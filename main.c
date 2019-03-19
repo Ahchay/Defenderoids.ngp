@@ -1,7 +1,6 @@
 #include "ngpc.h"
 #include "carthdr.h" // TODO: edit game name in carthdr.h
 #include "library.h"
-#include "Defenderoids.h"
 
 void main()
 {
@@ -13,9 +12,9 @@ void main()
    SetBackgroundColour(RGB(0, 0, 0));
 
    SetPalette(SCR_1_PLANE, 0, 0, 0, 0, RGB(15,15,15));
-   PrintString(SCR_1_PLANE, 0, 4, 9, "DEFENDROIDS");
-   PrintString(SCR_1_PLANE, 0, 2, 12, "Neither Defender");
-   PrintString(SCR_1_PLANE, 0, 3, 13, "nor Asteroids");
+   //PrintString(SCR_1_PLANE, 0, 4, 9, "DEFENDROIDS");
+   //PrintString(SCR_1_PLANE, 0, 2, 12, "Neither Defender");
+   //PrintString(SCR_1_PLANE, 0, 3, 13, "nor Asteroids");
 
    DefenderoidsMain();
 }
