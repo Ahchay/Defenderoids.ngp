@@ -2,4 +2,4 @@
 
 void DefenderoidsMain();
 
-const u16 DefenderoidShip[5][2] = {{0,0},{0,1},{1,1},{1,0},{0,0}};
+const u16 DefenderoidShip[5][2] = {{0,0},{0,2},{2,2},{2,0},{0,0}};

@@ -15,6 +15,14 @@ void DefenderoidsMain()
 	u16 iStartX;
 	u16 iStartY;
 	u8 iScale;
+	u8 iAngle;
+	u16 iEndX;
+	u16 iEndY;
+	u16 iTempX;
+	u16 iTempY;
+	u16 iStartFrame;
+	s8 cSin;
+	s8 cCos;
 
 	InitNGPC();
 	SysSetSystemFont();
@@ -42,14 +50,18 @@ void DefenderoidsMain()
 	}
 
 	// Create a shape object
-	// Should be sort of asteroid-shipy shaped
+	// Should be sort of asteroid-shipy shaped, but for now, it's a box.
 
 	iLoopX=0;
 	iLoopY=0;
 	iDirection=0;
 	iScale=1;
+	iAngle=0;
 	while (1)
 	{
+
+		iStartFrame=VBCounter;
+
 		CreateBitmap((u16*)RugBitmap, 128, 128);
 
 		iStartX=DefenderoidShip[0][0];
@@ -62,24 +74,56 @@ void DefenderoidsMain()
 			//PrintDecimal(SCR_1_PLANE, 0, 6, iPoint + 12, iStartX, 4);
 			//PrintDecimal(SCR_1_PLANE, 0, 12, iPoint + 12, iStartY, 4);
 
+			// Start with a border
+			DrawLine((u16*)RugBitmap,(u8)((iStartX)*63),(u8)((iStartY)*63),(u8)((DefenderoidShip[iPoint][0])*63),(u8)((DefenderoidShip[iPoint][1])*63),1);
+
 			// Can we scale this easily?
-			DrawLine((u16*)RugBitmap,(u8)(1+((126-iScale)>>1)+(iStartX)*iScale),(u8)(1+((126-iScale)>>1)+(iStartY)*iScale),(u8)(1+((126-iScale)>>1)+(DefenderoidShip[iPoint][0])*iScale),(u8)(1+((126-iScale)>>1)+(DefenderoidShip[iPoint][1])*iScale),2);
+			DrawLine((u16*)RugBitmap,(u8)(1+((62-iScale)>>1)+(iStartX)*iScale),(u8)(1+((62-iScale)>>1)+(iStartY)*iScale),(u8)(1+((62-iScale)>>1)+(DefenderoidShip[iPoint][0])*iScale),(u8)(1+((62-iScale)>>1)+(DefenderoidShip[iPoint][1])*iScale),2);
 
-			DrawLine((u16*)RugBitmap,(u8)((iStartX)*127),(u8)((iStartY)*127),(u8)((DefenderoidShip[iPoint][0])*127),(u8)((DefenderoidShip[iPoint][1])*127),1);
+			// Or rotate? Using integer maths?
+			// Library C functions return a signed integer range, not a "true" sin/cos
+			cSin = Sin(iAngle);
+			cCos = Cos(iAngle);
 
-			// Or rotate?
+
+			// translate point back to origin:
+			iStartX = (iStartX<<3)-8;
+			iStartY = (iStartY<<3)-8;
+
+			// rotate point
+			iTempX = ((iStartX * cCos)>>7) - ((iStartY * cSin)>>7);
+			iTempY = ((iStartX * cSin)>>7) + ((iStartY * cCos)>>7);
+
+			// translate point back:
+			iStartX = iTempX + 8;
+			iStartY = iTempY + 8;
+
+			// translate point back to origin:
+			iEndX = (DefenderoidShip[iPoint][0]<<3)-8;
+			iEndY = (DefenderoidShip[iPoint][1]<<3)-8;
+
+			// rotate point
+			iTempX = ((iEndX * cCos)>>7) - ((iEndY * cSin)>>7);
+			iTempY = ((iEndX * cSin)>>7) + ((iEndY * cCos)>>7);
+
+			// translate point back:
+			iEndX = iTempX + 8;
+			iEndY = iTempY + 8;
+
+			DrawLine((u16*)RugBitmap,(u8)(1+((126-16)>>1)+(iStartX)),(u8)(1+((126-16)>>1)+(iStartY)),(u8)(1+((126-16)>>1)+(iEndX)),(u8)(1+((126-16)>>1)+(iEndY)),3);
 
 			iStartX = DefenderoidShip[iPoint][0];
 			iStartY = DefenderoidShip[iPoint][1];
 
 		}
+
 		// Then copy the bitmap back into tile memory...
 		CopyBitmap((u16*)RugBitmap, bgTileBase);
 
 		if (iDirection==0)
 		{
 			iScale++;
-			if (iScale==126)
+			if (iScale==62)
 			{
 				iDirection=1;
 			}
@@ -93,10 +137,16 @@ void DefenderoidsMain()
 			}
 		}
 
-		PrintDecimal(SCR_1_PLANE, 0, 0, 18, iScale, 3);
+		iAngle++;
 
-		//Sleep(1);
+		// How many frames has all of this taken...
+		PrintDecimal(SCR_1_PLANE, 0, 0, 18, VBCounter-iStartFrame, 6);
+		// Five or six with one static box, one scaled box and one rotated box
+		// Interestingly, creating with only a static box only takes it down to 4 or five blanks per frame?
+		// Implying that maybe it's the "create and copy bitmap" that's taking a significant amount of that time.
+		// We know that PutPixel is a bit slow as well, so the longer the line the longer it will take...
 
 		//DrawBitmap((u16 *)bmpBackground, 160, 96, 0, 2);
 	}
 }
+
