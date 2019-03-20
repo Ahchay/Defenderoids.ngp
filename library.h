@@ -104,6 +104,8 @@ void SetPixel(u16 * BitmapAddress, u16 xPosition, u16 yPosition, u16 Colour);
 //void CopySingleTile(u8 TileGraphic, u16 TileNumber);
 void PutBitmapTile(u16 * BitmapAddress, u16 InputTile, u16 OutputTile);
 void DrawLine(u16 * BitmapAddress, u8 x1, u8 y1, u8 x2, u8 y2, u8 Colour);
+void DrawLineVertical(u16 * BitmapAddress, u16 x, u16 y1, u16 y2, u16 Colour);
+void DrawLineHorizontal(u16 * BitmapAddress, u16 x1, u16 x2, u16 y, u16 Colour);
 
 // Helper function to streamline copying animation frames between a buffer and the tile memory
 // copies a new animation frame into tile memory.

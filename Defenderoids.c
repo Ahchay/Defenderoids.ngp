@@ -78,19 +78,22 @@ void DefenderoidsMain()
 			DrawLine((u16*)RugBitmap,(u8)((iStartX)*63),(u8)((iStartY)*63),(u8)((DefenderoidShip[iPoint][0])*63),(u8)((DefenderoidShip[iPoint][1])*63),1);
 
 			// Can we scale this easily?
-			DrawLine((u16*)RugBitmap,(u8)(1+((62-iScale)>>1)+(iStartX)*iScale),(u8)(1+((62-iScale)>>1)+(iStartY)*iScale),(u8)(1+((62-iScale)>>1)+(DefenderoidShip[iPoint][0])*iScale),(u8)(1+((62-iScale)>>1)+(DefenderoidShip[iPoint][1])*iScale),2);
+			DrawLine((u16*)RugBitmap,(u8)(1+(iStartX)*iScale),(u8)(1+(iStartY)*iScale),(u8)(1+(DefenderoidShip[iPoint][0])*iScale),(u8)(1+(DefenderoidShip[iPoint][1])*iScale),2);
 
 			// Or rotate? Using integer maths?
 			// Library C functions return a signed integer range, not a "true" sin/cos
 			cSin = Sin(iAngle);
 			cCos = Cos(iAngle);
 
-
 			// translate point back to origin:
 			iStartX = (iStartX<<3)-8;
 			iStartY = (iStartY<<3)-8;
 
-			// rotate point
+			// rotate point.
+			// The calculation here is xpos = (xpos * cos(theta)) - (ypos * sin(theta))
+			// Because our sin/cos table is an integer table and not the "true" sin/cos
+			// we need to do each side of that calculation and then divide down by 128 (or right shift 7 points)
+			// before adding/subtracting the two results
 			iTempX = ((iStartX * cCos)>>7) - ((iStartY * cSin)>>7);
 			iTempY = ((iStartX * cSin)>>7) + ((iStartY * cCos)>>7);
 
