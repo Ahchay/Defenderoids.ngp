@@ -15,26 +15,32 @@ void DefenderoidsMain()
 	// Define variables
 	u8 iLoopX;
 	u8 iLoopY;
-	u8 iTile;
+	u16 iTile;
 	u8 iMainLoop;
 	u8 iDirection;
 	u16 RugBitmap[257][8];
 	u8 iPoint;
-	u16 iStartX;
-	u16 iStartY;
+	s16 iStartX;
+	s16 iStartY;
 	u8 iScale;
 	u8 iAngle;
-	u16 iEndX;
-	u16 iEndY;
-	u16 iTempX;
-	u16 iTempY;
+	s16 iEndX;
+	s16 iEndY;
+	s16 iTempX;
+	s16 iTempY;
 	u16 iStartFrame;
 	s8 cSin;
 	s8 cCos;
 	u8 iSpriteScale;
 	VECTOROBJECT Qix;
 	u8 iLoopQix;
-	VECTOROBJECT Asteroid = {{6,6},{24,87},11,{{2,2,1},{4,0,1},{6,2,1},{10,0,1},{12,4,1},{8,8,1},{10,10,1},{6,12,1},{4,8,1},{0,6,1},{4,4,1},{2,2,1}},2,0,-12};
+	u8 iLoopAsteroid;
+	VECTOROBJECT Asteroid[] = {
+									{{6,6},{24,87},11,{{2,2,1},{4,0,1},{6,2,1},{10,0,1},{12,4,1},{8,8,1},{10,10,1},{6,12,1},{4,8,1},{0,6,1},{4,4,1},{2,2,1}},2,0,-12},
+									{{6,6},{82,12},11,{{2,2,1},{4,0,1},{6,2,1},{10,0,1},{12,4,1},{8,8,1},{10,10,1},{6,12,1},{4,8,1},{0,6,1},{4,4,1},{2,2,1}},2,0,+3},
+									{{6,6},{13,16},11,{{2,2,1},{4,0,1},{6,2,1},{10,0,1},{12,4,1},{8,8,1},{10,10,1},{6,12,1},{4,8,1},{0,6,1},{4,4,1},{2,2,1}},2,0,-2},
+									{{6,6},{87,87},11,{{2,2,1},{4,0,1},{6,2,1},{10,0,1},{12,4,1},{8,8,1},{10,10,1},{6,12,1},{4,8,1},{0,6,1},{4,4,1},{2,2,1}},2,0,+1}
+								};
 
 	InitNGPC();
 	SysSetSystemFont();
@@ -46,7 +52,7 @@ void DefenderoidsMain()
 
 	SetPalette(SCR_1_PLANE, 0, 0, RGB(15,15,15), RGB(0,0,15), RGB(15,0,0));
 
-	CreateBitmap((u16*)RugBitmap, 128, 128);
+	CreateBitmap((u16*)RugBitmap, 144, 128);
 	CopyBitmap((u16*)RugBitmap, bgTileBase);
 
 	iTile=0;
@@ -55,7 +61,7 @@ void DefenderoidsMain()
 	// Watch the order...
 	for (iLoopY=0;iLoopY<16;iLoopY++)
 	{
-		for (iLoopX=0;iLoopX<16;iLoopX++)
+		for (iLoopX=0;iLoopX<18;iLoopX++)
 		{
 			PutTile(SCR_1_PLANE, 0, 2 + iLoopX, 1 + iLoopY, bgTileBase+iTile);
 			iTile++;
@@ -73,8 +79,8 @@ void DefenderoidsMain()
 	Qix.RotationSpeed=0;
 	for (iLoopQix=0;iLoopQix<Qix.Points;iLoopQix++)
 	{
-		Qix.VectorList[iLoopQix].x = (QRandom()>>2);
-		Qix.VectorList[iLoopQix].y = (QRandom()>>2);
+		Qix.VectorList[iLoopQix].x = (QRandom()>>3);
+		Qix.VectorList[iLoopQix].y = (QRandom()>>3);
 		Qix.VectorList[iLoopQix].colour = 3;
 	}
 
@@ -91,7 +97,7 @@ void DefenderoidsMain()
 
 		iStartFrame=VBCounter;
 
-		CreateBitmap((u16*)RugBitmap, 128, 128);
+		CreateBitmap((u16*)RugBitmap, 144, 128);
 
 		// Line version...
 		/*
@@ -118,79 +124,20 @@ void DefenderoidsMain()
 			Qix.VectorList[iLoopQix].y = Qix.VectorList[iLoopQix+1].y;
 			Qix.VectorList[iLoopQix].colour = 3;
 		}
-		Qix.VectorList[iLoopQix].x = (QRandom()>>2);
-		Qix.VectorList[iLoopQix].y = (QRandom()>>2);
+		Qix.VectorList[iLoopQix].x = (QRandom()>>3);
+		Qix.VectorList[iLoopQix].y = (QRandom()>>3);
 		Qix.VectorList[iLoopQix].colour = 3;
 
-
-		// Line version...
-		/*
-		iStartX=Box[0].x;
-		iStartY=Box[0].y;
-		iPoint = 1;
-
-		cSin = Sin(iAngle);
-		cCos = Cos(iAngle);
-
-		while (iPoint++<4)
-		{
-			//PrintDecimal(SCR_1_PLANE, 0, 0, iPoint + 12, iPoint, 4);
-			//PrintDecimal(SCR_1_PLANE, 0, 6, iPoint + 12, iStartX, 4);
-			//PrintDecimal(SCR_1_PLANE, 0, 12, iPoint + 12, iStartY, 4);
-
-			// Start with a border
-			DrawLine((u16*)RugBitmap,(u8)((iStartX)*127),(u8)((iStartY)*127),(u8)((Box[iPoint].x)*127),(u8)((Box[iPoint].y)*127),1);
-
-			// Scale is relatively easy
-			DrawLine((u16*)RugBitmap,(u8)(1+(iStartX)*iScale),(u8)(1+(iStartY)*iScale),(u8)(1+(Box[iPoint].x)*iScale),(u8)(1+(Box[iPoint].y)*iScale),2);
-
-			// Rotation needs a bit more calculation
-			// Library C functions return a signed integer range, not a "true" sin/cos
-			// translate point to an arbitary origin:
-			// This acts as the centre of rotation, scaling done here too.
-			iStartX = (iStartX<<3)-16;
-			iStartY = (iStartY<<3)-16;
-
-			// rotate point.
-			// The calculation here should be xpos = (xpos * cos(theta)) - (ypos * sin(theta))
-			// Because our sin/cos table is an integer table and not the "true" sin/cos
-			// we need to do each side of that calculation and then divide down by 128 (or right shift 7 points)
-			// before adding/subtracting the two results
-
-			iTempX = ((iStartX * cCos)>>7) - ((iStartY * cSin)>>7);
-			iTempY = ((iStartX * cSin)>>7) + ((iStartY * cCos)>>7);
-
-			// translate point back to it's original position:
-			iStartX = iTempX + 16;
-			iStartY = iTempY + 16;
-
-			// translate point back to origin:
-			iEndX = (Box[iPoint].x<<3)-16;
-			iEndY = (Box[iPoint].y<<3)-16;
-
-			// rotate point
-			iTempX = ((iEndX * cCos)>>7) - ((iEndY * cSin)>>7);
-			iTempY = ((iEndX * cSin)>>7) + ((iEndY * cCos)>>7);
-
-			// translate point back:
-			iEndX = iTempX + 16;
-			iEndY = iTempY + 16;
-
-			DrawLine((u16*)RugBitmap,(u8)(1+((126-16)>>1)+(iStartX)),(u8)(1+((126-16)>>1)+(iStartY)),(u8)(1+((126-16)>>1)+(iEndX)),(u8)(1+((126-16)>>1)+(iEndY)),3);
-
-
-			iStartX = Box[iPoint].x;
-			iStartY = Box[iPoint].y;
-		}
-		*/
-
 		// Asteroid
-		DrawVectorObject((u16*)RugBitmap,Asteroid);
-		Asteroid.RotationAngle+=Asteroid.RotationSpeed;
+		for (iLoopAsteroid=0;iLoopAsteroid<4;iLoopAsteroid++)
+		{
+			DrawVectorObject((u16*)RugBitmap,Asteroid[iLoopAsteroid]);
+			Asteroid[iLoopAsteroid].RotationAngle+=Asteroid[iLoopAsteroid].RotationSpeed;
+		}
 
 		// Ship Sprite
 		iPoint = 0;
-		iSpriteScale = 2;
+		iSpriteScale = 4;
 		cSin = Sin(iAngle);
 		cCos = Cos(iAngle);
 
@@ -208,8 +155,8 @@ void DefenderoidsMain()
 				iTempY = ((iStartX * cSin)>>7) + ((iStartY * cCos)>>7);
 
 				// translate point back to it's original position:
-				iStartX = 87+iTempX+8;
-				iStartY = 87+iTempY+8;
+				iStartX = 80+iTempX+8;
+				iStartY = 32+iTempY+8;
 
 				// Could we do something to scale the points
 				// i.e. draw a 3 x 3 box instead of a single point?
@@ -218,10 +165,12 @@ void DefenderoidsMain()
 				// Which  actually looks slightly worse...
 				// I guess the "ultimate" would be to express each pixel in the sprite as a circle of size iSpriteScale
 				// Which also looks slightly worse. Who'd have thought, clunky and quick looks better than accurate and slow.
+				// Overdrawing the individual pixels (by changing the iSpriteScale condition to iLoopX<=iSpriteScale looks a bit better for smaller scales, but not for larger
+				// Ah. Overdrawing in one axis only actually looks pretty good at most scales...
 
 				for (iLoopX=0;iLoopX<iSpriteScale;iLoopX++)
 				{
-					for (iLoopY=0;iLoopY<iSpriteScale;iLoopY++)
+					for (iLoopY=0;iLoopY<=iSpriteScale;iLoopY++)
 					{
 						SetPixel((u16*)RugBitmap,(u8)(iStartX+iLoopX),(u8)(iStartY+iLoopY),PlayerSprite[iPoint].colour);
 					}
@@ -256,25 +205,17 @@ void DefenderoidsMain()
 		PrintString(SCR_1_PLANE, 0, 0, 18, "FPS:");
 		PrintDecimal(SCR_1_PLANE, 0, 4, 18, 60/(VBCounter-iStartFrame), 2);
 
-		// Five or six with one static box, one scaled box and one rotated box
-		// Interestingly, creating with only a static box only takes it down to 4 or five blanks per frame?
-		// Implying that maybe it's the "create and copy bitmap" that's taking a significant amount of that time.
-		// We know that PutPixel is a bit slow as well, so the longer the line the longer it will take...
-		// 1 or 2 frames if we use individual pixel maps?
-		// Could I do "proper" rotatable sprites like this?
-
-		//DrawBitmap((u16 *)bmpBackground, 160, 96, 0, 2);
 	}
 }
 
 void DrawVectorObject(u16 * BitmapAddress, VECTOROBJECT VectorObject)
 {
-	u16 iStartX;
-	u16 iStartY;
-	u16 iEndX;
-	u16 iEndY;
-	u16 iTempX;
-	u16 iTempY;
+	s16 iStartX;
+	s16 iStartY;
+	s16 iEndX;
+	s16 iEndY;
+	s16 iTempX;
+	s16 iTempY;
 	u8 iPoint = 0;
 	s8 cSin;
 	s8 cCos;
@@ -299,7 +240,9 @@ void DrawVectorObject(u16 * BitmapAddress, VECTOROBJECT VectorObject)
 		// translate point back to it's original position:
 		// Modify back from the centre of rotation above, and then add the X & Y co-ordinates
 		iStartX = VectorObject.Position.x+iTempX+VectorObject.Origin.x;
+		if (iStartX<0) iStartX=0;
 		iStartY = VectorObject.Position.y+iTempY+VectorObject.Origin.y;
+		if (iStartY<0) iStartY=0;
 
 		iEndX = (VectorObject.VectorList[iPoint].x*VectorObject.Scale)-VectorObject.Origin.x;
 		iEndY = (VectorObject.VectorList[iPoint].y*VectorObject.Scale)-VectorObject.Origin.y;
@@ -310,7 +253,9 @@ void DrawVectorObject(u16 * BitmapAddress, VECTOROBJECT VectorObject)
 
 		// translate point back:
 		iEndX = VectorObject.Position.x+iTempX+VectorObject.Origin.x;
+		if (iEndX<0) iEndX=0;
 		iEndY = VectorObject.Position.y+iTempY+VectorObject.Origin.y;
+		if (iEndY<0) iEndY=0;
 
 		DrawLine((u16*)BitmapAddress,(u8)(iStartX),(u8)(iStartY),(u8)(iEndX),(u8)(iEndY),VectorObject.VectorList[iPoint].colour);
 
