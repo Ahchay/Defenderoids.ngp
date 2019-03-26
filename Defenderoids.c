@@ -18,7 +18,7 @@ void DefenderoidsMain()
 	u16 iTile;
 	u8 iMainLoop;
 	u8 iDirection;
-	u16 RugBitmap[257][8];
+	u16 RugBitmap[252][8];
 	u8 iPoint;
 	s16 iStartX;
 	s16 iStartY;
@@ -36,10 +36,12 @@ void DefenderoidsMain()
 	u8 iLoopQix;
 	u8 iLoopAsteroid;
 	VECTOROBJECT Asteroid[] = {
-									{{6,6},{24,87},11,{{2,2,1},{4,0,1},{6,2,1},{10,0,1},{12,4,1},{8,8,1},{10,10,1},{6,12,1},{4,8,1},{0,6,1},{4,4,1},{2,2,1}},2,0,-12},
-									{{6,6},{82,12},11,{{2,2,1},{4,0,1},{6,2,1},{10,0,1},{12,4,1},{8,8,1},{10,10,1},{6,12,1},{4,8,1},{0,6,1},{4,4,1},{2,2,1}},2,0,+3},
-									{{6,6},{13,16},11,{{2,2,1},{4,0,1},{6,2,1},{10,0,1},{12,4,1},{8,8,1},{10,10,1},{6,12,1},{4,8,1},{0,6,1},{4,4,1},{2,2,1}},2,0,-2},
-									{{6,6},{87,87},11,{{2,2,1},{4,0,1},{6,2,1},{10,0,1},{12,4,1},{8,8,1},{10,10,1},{6,12,1},{4,8,1},{0,6,1},{4,4,1},{2,2,1}},2,0,+1}
+									{{6,6},{8192,8192},{128,3},11,{{2,2,1},{4,0,1},{6,2,1},{10,0,1},{12,4,1},{8,8,1},{10,10,1},{6,12,1},{4,8,1},{0,6,1},{4,4,1},{2,2,1}},2,0,-1},
+									{{6,6},{4096,4096},{5,23},11,{{2,2,1},{4,0,1},{6,2,1},{10,0,1},{12,4,1},{8,8,1},{10,10,1},{6,12,1},{4,8,1},{0,6,1},{4,4,1},{2,2,1}},2,0,+3},
+									{{6,6},{256,8192},{8,9},11,{{2,2,1},{4,0,1},{6,2,1},{10,0,1},{12,4,1},{8,8,1},{10,10,1},{6,12,1},{4,8,1},{0,6,1},{4,4,1},{2,2,1}},1,0,+3},
+									{{6,6},{8192,4098},{64,-23},11,{{2,2,1},{4,0,1},{6,2,1},{10,0,1},{12,4,1},{8,8,1},{10,10,1},{6,12,1},{4,8,1},{0,6,1},{4,4,1},{2,2,1}},2,0,-2},
+									{{6,6},{4098,256},{-45,23},11,{{2,2,1},{4,0,1},{6,2,1},{10,0,1},{12,4,1},{8,8,1},{10,10,1},{6,12,1},{4,8,1},{0,6,1},{4,4,1},{2,2,1}},1,0,+3},
+									{{6,6},{256,256},{-12,-12},11,{{2,2,1},{4,0,1},{6,2,1},{10,0,1},{12,4,1},{8,8,1},{10,10,1},{6,12,1},{4,8,1},{0,6,1},{4,4,1},{2,2,1}},2,0,+1}
 								};
 
 	InitNGPC();
@@ -48,18 +50,17 @@ void DefenderoidsMain()
 
 	// So, create a bitmap...
 
-	SetBackgroundColour(0);
+	SetBackgroundColour(RGB(0,0,15));
 
 	SetPalette(SCR_1_PLANE, 0, 0, RGB(15,15,15), RGB(0,0,15), RGB(15,0,0));
 
-	CreateBitmap((u16*)RugBitmap, 144, 128);
+	CreateBitmap((u16*)RugBitmap, 144, 112);
 	CopyBitmap((u16*)RugBitmap, bgTileBase);
 
 	iTile=0;
-
 	//Copy the bitmap to SCR_1_PLANE
 	// Watch the order...
-	for (iLoopY=0;iLoopY<16;iLoopY++)
+	for (iLoopY=0;iLoopY<14;iLoopY++)
 	{
 		for (iLoopX=0;iLoopX<18;iLoopX++)
 		{
@@ -71,21 +72,20 @@ void DefenderoidsMain()
 	// Setup the qix object
 	Qix.Origin.x=0;
 	Qix.Origin.y=0;
-	Qix.Position.x=32;
-	Qix.Position.y=32;
+	Qix.Position.x=4096;
+	Qix.Position.y=4096;
+	Qix.MovementVector.x=32;
+	Qix.MovementVector.y=32;
 	Qix.Points=12;
 	Qix.Scale=1;
 	Qix.RotationAngle=0;
 	Qix.RotationSpeed=0;
 	for (iLoopQix=0;iLoopQix<Qix.Points;iLoopQix++)
 	{
-		Qix.VectorList[iLoopQix].x = (QRandom()>>3);
-		Qix.VectorList[iLoopQix].y = (QRandom()>>3);
+		Qix.VectorList[iLoopQix].x = 0;
+		Qix.VectorList[iLoopQix].y = 0;
 		Qix.VectorList[iLoopQix].colour = 3;
 	}
-
-	// Create a shape object
-	// Should be sort of asteroid-shipy shaped, but for now, it's a box.
 
 	iLoopX=0;
 	iLoopY=0;
@@ -97,7 +97,7 @@ void DefenderoidsMain()
 
 		iStartFrame=VBCounter;
 
-		CreateBitmap((u16*)RugBitmap, 144, 128);
+		CreateBitmap((u16*)RugBitmap, 144, 112);
 
 		// Line version...
 		/*
@@ -124,24 +124,43 @@ void DefenderoidsMain()
 			Qix.VectorList[iLoopQix].y = Qix.VectorList[iLoopQix+1].y;
 			Qix.VectorList[iLoopQix].colour = 3;
 		}
-		Qix.VectorList[iLoopQix].x = (QRandom()>>3);
-		Qix.VectorList[iLoopQix].y = (QRandom()>>3);
+		Qix.VectorList[iLoopQix].x = (((s16)QRandom())>>2);
+		Qix.VectorList[iLoopQix].y = (((s16)QRandom())>>2);
 		Qix.VectorList[iLoopQix].colour = 3;
 
 		// Asteroid
-		for (iLoopAsteroid=0;iLoopAsteroid<4;iLoopAsteroid++)
+		for (iLoopAsteroid=0;iLoopAsteroid<6;iLoopAsteroid++)
 		{
 			DrawVectorObject((u16*)RugBitmap,Asteroid[iLoopAsteroid]);
 			Asteroid[iLoopAsteroid].RotationAngle+=Asteroid[iLoopAsteroid].RotationSpeed;
+			// Need to do some bounds checking here...
+			Asteroid[iLoopAsteroid].Position.x += Asteroid[iLoopAsteroid].MovementVector.x;
+			if (Asteroid[iLoopAsteroid].Position.x < 128)
+			{
+				Asteroid[iLoopAsteroid].MovementVector.x = Asteroid[iLoopAsteroid].MovementVector.x*-1;
+			}
+			if (Asteroid[iLoopAsteroid].Position.x > 15700)
+			{
+				Asteroid[iLoopAsteroid].MovementVector.x = Asteroid[iLoopAsteroid].MovementVector.x*-1;
+			}
+			Asteroid[iLoopAsteroid].Position.y += Asteroid[iLoopAsteroid].MovementVector.y;
+			if (Asteroid[iLoopAsteroid].Position.y < 128)
+			{
+				Asteroid[iLoopAsteroid].MovementVector.y = Asteroid[iLoopAsteroid].MovementVector.y*-1;
+			}
+			if (Asteroid[iLoopAsteroid].Position.y > 13672)
+			{
+				Asteroid[iLoopAsteroid].MovementVector.y = Asteroid[iLoopAsteroid].MovementVector.y*-1;
+			}
 		}
 
 		// Ship Sprite
 		iPoint = 0;
-		iSpriteScale = 4;
+		iSpriteScale = 2;
 		cSin = Sin(iAngle);
 		cCos = Cos(iAngle);
 
-		while (iPoint++<63)
+		while (iPoint++<40)
 		{
 
 			if (PlayerSprite[iPoint].colour != 0)
@@ -167,10 +186,11 @@ void DefenderoidsMain()
 				// Which also looks slightly worse. Who'd have thought, clunky and quick looks better than accurate and slow.
 				// Overdrawing the individual pixels (by changing the iSpriteScale condition to iLoopX<=iSpriteScale looks a bit better for smaller scales, but not for larger
 				// Ah. Overdrawing in one axis only actually looks pretty good at most scales...
+				// Might be better if we overdraw vertically between NW and NE and SW and SE and horizontally between NE and SE and SW and NW?
 
 				for (iLoopX=0;iLoopX<iSpriteScale;iLoopX++)
 				{
-					for (iLoopY=0;iLoopY<=iSpriteScale;iLoopY++)
+					for (iLoopY=0;iLoopY<iSpriteScale;iLoopY++)
 					{
 						SetPixel((u16*)RugBitmap,(u8)(iStartX+iLoopX),(u8)(iStartY+iLoopY),PlayerSprite[iPoint].colour);
 					}
@@ -185,7 +205,7 @@ void DefenderoidsMain()
 		if (iDirection==0)
 		{
 			iScale++;
-			if (iScale==126)
+			if (iScale==64)
 			{
 				iDirection=1;
 			}
@@ -239,9 +259,9 @@ void DrawVectorObject(u16 * BitmapAddress, VECTOROBJECT VectorObject)
 
 		// translate point back to it's original position:
 		// Modify back from the centre of rotation above, and then add the X & Y co-ordinates
-		iStartX = VectorObject.Position.x+iTempX+VectorObject.Origin.x;
+		iStartX = (VectorObject.Position.x>>7)+iTempX+VectorObject.Origin.x;
 		if (iStartX<0) iStartX=0;
-		iStartY = VectorObject.Position.y+iTempY+VectorObject.Origin.y;
+		iStartY = (VectorObject.Position.y>>7)+iTempY+VectorObject.Origin.y;
 		if (iStartY<0) iStartY=0;
 
 		iEndX = (VectorObject.VectorList[iPoint].x*VectorObject.Scale)-VectorObject.Origin.x;
@@ -252,9 +272,9 @@ void DrawVectorObject(u16 * BitmapAddress, VECTOROBJECT VectorObject)
 		iTempY = ((iEndX * cSin)>>7) + ((iEndY * cCos)>>7);
 
 		// translate point back:
-		iEndX = VectorObject.Position.x+iTempX+VectorObject.Origin.x;
+		iEndX = (VectorObject.Position.x>>7)+iTempX+VectorObject.Origin.x;
 		if (iEndX<0) iEndX=0;
-		iEndY = VectorObject.Position.y+iTempY+VectorObject.Origin.y;
+		iEndY = (VectorObject.Position.y>>7)+iTempY+VectorObject.Origin.y;
 		if (iEndY<0) iEndY=0;
 
 		DrawLine((u16*)BitmapAddress,(u8)(iStartX),(u8)(iStartY),(u8)(iEndX),(u8)(iEndY),VectorObject.VectorList[iPoint].colour);
