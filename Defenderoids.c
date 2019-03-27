@@ -70,10 +70,15 @@ void DefenderoidsMain()
 	}
 
 	// Setup the qix object
+	// So, the Qix itself is a lot simpler than it first appears.
+	// Essentially, it's a list of lines, each starting from the end position of the last
+	// where the "first" line falls off the stack and is replaced at the end with a new one
+	// with a random(?) length and direction.
+	// Changing the length would essentially control the speed and overall size of the Qix
 	Qix.Origin.x=0;
 	Qix.Origin.y=0;
-	Qix.Position.x=4096;
-	Qix.Position.y=4096;
+	Qix.Position.x=0;
+	Qix.Position.y=0;
 	Qix.MovementVector.x=32;
 	Qix.MovementVector.y=32;
 	Qix.Points=12;
@@ -92,6 +97,7 @@ void DefenderoidsMain()
 	iDirection=0;
 	iScale=1;
 	iAngle=0;
+	iLoopQix=0;
 	while (1)
 	{
 
@@ -99,34 +105,19 @@ void DefenderoidsMain()
 
 		CreateBitmap((u16*)RugBitmap, 144, 112);
 
-		// Line version...
-		/*
-		iStartX=Qix[0].x;
-		iStartY=Qix[0].y;
-		iPoint = 0;
-
-		//Draw a qix
-		while (iPoint++<12)
-		{
-			DrawLine((u16*)RugBitmap,(u8)((iStartX)),(u8)((iStartY)),(u8)((Qix[iPoint].x)),(u8)((Qix[iPoint].y)),Qix[iPoint].colour);
-
-			iStartX = Qix[iPoint].x;
-			iStartY = Qix[iPoint].y;
-		}
-		*/
-
 		DrawVectorObject((u16*)RugBitmap,Qix);
 
 		// rotate the points up the Qix list...
-		for (iLoopQix=0;iLoopQix<Qix.Points;iLoopQix++)
-		{
-			Qix.VectorList[iLoopQix].x = Qix.VectorList[iLoopQix+1].x;
-			Qix.VectorList[iLoopQix].y = Qix.VectorList[iLoopQix+1].y;
-			Qix.VectorList[iLoopQix].colour = 3;
-		}
-		Qix.VectorList[iLoopQix].x = (((s16)QRandom())>>2);
-		Qix.VectorList[iLoopQix].y = (((s16)QRandom())>>2);
+		Qix.VectorList[iLoopQix].x = (((s16)QRandom())>>2)+(Qix.MovementVector.x>>5);
+		Qix.VectorList[iLoopQix].y = (((s16)QRandom())>>2)+(Qix.MovementVector.y>>5);
 		Qix.VectorList[iLoopQix].colour = 3;
+		if (++iLoopQix >= Qix.Points)
+		{
+			iLoopQix = 0;
+		}
+
+		Qix.MovementVector.x++;
+		Qix.MovementVector.y++;
 
 		// Asteroid
 		for (iLoopAsteroid=0;iLoopAsteroid<6;iLoopAsteroid++)
