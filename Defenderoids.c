@@ -42,7 +42,13 @@ void DefenderoidsMain()
 									{{6,6},{256,8192},{8,9},15,{{0,0,1},{0,0,1},{0,0,1},{0,0,1},{0,0,1},{0,0,1},{0,0,1},{0,0,1},{0,0,1},{0,0,1},{0,0,1},{0,0,1},{0,0,1},{0,0,1}},1,0,+3},
 									{{6,6},{8192,4098},{64,-23},15,{{0,0,1},{0,0,1},{0,0,1},{0,0,1},{0,0,1},{0,0,1},{0,0,1},{0,0,1},{0,0,1},{0,0,1},{0,0,1},{0,0,1},{0,0,1},{0,0,1}},2,0,-2},
 									{{6,6},{4098,256},{-45,23},15,{{0,0,1},{0,0,1},{0,0,1},{0,0,1},{0,0,1},{0,0,1},{0,0,1},{0,0,1},{0,0,1},{0,0,1},{0,0,1},{0,0,1},{0,0,1},{0,0,1}},1,0,+3},
-									{{6,6},{256,256},{-12,-12},15,{{0,0,1},{0,0,1},{0,0,1},{0,0,1},{0,0,1},{0,0,1},{0,0,1},{0,0,1},{0,0,1},{0,0,1},{0,0,1},{0,0,1},{0,0,1},{0,0,1}},2,0,+1}
+									{{6,6},{256,256},{-12,-12},15,{{0,0,1},{0,0,1},{0,0,1},{0,0,1},{0,0,1},{0,0,1},{0,0,1},{0,0,1},{0,0,1},{0,0,1},{0,0,1},{0,0,1},{0,0,1},{0,0,1}},2,0,+1},
+									{{6,6},{6432,256},{-12,-12},15,{{0,0,1},{0,0,1},{0,0,1},{0,0,1},{0,0,1},{0,0,1},{0,0,1},{0,0,1},{0,0,1},{0,0,1},{0,0,1},{0,0,1},{0,0,1},{0,0,1}},2,0,+1},
+									{{6,6},{256,7634},{-12,-12},15,{{0,0,1},{0,0,1},{0,0,1},{0,0,1},{0,0,1},{0,0,1},{0,0,1},{0,0,1},{0,0,1},{0,0,1},{0,0,1},{0,0,1},{0,0,1},{0,0,1}},2,0,+1},
+									{{6,6},{2034,7763},{-12,-12},15,{{0,0,1},{0,0,1},{0,0,1},{0,0,1},{0,0,1},{0,0,1},{0,0,1},{0,0,1},{0,0,1},{0,0,1},{0,0,1},{0,0,1},{0,0,1},{0,0,1}},2,0,+1},
+									{{6,6},{1098,256},{-12,-12},15,{{0,0,1},{0,0,1},{0,0,1},{0,0,1},{0,0,1},{0,0,1},{0,0,1},{0,0,1},{0,0,1},{0,0,1},{0,0,1},{0,0,1},{0,0,1},{0,0,1}},2,0,+1},
+									{{6,6},{256,1043},{-12,-12},15,{{0,0,1},{0,0,1},{0,0,1},{0,0,1},{0,0,1},{0,0,1},{0,0,1},{0,0,1},{0,0,1},{0,0,1},{0,0,1},{0,0,1},{0,0,1},{0,0,1}},2,0,+1},
+									{{6,6},{3432,256},{-12,-12},15,{{0,0,1},{0,0,1},{0,0,1},{0,0,1},{0,0,1},{0,0,1},{0,0,1},{0,0,1},{0,0,1},{0,0,1},{0,0,1},{0,0,1},{0,0,1},{0,0,1}},2,0,+1}
 								};
 
 	InitNGPC();
@@ -94,7 +100,7 @@ void DefenderoidsMain()
 	}
 
 	// Set up the asteroids
-	for (iLoopAsteroid=0;iLoopAsteroid<6;iLoopAsteroid++)
+	for (iLoopAsteroid=0;iLoopAsteroid<12;iLoopAsteroid++)
 	{
 		for (iLoopAsteroidPoint=0;iLoopAsteroidPoint<Asteroid[iLoopAsteroid].Points-1;iLoopAsteroidPoint++)
 		{
@@ -102,9 +108,15 @@ void DefenderoidsMain()
 		}
 		// Make sure the asteroid is closed...
 		Asteroid[iLoopAsteroid].VectorList[iLoopAsteroidPoint] = Asteroid[iLoopAsteroid].VectorList[0];
-		Asteroid[iLoopAsteroid].Scale=(QRandom()>>6)+2;
+		Asteroid[iLoopAsteroid].Scale=(QRandom()>>6)+1;
 		Asteroid[iLoopAsteroid].RotationSpeed=(QRandom()>>5)+1;
 		Asteroid[iLoopAsteroid].RotationAngle=QRandom();
+		Asteroid[iLoopAsteroid].Position.x=((u16)QRandom())<<4;
+		Asteroid[iLoopAsteroid].Position.y=((u16)QRandom())<<4;
+		Asteroid[iLoopAsteroid].MovementVector.x=QRandom();
+		Asteroid[iLoopAsteroid].MovementVector.y=QRandom();
+
+
 	}
 
 	iLoopX=0;
@@ -135,7 +147,7 @@ void DefenderoidsMain()
 		Qix.MovementVector.y++;
 
 		// Asteroid
-		for (iLoopAsteroid=0;iLoopAsteroid<6;iLoopAsteroid++)
+		for (iLoopAsteroid=0;iLoopAsteroid<12;iLoopAsteroid++)
 		{
 			DrawVectorObject((u16*)RugBitmap,Asteroid[iLoopAsteroid]);
 			Asteroid[iLoopAsteroid].RotationAngle+=Asteroid[iLoopAsteroid].RotationSpeed;
