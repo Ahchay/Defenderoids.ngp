@@ -50,6 +50,7 @@ void DefenderoidsMain()
 									{{6,6},{256,1043},{-12,-12},15,{{0,0,1},{0,0,1},{0,0,1},{0,0,1},{0,0,1},{0,0,1},{0,0,1},{0,0,1},{0,0,1},{0,0,1},{0,0,1},{0,0,1},{0,0,1},{0,0,1}},2,0,+1},
 									{{6,6},{3432,256},{-12,-12},15,{{0,0,1},{0,0,1},{0,0,1},{0,0,1},{0,0,1},{0,0,1},{0,0,1},{0,0,1},{0,0,1},{0,0,1},{0,0,1},{0,0,1},{0,0,1},{0,0,1}},2,0,+1}
 								};
+	VECTOROBJECT PlayerOne;
 
 	InitNGPC();
 	SysSetSystemFont();
@@ -108,7 +109,7 @@ void DefenderoidsMain()
 		}
 		// Make sure the asteroid is closed...
 		Asteroid[iLoopAsteroid].VectorList[iLoopAsteroidPoint] = Asteroid[iLoopAsteroid].VectorList[0];
-		Asteroid[iLoopAsteroid].Scale=(QRandom()>>6)+1;
+		Asteroid[iLoopAsteroid].Scale=3;
 		Asteroid[iLoopAsteroid].RotationSpeed=(QRandom()>>5)+1;
 		Asteroid[iLoopAsteroid].RotationAngle=QRandom();
 		Asteroid[iLoopAsteroid].Position.x=((u16)QRandom())<<4;
@@ -117,6 +118,25 @@ void DefenderoidsMain()
 		Asteroid[iLoopAsteroid].MovementVector.y=QRandom();
 
 
+	}
+
+	// Set up the player
+	PlayerOne.Origin.x = 8;
+	PlayerOne.Origin.y = 16;
+	PlayerOne.Position.x = 80;
+	PlayerOne.Position.y = 80;
+	PlayerOne.MovementVector.x = 0;
+	PlayerOne.MovementVector.y = 0;
+	PlayerOne.Scale = 2;
+	PlayerOne.Points = 40;
+	PlayerOne.RotationAngle = 0;
+	PlayerOne.RotationSpeed = 0;
+	iLoopX=0;
+	while (iLoopX++<PlayerOne.Points)
+	{
+		PlayerOne.VectorList[iLoopX].x = PlayerSprite[iLoopX].x;
+		PlayerOne.VectorList[iLoopX].y = PlayerSprite[iLoopX].y;
+		PlayerOne.VectorList[iLoopX].colour = PlayerSprite[iLoopX].colour;
 	}
 
 	iLoopX=0;
@@ -173,49 +193,17 @@ void DefenderoidsMain()
 		}
 
 		// Ship Sprite
-		iPoint = 0;
-		iSpriteScale = 2;
-		cSin = Sin(iAngle);
-		cCos = Cos(iAngle);
-
-		while (iPoint++<40)
+		if (JOYPAD & J_LEFT) PlayerOne.RotationAngle-=8;
+		if (JOYPAD & J_RIGHT) PlayerOne.RotationAngle+=8;
+		if (JOYPAD & J_UP)
 		{
-
-			if (PlayerSprite[iPoint].colour != 0)
-			{
-
-				iStartX = (PlayerSprite[iPoint].x*iSpriteScale)-8;
-				iStartY = (PlayerSprite[iPoint].y*iSpriteScale)-8;
-
-				// rotate point.
-				iTempX = ((iStartX * cCos)>>7) - ((iStartY * cSin)>>7);
-				iTempY = ((iStartX * cSin)>>7) + ((iStartY * cCos)>>7);
-
-				// translate point back to it's original position:
-				iStartX = 80+iTempX+8;
-				iStartY = 32+iTempY+8;
-
-				// Could we do something to scale the points
-				// i.e. draw a 3 x 3 box instead of a single point?
-				// oh shit. That actually works. Bit sloppy round the edges, but recognisable as the sprite...
-				// Or we can try rotating each point seperately?
-				// Which  actually looks slightly worse...
-				// I guess the "ultimate" would be to express each pixel in the sprite as a circle of size iSpriteScale
-				// Which also looks slightly worse. Who'd have thought, clunky and quick looks better than accurate and slow.
-				// Overdrawing the individual pixels (by changing the iSpriteScale condition to iLoopX<=iSpriteScale looks a bit better for smaller scales, but not for larger
-				// Ah. Overdrawing in one axis only actually looks pretty good at most scales...
-				// Might be better if we overdraw vertically between NW and NE and SW and SE and horizontally between NE and SE and SW and NW?
-
-				for (iLoopX=0;iLoopX<iSpriteScale;iLoopX++)
-				{
-					for (iLoopY=0;iLoopY<iSpriteScale;iLoopY++)
-					{
-						SetPixel((u16*)RugBitmap,(u8)(iStartX+iLoopX),(u8)(iStartY+iLoopY),PlayerSprite[iPoint].colour);
-					}
-				}
-			}
-
+			// Modify the movement vector by the angle.
+			PlayerOne.MovementVector.x += (Cos(PlayerOne.RotationAngle+192));
+			PlayerOne.MovementVector.y += (Sin(PlayerOne.RotationAngle+192));
 		}
+		PlayerOne.Position.x += PlayerOne.MovementVector.x>>7;
+		PlayerOne.Position.y += PlayerOne.MovementVector.y>>7;
+		DrawVectorSprite((u16*)RugBitmap, PlayerOne);
 
 		// Then copy the bitmap back into tile memory...
 		CopyBitmap((u16*)RugBitmap, bgTileBase);
@@ -242,6 +230,9 @@ void DefenderoidsMain()
 		// How many frames has all of this taken...
 		PrintString(SCR_1_PLANE, 0, 0, 18, "FPS:");
 		PrintDecimal(SCR_1_PLANE, 0, 4, 18, 60/(VBCounter-iStartFrame), 2);
+
+		PrintDecimal(SCR_1_PLANE, 0, 12, 18, PlayerOne.MovementVector.x, 2);
+		PrintDecimal(SCR_1_PLANE, 0, 15, 18, PlayerOne.MovementVector.y, 2);
 
 	}
 }
@@ -302,4 +293,54 @@ void DrawVectorObject(u16 * BitmapAddress, VECTOROBJECT VectorObject)
 
 	}
 
+}
+
+void DrawVectorSprite(u16 * BitmapAddress, VECTOROBJECT VectorObject)
+{
+	s16 iStartX;
+	s16 iStartY;
+	s16 iEndX;
+	s16 iEndY;
+	s16 iTempX;
+	s16 iTempY;
+	u8 iPoint = 0;
+	s8 cSin;
+	s8 cCos;
+	u8 iLoopX;
+	u8 iLoopY;
+
+	cSin = Sin(VectorObject.RotationAngle);
+	cCos = Cos(VectorObject.RotationAngle);
+
+	iStartX = VectorObject.VectorList[0].x;
+	iStartY = VectorObject.VectorList[0].y;
+
+	while (iPoint++<VectorObject.Points)
+	{
+
+		if (PlayerSprite[iPoint].colour != 0)
+		{
+
+			iStartX = (PlayerSprite[iPoint].x*VectorObject.Scale)-VectorObject.Origin.x;
+			iStartY = (PlayerSprite[iPoint].y*VectorObject.Scale)-VectorObject.Origin.y;
+
+			// rotate point.
+			iTempX = ((iStartX * cCos)>>7) - ((iStartY * cSin)>>7);
+			iTempY = ((iStartX * cSin)>>7) + ((iStartY * cCos)>>7);
+
+			// translate point back to it's original position:
+			iStartX = VectorObject.Position.x+iTempX+VectorObject.Origin.x;
+			iStartY = VectorObject.Position.y+iTempY+VectorObject.Origin.y;
+
+			// Quick and dirty method to scale up the individual points
+			for (iLoopX=0;iLoopX<VectorObject.Scale;iLoopX++)
+			{
+				for (iLoopY=0;iLoopY<VectorObject.Scale;iLoopY++)
+				{
+					SetPixel((u16*)BitmapAddress,(u8)(iStartX+iLoopX),(u8)(iStartY+iLoopY),VectorObject.VectorList[iPoint].colour);
+				}
+			}
+		}
+
+	}
 }
