@@ -203,7 +203,7 @@ void DefenderoidsMain()
 		}
 		PlayerOne.Position.x += PlayerOne.MovementVector.x>>7;
 		PlayerOne.Position.y += PlayerOne.MovementVector.y>>7;
-		DrawVectorSprite((u16*)RugBitmap, PlayerOne);
+		DrawVectorObject((u16*)RugBitmap, PlayerOne);
 
 		// Then copy the bitmap back into tile memory...
 		CopyBitmap((u16*)RugBitmap, bgTileBase);
