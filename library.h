@@ -99,7 +99,7 @@ void NeoTracker_StopAll(void);
 
 // bitmap mode support//Function declarations
 void CreateBitmap(u16 * BitmapAddress, u8 Width, u8 Height);
-void SetPixel(u16 * BitmapAddress, u16 xPosition, u16 yPosition, u16 Colour);
+void SetPixel(u16 * BitmapAddress, s16 xPosition, s16 yPosition, u16 Colour);
 //u8 GetPixel(u16 xPosition, u16 yPosition);
 //void CopySingleTile(u8 TileGraphic, u16 TileNumber);
 void PutBitmapTile(u16 * BitmapAddress, u16 InputTile, u16 OutputTile);

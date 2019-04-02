@@ -1445,19 +1445,29 @@ void CreateBitmap(u16 * BitmapAddress, u8 Width, u8 Height)
 	}
 }
 
-void SetPixel(u16 * BitmapAddress, u16 xPosition, u16 yPosition, u16 Colour)
+void SetPixel(u16 * BitmapAddress, s16 xPosition, s16 yPosition, u16 Colour)
 {
 	//Set the selected pixel in the bitmap
 	u16 CurrentTile;
 	//u16 TileRow;
 	u16 * TileRam = BitmapAddress+8;
 
-	//Trouble is. This needs to know the width and height of the bitmap (well, probably not the height)
+	s16 xbounded;
+	s16 ybounded;
+
+	// forces the pixel to draw inside the bounds of the bitmap area.
+	xbounded=xPosition;
+	if (xPosition<0) xbounded=0;
+	if (xPosition>BitmapAddress[0]) xbounded=BitmapAddress[0];
+
+	ybounded=yPosition;
+	if (yPosition<0) ybounded=0;
+	if (yPosition>BitmapAddress[1]) ybounded=BitmapAddress[1];
 
 	//Fist of all, identify the tile that the specified bitmap lives inside...
 	//This can be derived from xPosition and yPosition
 
-	CurrentTile=(xPosition/8)+((yPosition/8)*(BitmapAddress[0]/8));
+	CurrentTile=(xbounded/8)+((ybounded/8)*(BitmapAddress[0]/8));
 	//For now, copy our "rubbish" tile into the tile space.
 	//This is just to prove that I'm in the right general area...
 	//CopySingleTile(RubbishTile, CustomTileBase+CurrentTile);
@@ -1470,7 +1480,7 @@ void SetPixel(u16 * BitmapAddress, u16 xPosition, u16 yPosition, u16 Colour)
 	//I don't need the whole tile. Just the row (yPosition % 8)
 	//Grab a pointer to the relevant tile.
 	//TileRam += (BitmapTileBase * 8);
-	TileRam += (CurrentTile * 8)+(yPosition%8);
+	TileRam += (CurrentTile * 8)+(ybounded%8);
 	//& Then... Grab the value held in this address...
 	//TileRow = *TileRam;
 
@@ -1484,8 +1494,8 @@ void SetPixel(u16 * BitmapAddress, u16 xPosition, u16 yPosition, u16 Colour)
 	//respectively. (Load the values in bitmap.h into neotile to see what I mean)
 
 	//Updated to work directly on the tileram. Slightly quicker...
-	TileRam[0]=TileRam[0] & BitmapMask[xPosition%8];
-	TileRam[0]=TileRam[0] | BitmapNewMask[Colour][xPosition%8];
+	TileRam[0]=TileRam[0] & BitmapMask[xbounded%8];
+	TileRam[0]=TileRam[0] | BitmapNewMask[Colour][xbounded%8];
 
 	//Put the tile back...
 	//TileRam[0] = TileRow;
