@@ -21,7 +21,7 @@ typedef struct VectorObject
 	u8 Points;
 	COLOURPOINT VectorList[128];
 	u8 Scale;
-	u8 RotationAngle;
+	s8 RotationAngle;
 	s8 RotationSpeed;
 } VECTOROBJECT;
 
