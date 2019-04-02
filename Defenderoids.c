@@ -17,7 +17,7 @@ void DefenderoidsMain()
 	u8 iLoopY;
 	u16 iTile;
 	u8 iMainLoop;
-	u16 RugBitmap[252][8];
+	u16 bmpPlayField[252][8];
 	u8 iPoint;
 	s16 iStartX;
 	s16 iStartY;
@@ -57,12 +57,12 @@ void DefenderoidsMain()
 
 	// So, create a bitmap...
 
-	SetBackgroundColour(RGB(0,0,15));
+	SetBackgroundColour(RGB(0,0,4));
 
 	SetPalette(SCR_1_PLANE, 0, 0, RGB(15,15,15), RGB(0,0,15), RGB(15,0,0));
 
-	CreateBitmap((u16*)RugBitmap, 144, 112);
-	CopyBitmap((u16*)RugBitmap, bgTileBase);
+	CreateBitmap((u16*)bmpPlayField, 144, 112);
+	CopyBitmap((u16*)bmpPlayField, bgTileBase);
 
 	iTile=0;
 	//Copy the bitmap to SCR_1_PLANE
@@ -148,8 +148,8 @@ void DefenderoidsMain()
 
 		iStartFrame=VBCounter;
 
-		CreateBitmap((u16*)RugBitmap, 144, 112);
-		DrawVectorObject((u16*)RugBitmap,Qix);
+		CreateBitmap((u16*)bmpPlayField, 144, 112);
+		DrawVectorObject((u16*)bmpPlayField,Qix);
 
 		// rotate the points up the Qix list...
 		Qix.VectorList[iLoopQix].x = (((s16)QRandom())>>2)+(Qix.MovementVector.x>>5);
@@ -168,7 +168,7 @@ void DefenderoidsMain()
 		// Regardless of the number of asteroids, or the rotation speeds or anything?
 		for (iLoopAsteroid=0;iLoopAsteroid<4;iLoopAsteroid++)
 		{
-			DrawVectorObject((u16*)RugBitmap,Asteroid[iLoopAsteroid]);
+			DrawVectorObject((u16*)bmpPlayField,Asteroid[iLoopAsteroid]);
 			Asteroid[iLoopAsteroid].RotationAngle+=Asteroid[iLoopAsteroid].RotationSpeed;
 			// Need to do some bounds checking here...
 			Asteroid[iLoopAsteroid].Position.x += Asteroid[iLoopAsteroid].MovementVector.x;
@@ -202,11 +202,11 @@ void DefenderoidsMain()
 		}
 		// Bounds checking? How do I constrain the player within the visible screen without breaking the immersion?
 		// Bitmap address [0] contains the bitmap width, and address[1] the bitmap height. So we should be able to use that?
-		if (PlayerOne.Position.x<0) PlayerOne.Position.x=((u16*)RugBitmap)[0];
-		if (PlayerOne.Position.x>(((u16*)RugBitmap)[0])) PlayerOne.Position.x=0;
+		if (PlayerOne.Position.x<0) PlayerOne.Position.x=((u16*)bmpPlayField)[0];
+		if (PlayerOne.Position.x>(((u16*)bmpPlayField)[0])) PlayerOne.Position.x=0;
 		PlayerOne.Position.x += PlayerOne.MovementVector.x>>7;
-		if (PlayerOne.Position.y<0) PlayerOne.Position.y=((u16*)RugBitmap)[1];
-		if (PlayerOne.Position.y>((u16*)RugBitmap)[1]) PlayerOne.Position.y=0;
+		if (PlayerOne.Position.y<0) PlayerOne.Position.y=((u16*)bmpPlayField)[1];
+		if (PlayerOne.Position.y>((u16*)bmpPlayField)[1]) PlayerOne.Position.y=0;
 		PlayerOne.Position.y += PlayerOne.MovementVector.y>>7;
 		// Draw some random engine noise...
 		iEngineLoop=PlayerOne.Points-5;
@@ -217,10 +217,10 @@ void DefenderoidsMain()
 			iEngineLoop++;
 		}
 		// And then draw the sprite
-		DrawVectorSprite((u16*)RugBitmap, PlayerOne);
+		DrawVectorSprite((u16*)bmpPlayField, PlayerOne);
 
 		// Then copy the bitmap back into tile memory...
-		CopyBitmap((u16*)RugBitmap, bgTileBase);
+		CopyBitmap((u16*)bmpPlayField, bgTileBase);
 
 		// How many frames has all of this taken...
 		PrintString(SCR_1_PLANE, 0, 0, 18, "FPS:");
