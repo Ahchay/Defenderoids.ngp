@@ -201,12 +201,12 @@ void DefenderoidsMain()
 		}
 		// Bounds checking? How do I constrain the player within the visible screen without breaking the immersion?
 		// Bitmap address [0] contains the bitmap width, and address[1] the bitmap height. So we should be able to use that?
+		if (PlayerOne.Position.x<0) PlayerOne.Position.x=((u16*)RugBitmap)[0];
+		if (PlayerOne.Position.x>(((u16*)RugBitmap)[0])) PlayerOne.Position.x=0;
 		PlayerOne.Position.x += PlayerOne.MovementVector.x>>7;
-		if (PlayerOne.Position.x<0-(PlayerOne.Scale * PlayerOne.Origin.x)) PlayerOne.Position.x=((u16*)RugBitmap)[0]+(PlayerOne.Scale * PlayerOne.Origin.x);
-		if (PlayerOne.Position.x>(((u16*)RugBitmap)[0])+(PlayerOne.Scale * PlayerOne.Origin.x)) PlayerOne.Position.x=0-(PlayerOne.Scale * PlayerOne.Origin.x);
+		if (PlayerOne.Position.y<0) PlayerOne.Position.y=((u16*)RugBitmap)[1];
+		if (PlayerOne.Position.y>((u16*)RugBitmap)[1]) PlayerOne.Position.y=0;
 		PlayerOne.Position.y += PlayerOne.MovementVector.y>>7;
-		if (PlayerOne.Position.y<0-(PlayerOne.Scale * PlayerOne.Origin.y)) PlayerOne.Position.y=((u16*)RugBitmap)[1]+(PlayerOne.Scale * PlayerOne.Origin.y);
-		if (PlayerOne.Position.y>((u16*)RugBitmap)[1]+(PlayerOne.Scale * PlayerOne.Origin.y)) PlayerOne.Position.y=0-(PlayerOne.Scale * PlayerOne.Origin.y);
 		// Draw some random engine noise...
 		iEngineLoop=PlayerOne.Points-5;
 		while (iEngineLoop<PlayerOne.Points)
