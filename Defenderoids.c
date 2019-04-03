@@ -35,6 +35,8 @@ void DefenderoidsMain()
 	u8 iLoopAsteroidPoint;
 	u16 iCounter;
 	u8 iEngineLoop;
+	u32 iVelocity;
+	bool bShoot;
 	VECTOROBJECT Asteroid[] = {
 									{{6,6},{12192,8192},0,0,0,0,0,0},
 									{{6,6},{12096,10096},0,0,0,0,0,0},
@@ -49,10 +51,16 @@ void DefenderoidsMain()
 									{{6,6},{2048,10048},0,0,0,0,0,0},
 									{{6,6},{12432,2048},0,0,0,0,0,0}
 								};
+
+	VECTOROBJECT Shot[] = {
+								{{1,1},{0,0},{0,0},1,{{1,1}},0,0,0},
+								{{1,1},{0,0},{0,0},1,{{1,1}},0,0,0},
+								{{1,1},{0,0},{0,0},1,{{1,1}},0,0,0},
+								{{1,1},{0,0},{0,0},1,{{1,1}},0,0,0}
+							};
+
 	VECTOROBJECT PlayerOne;
 
-	InitNGPC();
-	SysSetSystemFont();
 	InitialiseQRandom();
 
 	// So, create a bitmap...
@@ -65,6 +73,7 @@ void DefenderoidsMain()
 	CopyBitmap((u16*)bmpPlayField, bgTileBase);
 
 	iTile=0;
+	bShoot=0;
 	//Copy the bitmap to SCR_1_PLANE
 	// Watch the order...
 	for (iLoopY=0;iLoopY<14;iLoopY++)
@@ -116,8 +125,6 @@ void DefenderoidsMain()
 		//Asteroid[iLoopAsteroid].Position.y=((u16)QRandom())<<4;
 		Asteroid[iLoopAsteroid].MovementVector.x=QRandom();
 		Asteroid[iLoopAsteroid].MovementVector.y=QRandom();
-
-
 	}
 
 	// Set up the player
@@ -143,29 +150,32 @@ void DefenderoidsMain()
 	iLoopY=0;
 	iLoopQix=0;
 	iCounter=0;
+	iVelocity=0;
 	while (1)
 	{
 
 		iStartFrame=VBCounter;
 
+		//Reset the bitmap for every frame.
 		CreateBitmap((u16*)bmpPlayField, 144, 112);
-		DrawVectorObject((u16*)bmpPlayField,Qix);
 
-		// rotate the points up the Qix list...
-		Qix.VectorList[iLoopQix].x = (((s16)QRandom())>>2)+(Qix.MovementVector.x>>5);
-		Qix.VectorList[iLoopQix].y = (((s16)QRandom())>>2)+(Qix.MovementVector.y>>5);
+		// Draw and animate the qix.
+		// This will be an "evil otto" style enemy that cannot be destroyed...
+		DrawVectorObject((u16*)bmpPlayField,Qix);
+		// Overwrite the "oldest" point in the list with a new random point.
+		Qix.VectorList[iLoopQix].x = (((s16)QRandom())>>3)+(Qix.MovementVector.x>>5);
+		Qix.VectorList[iLoopQix].y = (((s16)QRandom())>>3)+(Qix.MovementVector.y>>5);
 		Qix.VectorList[iLoopQix].colour = 3;
 		if (++iLoopQix >= Qix.Points)
 		{
 			iLoopQix = 0;
 		}
 
+		// Move the Qix towards the player
 		//Qix.MovementVector.x++;
 		//Qix.MovementVector.y++;
 
-		// Asteroid
-		// This hangs after "exactly" 77 frames? Every time?
-		// Regardless of the number of asteroids, or the rotation speeds or anything?
+		// Move and rotate the asteroids
 		for (iLoopAsteroid=0;iLoopAsteroid<4;iLoopAsteroid++)
 		{
 			DrawVectorObject((u16*)bmpPlayField,Asteroid[iLoopAsteroid]);
@@ -196,12 +206,36 @@ void DefenderoidsMain()
 		if (JOYPAD & J_RIGHT) PlayerOne.RotationAngle+=8;
 		if (JOYPAD & J_UP)
 		{
+			// Also, need to constrain the Movement Vector to a maximum velocity.
+			// I could do that in seperately in the x or y directions easily enough,
+			// Length of a vector is SQRT(x^2 + y^2)
+			// I don't need to calculate the square root, as I can work on the squared result.
+			iVelocity = ((PlayerOne.MovementVector.x + (Cos(PlayerOne.RotationAngle+192))) * (PlayerOne.MovementVector.x + (Cos(PlayerOne.RotationAngle+192)))) + ((PlayerOne.MovementVector.y + (Sin(PlayerOne.RotationAngle+192)))* (PlayerOne.MovementVector.y + (Sin(PlayerOne.RotationAngle+192))));
+
 			// Modify the movement vector by the angle.
-			PlayerOne.MovementVector.x += (Cos(PlayerOne.RotationAngle+192));
-			PlayerOne.MovementVector.y += (Sin(PlayerOne.RotationAngle+192));
+			//  Because "zero" degreesis at right angles to "up", we need to rotate this by 270 degrees
+			// but because we're using a 256 byte sine table that's 192.
+			if (iVelocity<65535)
+			{
+				PlayerOne.MovementVector.x += (Cos(PlayerOne.RotationAngle+192));
+				PlayerOne.MovementVector.y += (Sin(PlayerOne.RotationAngle+192));
+			}
+
+		}
+		if (JOYPAD & J_A && bShoot)
+		{
+			// Fire a shot.
+			// Set the shot flag so that we don't get continuous fire. Got to make the player work for it...
+			// Might make it a timer rather than a single yes/no flag...
+			bShoot=1;
+		}
+		if (!(JOYPAD & J_A))
+		{
+			bShoot=0;
 		}
 		// Bounds checking? How do I constrain the player within the visible screen without breaking the immersion?
-		// Bitmap address [0] contains the bitmap width, and address[1] the bitmap height. So we should be able to use that?
+		// Bitmap address [0] contains the bitmap width, and address[1] the bitmap height.
+		// So we can use that and just loop around to the opposite edge when we reach the side
 		if (PlayerOne.Position.x<0) PlayerOne.Position.x=((u16*)bmpPlayField)[0];
 		if (PlayerOne.Position.x>(((u16*)bmpPlayField)[0])) PlayerOne.Position.x=0;
 		PlayerOne.Position.x += PlayerOne.MovementVector.x>>7;
@@ -212,8 +246,7 @@ void DefenderoidsMain()
 		iEngineLoop=PlayerOne.Points-5;
 		while (iEngineLoop<PlayerOne.Points)
 		{
-			PlayerOne.VectorList[iEngineLoop+1].colour = 0;
-			if (QRandom()>128) PlayerOne.VectorList[iEngineLoop+1].colour = 3;
+			PlayerOne.VectorList[iEngineLoop+1].colour = (QRandom()>>7) * 3;
 			iEngineLoop++;
 		}
 		// And then draw the sprite
@@ -226,9 +259,8 @@ void DefenderoidsMain()
 		PrintString(SCR_1_PLANE, 0, 0, 18, "FPS:");
 		PrintDecimal(SCR_1_PLANE, 0, 4, 18, 60/(VBCounter-iStartFrame), 2);
 
-		PrintDecimal(SCR_1_PLANE, 0, 8, 18, PlayerOne.Position.x, 3);
-		PrintDecimal(SCR_1_PLANE, 0, 12, 18, PlayerOne.Position.y, 8);
-
+		PrintString(SCR_1_PLANE, 0, 8, 18, "VEL:");
+		PrintDecimal(SCR_1_PLANE, 0, 12, 18, (u16)(iVelocity>>7), 8);
 	}
 }
 
