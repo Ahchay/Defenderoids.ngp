@@ -4,7 +4,7 @@
 
 volatile u8 VBCounter;
 
-u8 RandomNumberCounter;
+volatile u8 RandomNumberCounter;
 
 // SFX related variables and registers
 u8 SFXInstalled;
@@ -777,7 +777,7 @@ const unsigned char QuickRandomNumbers[1024]={63, 254, 102, 147, 252, 158, 83, 1
 
 void InitialiseQRandom()
 {
-   RandomNumberCounter=0;
+   RandomNumberCounter=VBCounter;
 }
 
 unsigned char QRandom()
@@ -1629,7 +1629,8 @@ void CopyBitmap(u16 * BitmapAddress, u16 TileNumber)
 
 	TileWidth=BitmapAddress[0]/8;
 	TileHeight=BitmapAddress[1]/8;
-	//Copy the bitmap to the screen.
+	//Copy the bitmap to the tile ram.
+	//Does not put it on the screen.
 	for (iLoopX=0;iLoopX<TileWidth;iLoopX++)
 	{
 		for (iLoopY=0;iLoopY<TileHeight;iLoopY++)

@@ -10,6 +10,73 @@ Not sure where I'm going with it yet, but it's entertaining enough
 
 */
 
+bool DefenderoidsLogo()
+{
+	bool bGameStart;
+	// MUST be big enough for the bitmap (x*y) and 16 bytes for the bitmap header.
+	u16 bmpLogo[2032];
+	u8 iLoopY;
+	u8 iLoopX;
+	u8 iTile;
+
+	// Display a logo animation and wait for the player to push the start button.
+	// Can also use this to init() the randomiser so that the player gets different starting objects when they do
+	// start the game.
+
+	// Wait for the "A" button to be released
+	while (JOYPAD & J_A);
+
+	bGameStart=0;
+
+	CreateBitmap((u16*)bmpLogo, 144, 112);
+	CopyBitmap((u16*)bmpLogo, bgTileBase);
+
+	iTile=0;
+	for (iLoopY=0;iLoopY<14;iLoopY++)
+	{
+		for (iLoopX=0;iLoopX<18;iLoopX++)
+		{
+			PutTile(SCR_1_PLANE, 0, 1 + iLoopX, 1 + iLoopY, bgTileBase+iTile);
+			iTile++;
+		}
+	}
+
+	while (!bGameStart)
+	{
+
+		CreateBitmap((u16*)bmpLogo, 144, 112);
+
+		// do stuff?
+		for (iLoopY=0;iLoopY<112;iLoopY+=3)
+		{
+			for (iLoopX=0;iLoopX<144;iLoopX+=3)
+			{
+			SetPixel((u16*)bmpLogo,(u8)(iLoopX),(u8)(iLoopY),QRandom()>>6);
+			}
+		}
+
+		// Then copy the bitmap back into tile memory...
+		CopyBitmap((u16*)bmpLogo, bgTileBase);
+
+		// Start the game if the player pushes the "A" button
+		if (JOYPAD & J_A)
+		{
+			bGameStart=1;
+		}
+	}
+
+	// Just wait for them to let go of the button...
+	while (JOYPAD & J_A);
+
+	ClearScreen(SCR_1_PLANE);
+
+	//Just exiting this function causes the emulator to crash?
+	//Do I need to clear up memory or something?
+
+	return 1;
+
+}
+
 void DefenderoidsMain()
 {
 	// Define variables
@@ -17,7 +84,7 @@ void DefenderoidsMain()
 	u8 iLoopY;
 	u16 iTile;
 	u8 iMainLoop;
-	u16 bmpPlayField[252][8];
+	u16 bmpPlayField[2032];
 	u8 iPoint;
 	s16 iStartX;
 	s16 iStartY;
@@ -35,7 +102,9 @@ void DefenderoidsMain()
 	u8 iLoopAsteroidPoint;
 	u16 iCounter;
 	u8 iEngineLoop;
-	u32 iVelocity;
+	u32 iVelocityX;
+	u32 iVelocityY;
+	u16 iVelocity;
 	bool bShoot;
 	VECTOROBJECT Asteroid[] = {
 									{{6,6},{12192,8192},0,0,0,0,0,0},
@@ -61,13 +130,13 @@ void DefenderoidsMain()
 
 	VECTOROBJECT PlayerOne;
 
-	InitialiseQRandom();
-
 	// So, create a bitmap...
 
 	SetBackgroundColour(RGB(0,0,4));
 
 	SetPalette(SCR_1_PLANE, 0, 0, RGB(15,15,15), RGB(0,0,15), RGB(15,0,0));
+
+	InitialiseQRandom();
 
 	CreateBitmap((u16*)bmpPlayField, 144, 112);
 	CopyBitmap((u16*)bmpPlayField, bgTileBase);
@@ -111,7 +180,7 @@ void DefenderoidsMain()
 	// Set up the asteroids
 	for (iLoopAsteroid=0;iLoopAsteroid<4;iLoopAsteroid++)
 	{
-		Asteroid[iLoopAsteroid].Points = 15;
+		Asteroid[iLoopAsteroid].Points = 7 + (QRandom()>>5);
 		for (iLoopAsteroidPoint=0;iLoopAsteroidPoint<Asteroid[iLoopAsteroid].Points-1;iLoopAsteroidPoint++)
 		{
 			Asteroid[iLoopAsteroid].VectorList[iLoopAsteroidPoint] = AsteroidTemplate[iLoopAsteroidPoint][QRandom()>>7];
@@ -151,7 +220,7 @@ void DefenderoidsMain()
 	iLoopQix=0;
 	iCounter=0;
 	iVelocity=0;
-	while (1)
+	while (!(JOYPAD & J_B))
 	{
 
 		iStartFrame=VBCounter;
@@ -210,16 +279,19 @@ void DefenderoidsMain()
 			// I could do that in seperately in the x or y directions easily enough,
 			// Length of a vector is SQRT(x^2 + y^2)
 			// I don't need to calculate the square root, as I can work on the squared result.
-			iVelocity = ((PlayerOne.MovementVector.x + (Cos(PlayerOne.RotationAngle+192))) * (PlayerOne.MovementVector.x + (Cos(PlayerOne.RotationAngle+192)))) + ((PlayerOne.MovementVector.y + (Sin(PlayerOne.RotationAngle+192)))* (PlayerOne.MovementVector.y + (Sin(PlayerOne.RotationAngle+192))));
+			iVelocityX = ((PlayerOne.MovementVector.x + (Cos(PlayerOne.RotationAngle+192))) * (PlayerOne.MovementVector.x + (Cos(PlayerOne.RotationAngle+192))));
+			iVelocityY = ((PlayerOne.MovementVector.y + (Sin(PlayerOne.RotationAngle+192)))* (PlayerOne.MovementVector.y + (Sin(PlayerOne.RotationAngle+192))));
+			// This seems to jump rapidly to huge numbers? Which means it doesn't work at all.
+			iVelocity = (u16)(iVelocityX>>8) + (u16)(iVelocityY>>8);
 
-			// Modify the movement vector by the angle.
-			//  Because "zero" degreesis at right angles to "up", we need to rotate this by 270 degrees
-			// but because we're using a 256 byte sine table that's 192.
-			if (iVelocity<65535)
-			{
+			//if (iVelocity<32768)
+			//{
+				// Modify the movement vector by the angle.
+				// Because "zero" degrees is at right angles to "up", we need to rotate this by 270 degrees
+				// which on a 256 byte sine table is 192.
 				PlayerOne.MovementVector.x += (Cos(PlayerOne.RotationAngle+192));
 				PlayerOne.MovementVector.y += (Sin(PlayerOne.RotationAngle+192));
-			}
+			//}
 
 		}
 		if (JOYPAD & J_A && bShoot)
@@ -260,7 +332,7 @@ void DefenderoidsMain()
 		PrintDecimal(SCR_1_PLANE, 0, 4, 18, 60/(VBCounter-iStartFrame), 2);
 
 		PrintString(SCR_1_PLANE, 0, 8, 18, "VEL:");
-		PrintDecimal(SCR_1_PLANE, 0, 12, 18, (u16)(iVelocity>>7), 8);
+		PrintDecimal(SCR_1_PLANE, 0, 12, 18, iVelocity, 8);
 	}
 }
 
