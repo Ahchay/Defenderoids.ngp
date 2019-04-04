@@ -17,11 +17,53 @@ bool DefenderoidsLogo()
 	u16 bmpLogo[2032];
 	u8 iLoopY;
 	u8 iLoopX;
+	u8 iLoopLetter;
 	u8 iTile;
+	u8 iSourceLetter;
+	u8 iSourcePoint;
+	VECTOROBJECT GameLogo[] = {
+								{{0,0},{4000,4000},{0,0},0,0,1,0,0}, //D
+								{{0,0},{5000,4000},{0,0},1,0,1,0,0}, //e
+								{{0,0},{6000,4000},{0,0},2,0,1,0,0}, //f
+								{{0,0},{7000,4000},{0,0},1,0,1,0,0}, //e
+								{{0,0},{8000,4000},{0,0},3,0,1,0,0}, //n
+								{{0,0},{9000,4000},{0,0},4,0,1,0,0}, //d
+								{{0,0},{10000,4000},{0,0},1,0,1,0,0}, //e
+								{{0,0},{11000,4000},{0,0},5,0,1,0,0}, //r
+								{{0,0},{12000,4000},{0,0},6,0,1,0,0}, //o
+								{{0,0},{13000,4000},{0,0},7,0,1,0,0}, //i
+								{{0,0},{14000,4000},{0,0},4,0,1,0,0}, //d
+								{{0,0},{15000,4000},{0,0},8,0,1,0,0} //s
+							};
 
 	// Display a logo animation and wait for the player to push the start button.
 	// Can also use this to init() the randomiser so that the player gets different starting objects when they do
 	// start the game.
+
+	//Copy my template "alphabet" objects into the GameLogo array
+	//The "points" member will contain the soruce object for the letter in the template array
+
+	for (iLoopLetter=0;iLoopLetter<12;iLoopLetter++)
+	{
+		iSourceLetter=GameLogo[iLoopLetter].Points;
+		// Copy the relevant bits (Origin, Points and Vectorlist from the template
+		GameLogo[iLoopLetter].Origin.x = Alphabet[iSourceLetter].Origin.x;
+		GameLogo[iLoopLetter].Origin.y = Alphabet[iSourceLetter].Origin.y;
+		GameLogo[iLoopLetter].Points = Alphabet[iSourceLetter].Points;
+		for (iSourcePoint=0;iSourcePoint<Alphabet[iSourceLetter].Points;iSourcePoint++)
+		{
+			GameLogo[iLoopLetter].VectorList[iSourcePoint].x = Alphabet[iSourceLetter].VectorList[iSourcePoint].x;
+			GameLogo[iLoopLetter].VectorList[iSourcePoint].y = Alphabet[iSourceLetter].VectorList[iSourcePoint].y;
+			GameLogo[iLoopLetter].VectorList[iSourcePoint].colour = Alphabet[iSourceLetter].VectorList[iSourcePoint].colour;
+		}
+		GameLogo[iLoopLetter].Scale=2;
+		GameLogo[iLoopLetter].RotationSpeed=(Sin(QRandom())>>4)+1;
+		GameLogo[iLoopLetter].RotationAngle=Sin(QRandom());
+		GameLogo[iLoopLetter].MovementVector.x=QRandom();
+		GameLogo[iLoopLetter].MovementVector.y=QRandom();
+
+	}
+
 
 	// Wait for the "A" button to be released
 	while (JOYPAD & J_A);
@@ -47,11 +89,38 @@ bool DefenderoidsLogo()
 		CreateBitmap((u16*)bmpLogo, 144, 112);
 
 		// do stuff?
+		/*
 		for (iLoopY=0;iLoopY<112;iLoopY+=3)
 		{
 			for (iLoopX=0;iLoopX<144;iLoopX+=3)
 			{
-			SetPixel((u16*)bmpLogo,(u8)(iLoopX),(u8)(iLoopY),QRandom()>>6);
+				SetPixel((u16*)bmpLogo,(u8)(iLoopX),(u8)(iLoopY),QRandom()>>6);
+			}
+		}
+		*/
+
+		for (iLoopLetter=0;iLoopLetter<12;iLoopLetter++)
+		{
+			DrawVectorObject((u16*)bmpLogo,GameLogo[iLoopLetter]);
+			GameLogo[iLoopLetter].RotationAngle+=GameLogo[iLoopLetter].RotationSpeed;
+			// Need to do some bounds checking here...
+			GameLogo[iLoopLetter].Position.x += GameLogo[iLoopLetter].MovementVector.x;
+			if (GameLogo[iLoopLetter].Position.x < 3000)
+			{
+				GameLogo[iLoopLetter].MovementVector.x = GameLogo[iLoopLetter].MovementVector.x*-1;
+			}
+			if (GameLogo[iLoopLetter].Position.x > 14000)
+			{
+				GameLogo[iLoopLetter].MovementVector.x = GameLogo[iLoopLetter].MovementVector.x*-1;
+			}
+			//Asteroid[iLoopAsteroid].Position.y += Asteroid[iLoopAsteroid].MovementVector.y;
+			if (GameLogo[iLoopLetter].Position.y < 3000)
+			{
+				GameLogo[iLoopLetter].MovementVector.y = GameLogo[iLoopLetter].MovementVector.y*-1;
+			}
+			if (GameLogo[iLoopLetter].Position.y > 12000)
+			{
+				GameLogo[iLoopLetter].MovementVector.y = GameLogo[iLoopLetter].MovementVector.y*-1;
 			}
 		}
 
