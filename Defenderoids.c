@@ -22,18 +22,31 @@ bool DefenderoidsLogo()
 	u8 iSourceLetter;
 	u8 iSourcePoint;
 	VECTOROBJECT GameLogo[] = {
-								{{0,0},{4000,4000},{0,0},0,0,1,0,0}, //D
-								{{0,0},{5000,4000},{0,0},1,0,1,0,0}, //e
-								{{0,0},{6000,4000},{0,0},2,0,1,0,0}, //f
-								{{0,0},{7000,4000},{0,0},1,0,1,0,0}, //e
-								{{0,0},{8000,4000},{0,0},3,0,1,0,0}, //n
-								{{0,0},{9000,4000},{0,0},4,0,1,0,0}, //d
-								{{0,0},{10000,4000},{0,0},1,0,1,0,0}, //e
-								{{0,0},{11000,4000},{0,0},5,0,1,0,0}, //r
-								{{0,0},{12000,4000},{0,0},6,0,1,0,0}, //o
-								{{0,0},{13000,4000},{0,0},7,0,1,0,0}, //i
-								{{0,0},{14000,4000},{0,0},4,0,1,0,0}, //d
-								{{0,0},{15000,4000},{0,0},8,0,1,0,0} //s
+								{{0,0},{2000,1500},{0,0},0,0,1,0,0}, //D
+								{{0,0},{5000,2000},{0,0},1,0,1,0,0}, //e
+								{{0,0},{6000,2000},{0,0},2,0,1,0,0}, //f
+								{{0,0},{7000,2000},{0,0},1,0,1,0,0}, //e
+								{{0,0},{8000,2000},{0,0},3,0,1,0,0}, //n
+								{{0,0},{9000,2000},{0,0},4,0,1,0,0}, //d
+								{{0,0},{10000,2000},{0,0},1,0,1,0,0}, //e
+								{{0,0},{11000,2000},{0,0},5,0,1,0,0}, //r
+								{{0,0},{12000,2000},{0,0},6,0,1,0,0}, //o
+								{{0,0},{13000,2000},{0,0},7,0,1,0,0}, //i
+								{{0,0},{14000,2000},{0,0},4,0,1,0,0}, //d
+								{{0,0},{15000,2000},{0,0},8,0,1,0,0}, //s
+								{{0,0},{3000,7000},{0,0},9,0,1,0,0}, //P
+								{{0,0},{4000,7500},{0,0},5,0,1,0,0}, //r
+								{{0,0},{5000,7500},{0,0},1,0,1,0,0}, //e
+								{{0,0},{6000,7500},{0,0},8,0,1,0,0}, //s
+								{{0,0},{7000,7500},{0,0},8,0,1,0,0}, //s
+								{{0,0},{9000,7000},{0,0},12,0,1,0,0}, //'A'
+								{{0,0},{10500,7500},{0,0},10,0,1,0,0}, //t
+								{{0,0},{12500,7500},{0,0},6,0,1,0,0}, //o
+								{{0,0},{7000,10000},{0,0},8,0,1,0,0}, //s
+								{{0,0},{8500,10000},{0,0},10,0,1,0,0}, //t
+								{{0,0},{10000,10500},{0,0},11,0,1,0,0}, //a
+								{{0,0},{11500,10000},{0,0},5,0,1,0,0}, //r
+								{{0,0},{13000,10000},{0,0},10,0,1,0,0}, //t
 							};
 
 	// Display a logo animation and wait for the player to push the start button.
@@ -43,7 +56,7 @@ bool DefenderoidsLogo()
 	//Copy my template "alphabet" objects into the GameLogo array
 	//The "points" member will contain the soruce object for the letter in the template array
 
-	for (iLoopLetter=0;iLoopLetter<12;iLoopLetter++)
+	for (iLoopLetter=0;iLoopLetter<25;iLoopLetter++)
 	{
 		iSourceLetter=GameLogo[iLoopLetter].Points;
 		// Copy the relevant bits (Origin, Points and Vectorlist from the template
@@ -57,10 +70,10 @@ bool DefenderoidsLogo()
 			GameLogo[iLoopLetter].VectorList[iSourcePoint].colour = Alphabet[iSourceLetter].VectorList[iSourcePoint].colour;
 		}
 		GameLogo[iLoopLetter].Scale=2;
-		GameLogo[iLoopLetter].RotationSpeed=(Sin(QRandom())>>7)+1;
+		GameLogo[iLoopLetter].RotationSpeed=0; //(Sin(QRandom())>>7)+1;
 		GameLogo[iLoopLetter].RotationAngle=0;
-		GameLogo[iLoopLetter].MovementVector.x=QRandom()>>4;
-		GameLogo[iLoopLetter].MovementVector.y=QRandom()>>4;
+		GameLogo[iLoopLetter].MovementVector.x=0;//QRandom()>>4;
+		GameLogo[iLoopLetter].MovementVector.y=0;//QRandom()>>4;
 
 	}
 
@@ -99,7 +112,7 @@ bool DefenderoidsLogo()
 		}
 		*/
 
-		for (iLoopLetter=0;iLoopLetter<12;iLoopLetter++)
+		for (iLoopLetter=0;iLoopLetter<25;iLoopLetter++)
 		{
 			DrawVectorObject((u16*)bmpLogo,GameLogo[iLoopLetter]);
 			GameLogo[iLoopLetter].RotationAngle+=GameLogo[iLoopLetter].RotationSpeed;
