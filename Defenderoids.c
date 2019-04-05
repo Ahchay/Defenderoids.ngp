@@ -57,10 +57,10 @@ bool DefenderoidsLogo()
 			GameLogo[iLoopLetter].VectorList[iSourcePoint].colour = Alphabet[iSourceLetter].VectorList[iSourcePoint].colour;
 		}
 		GameLogo[iLoopLetter].Scale=2;
-		GameLogo[iLoopLetter].RotationSpeed=(Sin(QRandom())>>4)+1;
-		GameLogo[iLoopLetter].RotationAngle=Sin(QRandom());
-		GameLogo[iLoopLetter].MovementVector.x=QRandom();
-		GameLogo[iLoopLetter].MovementVector.y=QRandom();
+		GameLogo[iLoopLetter].RotationSpeed=(Sin(QRandom())>>7)+1;
+		GameLogo[iLoopLetter].RotationAngle=0;
+		GameLogo[iLoopLetter].MovementVector.x=QRandom()>>4;
+		GameLogo[iLoopLetter].MovementVector.y=QRandom()>>4;
 
 	}
 
@@ -121,6 +121,12 @@ bool DefenderoidsLogo()
 			if (GameLogo[iLoopLetter].Position.y > 12000)
 			{
 				GameLogo[iLoopLetter].MovementVector.y = GameLogo[iLoopLetter].MovementVector.y*-1;
+			}
+
+			if (JOYPAD & J_A)
+			{
+				bGameStart=1;
+				break;
 			}
 		}
 
