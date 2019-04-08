@@ -192,6 +192,8 @@ void DefenderoidsMain()
 	u32 iVelocityX;
 	u32 iVelocityY;
 	u16 iVelocity;
+	u8 iHeightMapLoop;
+	u8 iHorizontalOffset;
 	bool bShoot;
 	VECTOROBJECT Asteroid[] = {
 									{{6,6},{12192,8192},0,0,0,0,0,0},
@@ -302,6 +304,9 @@ void DefenderoidsMain()
 		PlayerOne.VectorList[iLoopX].colour = PlayerSprite[iLoopX].colour;
 	}
 
+	// Set up the horizontal offset.
+	iHorizontalOffset=0;
+
 	iLoopX=0;
 	iLoopY=0;
 	iLoopQix=0;
@@ -314,6 +319,12 @@ void DefenderoidsMain()
 
 		//Reset the bitmap for every frame.
 		CreateBitmap((u16*)bmpPlayField, 144, 112);
+
+		// Draw the height map
+		for (iHeightMapLoop=0;iHeightMapLoop<143;iHeightMapLoop++)
+		{
+			SetPixel((u16*)bmpPlayField,iHeightMapLoop,HeightMap[iHorizontalOffset+iHeightMapLoop],3);
+		}
 
 		// Draw and animate the qix.
 		// This will be an "evil otto" style enemy that cannot be destroyed...
@@ -395,9 +406,10 @@ void DefenderoidsMain()
 		// Bounds checking? How do I constrain the player within the visible screen without breaking the immersion?
 		// Bitmap address [0] contains the bitmap width, and address[1] the bitmap height.
 		// So we can use that and just loop around to the opposite edge when we reach the side
-		if (PlayerOne.Position.x<0) PlayerOne.Position.x=((u16*)bmpPlayField)[0];
-		if (PlayerOne.Position.x>(((u16*)bmpPlayField)[0])) PlayerOne.Position.x=0;
-		PlayerOne.Position.x += PlayerOne.MovementVector.x>>7;
+		//if (PlayerOne.Position.x<0) PlayerOne.Position.x=((u16*)bmpPlayField)[0];
+		//if (PlayerOne.Position.x>(((u16*)bmpPlayField)[0])) PlayerOne.Position.x=0;
+		//PlayerOne.Position.x += PlayerOne.MovementVector.x>>7;
+		iHorizontalOffset += PlayerOne.MovementVector.x>>7;
 		if (PlayerOne.Position.y<0) PlayerOne.Position.y=((u16*)bmpPlayField)[1];
 		if (PlayerOne.Position.y>((u16*)bmpPlayField)[1]) PlayerOne.Position.y=0;
 		PlayerOne.Position.y += PlayerOne.MovementVector.y>>7;
@@ -419,7 +431,7 @@ void DefenderoidsMain()
 		PrintDecimal(SCR_1_PLANE, 0, 4, 18, 60/(VBCounter-iStartFrame), 2);
 
 		PrintString(SCR_1_PLANE, 0, 8, 18, "VEL:");
-		PrintDecimal(SCR_1_PLANE, 0, 12, 18, iVelocity, 8);
+		PrintDecimal(SCR_1_PLANE, 0, 12, 18, iHorizontalOffset, 8);
 	}
 }
 
