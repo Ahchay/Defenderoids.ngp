@@ -71,10 +71,10 @@ bool DefenderoidsLogo()
 			GameLogo[iLoopLetter].VectorList[iSourcePoint].colour = Alphabet[iSourceLetter].VectorList[iSourcePoint].colour;
 		}
 		GameLogo[iLoopLetter].Scale=2;
-		GameLogo[iLoopLetter].RotationSpeed=0; //(Sin(QRandom())>>7)+1;
+		GameLogo[iLoopLetter].RotationSpeed=(Sin(QRandom())>>7)+1;
 		GameLogo[iLoopLetter].RotationAngle=0;
-		GameLogo[iLoopLetter].MovementVector.x=0;//QRandom()>>4;
-		GameLogo[iLoopLetter].MovementVector.y=0;//QRandom()>>4;
+		GameLogo[iLoopLetter].MovementVector.x=((s8)QRandom() - (s8)QRandom())>>3;
+		GameLogo[iLoopLetter].MovementVector.y=((s8)QRandom() - (s8)QRandom())>>3;
 
 	}
 
