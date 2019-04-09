@@ -190,8 +190,8 @@ void DefenderoidsMain()
 	u8 iLoopAsteroidPoint;
 	u16 iCounter;
 	u8 iEngineLoop;
-	u16 iVelocityX;
-	u16 iVelocityY;
+	s16 iVelocityX;
+	s16 iVelocityY;
 	u8 iHeightMapLoop;
 	u8 iHorizontalOffset;
 	bool bShoot;
@@ -387,9 +387,10 @@ void DefenderoidsMain()
 			//iVelocityX = ((iVelocityX + (Cos(PlayerOne.RotationAngle+192))>>2) * (iVelocityX + (Cos(PlayerOne.RotationAngle+192))>>2));
 			//iVelocityY = ((PlayerOne.MovementVector.y + (Sin(PlayerOne.RotationAngle+192)))* (PlayerOne.MovementVector.y + (Sin(PlayerOne.RotationAngle+192))));
 			// This seems to jump rapidly to huge numbers? Which means it doesn't work at all.
-			// (which makes sense given I'm using a 16 bit scale so it rapidly gets out of control)
+			// (which makes sense Iguess given that I'm using a 16 bit scale so it rapidly gets out of control)
 			//iVelocity = (u16)(iVelocityX>>8) + (u16)(iVelocityY>>8);
 
+			// Movement vector should grow or shrink by +/- 127 in any given frame?
 			if (PlayerOne.MovementVector.x + Cos(PlayerOne.RotationAngle+192) < 0)
 			{
 				iVelocityX = (PlayerOne.MovementVector.x + Cos(PlayerOne.RotationAngle+192)) * -1;
@@ -398,7 +399,6 @@ void DefenderoidsMain()
 			{
 				iVelocityX = PlayerOne.MovementVector.x + Cos(PlayerOne.RotationAngle+192);
 			}
-
 
 			if (PlayerOne.MovementVector.y + Sin(PlayerOne.RotationAngle+192) < 0)
 			{
@@ -411,17 +411,17 @@ void DefenderoidsMain()
 
 			// Bugger it. We can have maximum vertical velocity and maximum horizontal velocity. We can call it a gravity effect...
 
-			if (iVelocityX<8191)
-			{
+			//if (iVelocityX<8191)
+			//{
 				// Modify the movement vector by the angle.
 				// Because "zero" degrees is at right angles to "up", we need to rotate this by 270 degrees
 				// which on a 256 byte sine table is 192.
 				PlayerOne.MovementVector.x += (Cos(PlayerOne.RotationAngle+192));
-			}
-			if (iVelocityY<8191)
-			{
+			//}
+			//if (iVelocityY<8191)
+			//{
 				PlayerOne.MovementVector.y += (Sin(PlayerOne.RotationAngle+192));
-			}
+			//}
 		}
 		if (JOYPAD & J_A && bShoot)
 		{
@@ -462,6 +462,7 @@ void DefenderoidsMain()
 		PrintString(SCR_1_PLANE, 0, 0, 18, "FPS:");
 		PrintDecimal(SCR_1_PLANE, 0, 4, 18, 60/(VBCounter-iStartFrame), 2);
 
+		// Something doesn't make sense here. I'm seeing huge or no? jumps in Vertical or Horizontal velocity?
 		PrintString(SCR_1_PLANE, 0, 8, 17, "XV:");
 		PrintDecimal(SCR_1_PLANE, 0, 11, 17, iVelocityX, 8);
 		PrintString(SCR_1_PLANE, 0, 8, 18, "YV:");
