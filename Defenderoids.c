@@ -138,7 +138,8 @@ bool DefenderoidsLogo()
 			if (JOYPAD & J_A)
 			{
 				bGameStart=1;
-				break;
+				// Force the loop to terminate...
+				iLoopLetter=255;
 			}
 		}
 
