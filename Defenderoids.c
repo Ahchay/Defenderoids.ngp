@@ -113,7 +113,7 @@ bool DefenderoidsLogo()
 		// Game logo and instructions...
 		for (iLoopLetter=0;iLoopLetter<25;iLoopLetter++)
 		{
-			DrawVectorObject((u16*)bmpLogo,GameLogo[iLoopLetter]);
+			DrawVectorObject((u16*)bmpLogo,GameLogo[iLoopLetter],0);
 			GameLogo[iLoopLetter].RotationAngle+=GameLogo[iLoopLetter].RotationSpeed;
 			// Need to do some bounds checking here...
 			GameLogo[iLoopLetter].Position.x += GameLogo[iLoopLetter].MovementVector.x;
@@ -197,10 +197,10 @@ void DefenderoidsMain()
 	bool bShoot;
 	VECTOROBJECT Asteroid[] = {
 									{{6,6},{12192,8192},0,0,0,0,0,0},
-									{{6,6},{12096,10096},0,0,0,0,0,0},
-									{{6,6},{2048,10192},0,0,0,0,0,0},
-									{{6,6},{12192,40098},0,0,0,0,0,0},
-									{{6,6},{8192,2048},0,0,0,0,0,0},
+									{{6,6},{43096,10096},0,0,0,0,0,0},
+									{{6,6},{61048,10192},0,0,0,0,0,0},
+									{{6,6},{21192,40098},0,0,0,0,0,0},
+									{{6,6},{34092,2048},0,0,0,0,0,0},
 									{{6,6},{2048,2048},0,0,0,0,0,0},
 									{{6,6},{10432,2048},0,0,0,0,0,0},
 									{{6,6},{2048,7634},0,0,0,0,0,0},
@@ -328,7 +328,7 @@ void DefenderoidsMain()
 
 		// Draw and animate the qix.
 		// This will be an "evil otto" style enemy that cannot be destroyed...
-		DrawVectorObject((u16*)bmpPlayField,Qix);
+		DrawVectorObject((u16*)bmpPlayField,Qix,iHorizontalOffset);
 		// Overwrite the "oldest" point in the list with a new random point.
 		Qix.VectorList[iLoopQix].x = (((s16)QRandom())>>3)+(Qix.MovementVector.x>>5);
 		Qix.VectorList[iLoopQix].y = (((s16)QRandom())>>3)+(Qix.MovementVector.y>>5);
@@ -345,7 +345,7 @@ void DefenderoidsMain()
 		// Move and rotate the asteroids
 		for (iLoopAsteroid=0;iLoopAsteroid<4;iLoopAsteroid++)
 		{
-			DrawVectorObject((u16*)bmpPlayField,Asteroid[iLoopAsteroid]);
+			DrawVectorObject((u16*)bmpPlayField,Asteroid[iLoopAsteroid],iHorizontalOffset);
 			Asteroid[iLoopAsteroid].RotationAngle+=Asteroid[iLoopAsteroid].RotationSpeed;
 			// Need to do some bounds checking here...
 			Asteroid[iLoopAsteroid].Position.x += Asteroid[iLoopAsteroid].MovementVector.x;
@@ -353,7 +353,7 @@ void DefenderoidsMain()
 			{
 				Asteroid[iLoopAsteroid].MovementVector.x = Asteroid[iLoopAsteroid].MovementVector.x*-1;
 			}
-			if (Asteroid[iLoopAsteroid].Position.x > 14000)
+			if (Asteroid[iLoopAsteroid].Position.x > 62000)
 			{
 				Asteroid[iLoopAsteroid].MovementVector.x = Asteroid[iLoopAsteroid].MovementVector.x*-1;
 			}
@@ -435,7 +435,7 @@ void DefenderoidsMain()
 	}
 }
 
-void DrawVectorObject(u16 * BitmapAddress, VECTOROBJECT VectorObject)
+void DrawVectorObject(u16 * BitmapAddress, VECTOROBJECT VectorObject, u8 iHorizontalOffset)
 {
 	s16 iStartX;
 	s16 iStartY;
@@ -447,50 +447,53 @@ void DrawVectorObject(u16 * BitmapAddress, VECTOROBJECT VectorObject)
 	s8 cSin;
 	s8 cCos;
 
-	cSin = Sin(VectorObject.RotationAngle);
-	cCos = Cos(VectorObject.RotationAngle);
-
-	iStartX = VectorObject.VectorList[0].x;
-	iStartY = VectorObject.VectorList[0].y;
-
-	while (iPoint++<VectorObject.Points)
+	if (!((((VectorObject.Position.x>>7)+iHorizontalOffset) > BitmapAddress[0]) && ((VectorObject.Position.x>>7)<iHorizontalOffset)))
 	{
 
-		// Modifier here is to find the centre of rotation
-		iStartX = (iStartX*VectorObject.Scale)-VectorObject.Origin.x;
-		iStartY = (iStartY*VectorObject.Scale)-VectorObject.Origin.y;
+		cSin = Sin(VectorObject.RotationAngle);
+		cCos = Cos(VectorObject.RotationAngle);
 
-		// rotate point.
-		iTempX = ((iStartX * cCos)>>7) - ((iStartY * cSin)>>7);
-		iTempY = ((iStartX * cSin)>>7) + ((iStartY * cCos)>>7);
+		iStartX = VectorObject.VectorList[0].x;
+		iStartY = VectorObject.VectorList[0].y;
 
-		// translate point back to it's original position:
-		// Modify back from the centre of rotation above, and then add the X & Y co-ordinates
-		iStartX = (VectorObject.Position.x>>7)+iTempX+VectorObject.Origin.x;
-		//if (iStartX<0) iStartX=0;
-		iStartY = (VectorObject.Position.y>>7)+iTempY+VectorObject.Origin.y;
-		//if (iStartY<0) iStartY=0;
+		while (iPoint++<VectorObject.Points)
+		{
 
-		iEndX = (VectorObject.VectorList[iPoint].x*VectorObject.Scale)-VectorObject.Origin.x;
-		iEndY = (VectorObject.VectorList[iPoint].y*VectorObject.Scale)-VectorObject.Origin.y;
+			// Modifier here is to find the centre of rotation
+			iStartX = (iStartX*VectorObject.Scale)-VectorObject.Origin.x;
+			iStartY = (iStartY*VectorObject.Scale)-VectorObject.Origin.y;
 
-		// rotate point
-		iTempX = ((iEndX * cCos)>>7) - ((iEndY * cSin)>>7);
-		iTempY = ((iEndX * cSin)>>7) + ((iEndY * cCos)>>7);
+			// rotate point.
+			iTempX = ((iStartX * cCos)>>7) - ((iStartY * cSin)>>7);
+			iTempY = ((iStartX * cSin)>>7) + ((iStartY * cCos)>>7);
 
-		// translate point back:
-		iEndX = (VectorObject.Position.x>>7)+iTempX+VectorObject.Origin.x;
-		//if (iEndX<0) iEndX=0;
-		iEndY = (VectorObject.Position.y>>7)+iTempY+VectorObject.Origin.y;
-		//if (iEndY<0) iEndY=0;
+			// translate point back to it's original position:
+			// Modify back from the centre of rotation above, and then add the X & Y co-ordinates
+			iStartX = (VectorObject.Position.x>>7)+iHorizontalOffset+iTempX+VectorObject.Origin.x;
+			//if (iStartX<0) iStartX=0;
+			iStartY = (VectorObject.Position.y>>7)+iTempY+VectorObject.Origin.y;
+			//if (iStartY<0) iStartY=0;
 
-		DrawLine((u16*)BitmapAddress,(u8)(iStartX),(u8)(iStartY),(u8)(iEndX),(u8)(iEndY),VectorObject.VectorList[iPoint].colour);
+			iEndX = (VectorObject.VectorList[iPoint].x*VectorObject.Scale)-VectorObject.Origin.x;
+			iEndY = (VectorObject.VectorList[iPoint].y*VectorObject.Scale)-VectorObject.Origin.y;
 
-		iStartX = VectorObject.VectorList[iPoint].x;
-		iStartY = VectorObject.VectorList[iPoint].y;
+			// rotate point
+			iTempX = ((iEndX * cCos)>>7) - ((iEndY * cSin)>>7);
+			iTempY = ((iEndX * cSin)>>7) + ((iEndY * cCos)>>7);
 
+			// translate point back:
+			iEndX = (VectorObject.Position.x>>7)+iHorizontalOffset+iTempX+VectorObject.Origin.x;
+			//if (iEndX<0) iEndX=0;
+			iEndY = (VectorObject.Position.y>>7)+iTempY+VectorObject.Origin.y;
+			//if (iEndY<0) iEndY=0;
+
+			DrawLine((u16*)BitmapAddress,(u8)(iStartX),(u8)(iStartY),(u8)(iEndX),(u8)(iEndY),VectorObject.VectorList[iPoint].colour);
+
+			iStartX = VectorObject.VectorList[iPoint].x;
+			iStartY = VectorObject.VectorList[iPoint].y;
+
+		}
 	}
-
 }
 
 void DrawVectorSprite(u16 * BitmapAddress, VECTOROBJECT VectorObject)

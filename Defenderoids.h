@@ -28,7 +28,7 @@ typedef struct VectorObject
 bool DefenderoidsLogo();
 void DefenderoidsMain();
 
-void DrawVectorObject(u16 * BitmapAddress, VECTOROBJECT VectorObject);
+void DrawVectorObject(u16 * BitmapAddress, VECTOROBJECT VectorObject,u8 iHorizontalOffset);
 void DrawVectorSprite(u16 * BitmapAddress, VECTOROBJECT VectorObject);
 
 const POINT Box[5] = {{0,0},{0,1},{1,1},{1,0},{0,0}};
