@@ -261,7 +261,7 @@ void DefenderoidsMain()
 	Qix.RotationSpeed=0;
 	for (iLoopQix=0;iLoopQix<Qix.Points;iLoopQix++)
 	{
-		Qix.VectorList[iLoopQix].x = 0;
+		Qix.VectorList[iLoopQix].x = 6000;
 		Qix.VectorList[iLoopQix].y = 0;
 		Qix.VectorList[iLoopQix].colour = 3;
 	}
@@ -447,7 +447,7 @@ void DrawVectorObject(u16 * BitmapAddress, VECTOROBJECT VectorObject, u8 iHorizo
 	s8 cSin;
 	s8 cCos;
 
-	if (!((((VectorObject.Position.x>>7)+iHorizontalOffset) > BitmapAddress[0]) && ((VectorObject.Position.x>>7)<iHorizontalOffset)))
+	if (!((((VectorObject.Position.x>>7)-iHorizontalOffset) > BitmapAddress[0]) && ((VectorObject.Position.x>>7)<iHorizontalOffset)))
 	{
 
 		cSin = Sin(VectorObject.RotationAngle);
@@ -469,7 +469,7 @@ void DrawVectorObject(u16 * BitmapAddress, VECTOROBJECT VectorObject, u8 iHorizo
 
 			// translate point back to it's original position:
 			// Modify back from the centre of rotation above, and then add the X & Y co-ordinates
-			iStartX = (VectorObject.Position.x>>7)+iHorizontalOffset+iTempX+VectorObject.Origin.x;
+			iStartX = (VectorObject.Position.x>>7)-iHorizontalOffset+iTempX+VectorObject.Origin.x;
 			//if (iStartX<0) iStartX=0;
 			iStartY = (VectorObject.Position.y>>7)+iTempY+VectorObject.Origin.y;
 			//if (iStartY<0) iStartY=0;
@@ -482,7 +482,7 @@ void DrawVectorObject(u16 * BitmapAddress, VECTOROBJECT VectorObject, u8 iHorizo
 			iTempY = ((iEndX * cSin)>>7) + ((iEndY * cCos)>>7);
 
 			// translate point back:
-			iEndX = (VectorObject.Position.x>>7)+iHorizontalOffset+iTempX+VectorObject.Origin.x;
+			iEndX = (VectorObject.Position.x>>7)-iHorizontalOffset+iTempX+VectorObject.Origin.x;
 			//if (iEndX<0) iEndX=0;
 			iEndY = (VectorObject.Position.y>>7)+iTempY+VectorObject.Origin.y;
 			//if (iEndY<0) iEndY=0;
