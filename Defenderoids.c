@@ -381,6 +381,7 @@ void DefenderoidsMain()
 			iVelocityX = ((PlayerOne.MovementVector.x + (Cos(PlayerOne.RotationAngle+192))) * (PlayerOne.MovementVector.x + (Cos(PlayerOne.RotationAngle+192))));
 			iVelocityY = ((PlayerOne.MovementVector.y + (Sin(PlayerOne.RotationAngle+192)))* (PlayerOne.MovementVector.y + (Sin(PlayerOne.RotationAngle+192))));
 			// This seems to jump rapidly to huge numbers? Which means it doesn't work at all.
+			// (which makes sense given I'm using a 16 bit scale so 1024 x 1024 = 10000000+ etc - i.e. bigger than u16)
 			iVelocity = (u16)(iVelocityX>>8) + (u16)(iVelocityY>>8);
 
 			//if (iVelocity<32768)
@@ -431,6 +432,15 @@ void DefenderoidsMain()
 		// How many frames has all of this taken...
 		PrintString(SCR_1_PLANE, 0, 0, 18, "FPS:");
 		PrintDecimal(SCR_1_PLANE, 0, 4, 18, 60/(VBCounter-iStartFrame), 2);
+
+		// Horizontal Velocity
+		PrintString(SCR_1_PLANE, 0, 7, 17, "VX:");
+		PrintDecimal(SCR_1_PLANE, 0, 11, 17, (u8)(iVelocityX>>24), 3);
+		PrintDecimal(SCR_1_PLANE, 0, 15, 17, PlayerOne.MovementVector.x,3);
+
+		// Vertical Velocity
+		PrintString(SCR_1_PLANE, 0, 7, 18, "VY:");
+		PrintDecimal(SCR_1_PLANE, 0, 11, 18, (u8)(iVelocityY>>13), 8);
 
 	}
 }
