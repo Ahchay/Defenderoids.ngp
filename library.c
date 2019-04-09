@@ -1457,12 +1457,12 @@ void SetPixel(u16 * BitmapAddress, s16 xPosition, s16 yPosition, u16 Colour)
 
 	// forces the pixel to draw inside the bounds of the bitmap area.
 	xbounded=xPosition;
-	if (xPosition<0) xbounded=0;
-	if (xPosition>BitmapAddress[0]) xbounded=BitmapAddress[0];
+	if (xbounded<=0) xbounded=0;
+	if (xbounded>=BitmapAddress[0]) xbounded=BitmapAddress[0]-1;
 
 	ybounded=yPosition;
-	if (yPosition<0) ybounded=0;
-	if (yPosition>BitmapAddress[1]) ybounded=BitmapAddress[1];
+	if (ybounded<=0) ybounded=0;
+	if (ybounded>=BitmapAddress[1]) ybounded=BitmapAddress[1]-1;
 
 	//Fist of all, identify the tile that the specified bitmap lives inside...
 	//This can be derived from xPosition and yPosition
@@ -1483,7 +1483,6 @@ void SetPixel(u16 * BitmapAddress, s16 xPosition, s16 yPosition, u16 Colour)
 	TileRam += (CurrentTile * 8)+(ybounded%8);
 	//& Then... Grab the value held in this address...
 	//TileRow = *TileRam;
-
 
 	//Do clever stuff with AND's and OR's with the existing tile and the BitmapMask
 	//array(s?)

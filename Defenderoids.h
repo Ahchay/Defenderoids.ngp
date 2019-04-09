@@ -28,6 +28,7 @@ typedef struct VectorObject
 bool DefenderoidsLogo();
 void DefenderoidsMain();
 
+void DrawVectorObjectAbsolute(u16 * BitmapAddress, VECTOROBJECT VectorObject);
 void DrawVectorObject(u16 * BitmapAddress, VECTOROBJECT VectorObject,u8 iHorizontalOffset);
 void DrawVectorSprite(u16 * BitmapAddress, VECTOROBJECT VectorObject);
 

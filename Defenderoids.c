@@ -199,15 +199,15 @@ void DefenderoidsMain()
 	VECTOROBJECT Asteroid[] = {
 									{{6,6},{12192,8192},0,0,0,0,0,0},
 									{{6,6},{43096,10096},0,0,0,0,0,0},
-									{{6,6},{61048,10192},0,0,0,0,0,0},
+									{{6,6},{59048,10192},0,0,0,0,0,0},
 									{{6,6},{21192,40098},0,0,0,0,0,0},
 									{{6,6},{34092,2048},0,0,0,0,0,0},
-									{{6,6},{2048,2048},0,0,0,0,0,0},
+									{{6,6},{7048,2048},0,0,0,0,0,0},
 									{{6,6},{10432,2048},0,0,0,0,0,0},
-									{{6,6},{2048,7634},0,0,0,0,0,0},
-									{{6,6},{2048,7763},0,0,0,0,0,0},
-									{{6,6},{2048,2048},0,0,0,0,0,0},
-									{{6,6},{2048,10048},0,0,0,0,0,0},
+									{{6,6},{45048,7634},0,0,0,0,0,0},
+									{{6,6},{32748,7763},0,0,0,0,0,0},
+									{{6,6},{17048,2048},0,0,0,0,0,0},
+									{{6,6},{47048,10048},0,0,0,0,0,0},
 									{{6,6},{12432,2048},0,0,0,0,0,0}
 								};
 
@@ -254,7 +254,7 @@ void DefenderoidsMain()
 	Qix.Origin.y=0;
 	Qix.Position.x=0;
 	Qix.Position.y=0;
-	Qix.MovementVector.x=32;
+	Qix.MovementVector.x=376;
 	Qix.MovementVector.y=32;
 	Qix.Points=12;
 	Qix.Scale=1;
@@ -268,7 +268,7 @@ void DefenderoidsMain()
 	}
 
 	// Set up the asteroids
-	for (iLoopAsteroid=0;iLoopAsteroid<4;iLoopAsteroid++)
+	for (iLoopAsteroid=0;iLoopAsteroid<12;iLoopAsteroid++)
 	{
 		Asteroid[iLoopAsteroid].Points = 7 + (QRandom()>>5);
 		for (iLoopAsteroidPoint=0;iLoopAsteroidPoint<Asteroid[iLoopAsteroid].Points-1;iLoopAsteroidPoint++)
@@ -344,17 +344,17 @@ void DefenderoidsMain()
 		//Qix.MovementVector.y++;
 
 		// Move and rotate the asteroids
-		for (iLoopAsteroid=0;iLoopAsteroid<4;iLoopAsteroid++)
+		for (iLoopAsteroid=0;iLoopAsteroid<12;iLoopAsteroid++)
 		{
 			DrawVectorObject((u16*)bmpPlayField,Asteroid[iLoopAsteroid],iHorizontalOffset);
 			Asteroid[iLoopAsteroid].RotationAngle+=Asteroid[iLoopAsteroid].RotationSpeed;
 			// Need to do some bounds checking here...
 			Asteroid[iLoopAsteroid].Position.x += Asteroid[iLoopAsteroid].MovementVector.x;
-			if (Asteroid[iLoopAsteroid].Position.x < 2000)
+			if (Asteroid[iLoopAsteroid].Position.x < 4000)
 			{
 				Asteroid[iLoopAsteroid].MovementVector.x = Asteroid[iLoopAsteroid].MovementVector.x*-1;
 			}
-			if (Asteroid[iLoopAsteroid].Position.x > 62000)
+			if (Asteroid[iLoopAsteroid].Position.x > 60000)
 			{
 				Asteroid[iLoopAsteroid].MovementVector.x = Asteroid[iLoopAsteroid].MovementVector.x*-1;
 			}
@@ -407,6 +407,7 @@ void DefenderoidsMain()
 		// Bounds checking? How do I constrain the player within the visible screen without breaking the immersion?
 		// Bitmap address [0] contains the bitmap width, and address[1] the bitmap height.
 		// So we can use that and just loop around to the opposite edge when we reach the side
+		// I don't need to worry about horizontal position as the player is now fixed to the centre of the screen.
 		//if (PlayerOne.Position.x<0) PlayerOne.Position.x=((u16*)bmpPlayField)[0];
 		//if (PlayerOne.Position.x>(((u16*)bmpPlayField)[0])) PlayerOne.Position.x=0;
 		//PlayerOne.Position.x += PlayerOne.MovementVector.x>>7;
@@ -431,9 +432,12 @@ void DefenderoidsMain()
 		PrintString(SCR_1_PLANE, 0, 0, 18, "FPS:");
 		PrintDecimal(SCR_1_PLANE, 0, 4, 18, 60/(VBCounter-iStartFrame), 2);
 
-		PrintString(SCR_1_PLANE, 0, 8, 18, "VEL:");
-		PrintDecimal(SCR_1_PLANE, 0, 12, 18, iHorizontalOffset, 8);
 	}
+}
+
+void DrawVectorObjectAbsolute(u16 * BitmapAddress, VECTOROBJECT VectorObject)
+{
+	DrawVectorObject(BitmapAddress, VectorObject, 0);
 }
 
 void DrawVectorObject(u16 * BitmapAddress, VECTOROBJECT VectorObject, u8 iHorizontalOffset)
