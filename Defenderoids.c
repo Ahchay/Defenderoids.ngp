@@ -190,9 +190,8 @@ void DefenderoidsMain()
 	u8 iLoopAsteroidPoint;
 	u16 iCounter;
 	u8 iEngineLoop;
-	u32 iVelocityX;
-	u32 iVelocityY;
-	u16 iVelocity;
+	u16 iVelocityX;
+	u16 iVelocityY;
 	u8 iHeightMapLoop;
 	u8 iHorizontalOffset;
 	bool bShoot;
@@ -268,7 +267,7 @@ void DefenderoidsMain()
 	}
 
 	// Set up the asteroids
-	for (iLoopAsteroid=0;iLoopAsteroid<12;iLoopAsteroid++)
+	for (iLoopAsteroid=0;iLoopAsteroid<1;iLoopAsteroid++)
 	{
 		Asteroid[iLoopAsteroid].Points = 7 + (QRandom()>>5);
 		for (iLoopAsteroidPoint=0;iLoopAsteroidPoint<Asteroid[iLoopAsteroid].Points-1;iLoopAsteroidPoint++)
@@ -312,7 +311,6 @@ void DefenderoidsMain()
 	iLoopY=0;
 	iLoopQix=0;
 	iCounter=0;
-	iVelocity=0;
 	while (!(JOYPAD & J_B))
 	{
 
@@ -378,21 +376,52 @@ void DefenderoidsMain()
 			// I could do that in seperately in the x or y directions easily enough,
 			// Length of a vector is SQRT(x^2 + y^2)
 			// I don't need to calculate the square root, as I can work on the squared result.
-			iVelocityX = ((PlayerOne.MovementVector.x + (Cos(PlayerOne.RotationAngle+192))) * (PlayerOne.MovementVector.x + (Cos(PlayerOne.RotationAngle+192))));
-			iVelocityY = ((PlayerOne.MovementVector.y + (Sin(PlayerOne.RotationAngle+192)))* (PlayerOne.MovementVector.y + (Sin(PlayerOne.RotationAngle+192))));
-			// This seems to jump rapidly to huge numbers? Which means it doesn't work at all.
-			// (which makes sense given I'm using a 16 bit scale so 1024 x 1024 = 10000000+ etc - i.e. bigger than u16)
-			iVelocity = (u16)(iVelocityX>>8) + (u16)(iVelocityY>>8);
-
-			//if (iVelocity<32768)
+			//if (PlayerOne.MovementVector.x < 0)
 			//{
+			//	iVelocityX = (PlayerOne.MovementVector.x<<48 * -1);
+			//}
+			//else
+			//{
+			//	iVelocityX = (PlayerOne.MovementVector.x<<48);
+			//}
+			//iVelocityX = ((iVelocityX + (Cos(PlayerOne.RotationAngle+192))>>2) * (iVelocityX + (Cos(PlayerOne.RotationAngle+192))>>2));
+			//iVelocityY = ((PlayerOne.MovementVector.y + (Sin(PlayerOne.RotationAngle+192)))* (PlayerOne.MovementVector.y + (Sin(PlayerOne.RotationAngle+192))));
+			// This seems to jump rapidly to huge numbers? Which means it doesn't work at all.
+			// (which makes sense given I'm using a 16 bit scale so it rapidly gets out of control)
+			//iVelocity = (u16)(iVelocityX>>8) + (u16)(iVelocityY>>8);
+
+			if (PlayerOne.MovementVector.x + Cos(PlayerOne.RotationAngle+192) < 0)
+			{
+				iVelocityX = (PlayerOne.MovementVector.x + Cos(PlayerOne.RotationAngle+192)) * -1;
+			}
+			else
+			{
+				iVelocityX = PlayerOne.MovementVector.x + Cos(PlayerOne.RotationAngle+192);
+			}
+
+
+			if (PlayerOne.MovementVector.y + Sin(PlayerOne.RotationAngle+192) < 0)
+			{
+				iVelocityY = (PlayerOne.MovementVector.y + Sin(PlayerOne.RotationAngle+192) * -1);
+			}
+			else
+			{
+				iVelocityY = PlayerOne.MovementVector.y + Sin(PlayerOne.RotationAngle+192);
+			}
+
+			// Bugger it. We can have maximum vertical velocity and maximum horizontal velocity. We can call it a gravity effect...
+
+			if (iVelocityX<8191)
+			{
 				// Modify the movement vector by the angle.
 				// Because "zero" degrees is at right angles to "up", we need to rotate this by 270 degrees
 				// which on a 256 byte sine table is 192.
 				PlayerOne.MovementVector.x += (Cos(PlayerOne.RotationAngle+192));
+			}
+			if (iVelocityY<8191)
+			{
 				PlayerOne.MovementVector.y += (Sin(PlayerOne.RotationAngle+192));
-			//}
-
+			}
 		}
 		if (JOYPAD & J_A && bShoot)
 		{
@@ -433,14 +462,10 @@ void DefenderoidsMain()
 		PrintString(SCR_1_PLANE, 0, 0, 18, "FPS:");
 		PrintDecimal(SCR_1_PLANE, 0, 4, 18, 60/(VBCounter-iStartFrame), 2);
 
-		// Horizontal Velocity
-		PrintString(SCR_1_PLANE, 0, 7, 17, "VX:");
-		PrintDecimal(SCR_1_PLANE, 0, 11, 17, (u8)(iVelocityX>>24), 3);
-		PrintDecimal(SCR_1_PLANE, 0, 15, 17, PlayerOne.MovementVector.x,3);
-
-		// Vertical Velocity
-		PrintString(SCR_1_PLANE, 0, 7, 18, "VY:");
-		PrintDecimal(SCR_1_PLANE, 0, 11, 18, (u8)(iVelocityY>>13), 8);
+		PrintString(SCR_1_PLANE, 0, 8, 17, "XV:");
+		PrintDecimal(SCR_1_PLANE, 0, 11, 17, iVelocityX, 8);
+		PrintString(SCR_1_PLANE, 0, 8, 18, "YV:");
+		PrintDecimal(SCR_1_PLANE, 0, 11, 18, iVelocityY, 8);
 
 	}
 }
