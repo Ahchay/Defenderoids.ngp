@@ -332,7 +332,7 @@ void DefenderoidsMain()
 		// I have to draw the Qix with an "absolute" position within the bitmap, as the offset doesn't work?
 		// Presumably, because the position is (0,0) and does not move.
 		// Anyway, I'm keeping this in here because I like it - not really sure what it's going to do in terms of gameplay yet.
-		DrawVectorObjectAbsolute((u16*)bmpPlayField,Qix);
+		//DrawVectorObjectAbsolute((u16*)bmpPlayField,Qix);
 		// Overwrite the "oldest" point in the list with a new random point.
 		Qix.VectorList[iLoopQix].x = (((s16)QRandom())>>3)+(Qix.MovementVector.x>>5);
 		Qix.VectorList[iLoopQix].y = (((s16)QRandom())>>3)+(Qix.MovementVector.y>>5);
@@ -347,8 +347,9 @@ void DefenderoidsMain()
 		//Qix.MovementVector.y++;
 
 		// Move and rotate the asteroids
-		for (iLoopAsteroid=0;iLoopAsteroid<1;iLoopAsteroid++)
+		for (iLoopAsteroid=0;iLoopAsteroid<12;iLoopAsteroid++)
 		{
+			// Is this causing the hanging?
 			DrawVectorObject((u16*)bmpPlayField,Asteroid[iLoopAsteroid],iHorizontalOffset);
 			Asteroid[iLoopAsteroid].RotationAngle+=Asteroid[iLoopAsteroid].RotationSpeed;
 			// Need to do some bounds checking here...
@@ -467,12 +468,6 @@ void DefenderoidsMain()
 		PrintString(SCR_1_PLANE, 0, 0, 18, "FPS:");
 		PrintDecimal(SCR_1_PLANE, 0, 4, 18, 60/(VBCounter-iStartFrame), 2);
 
-		// Something doesn't make sense here. I'm seeing huge or no? jumps in Vertical or Horizontal velocity?
-		PrintString(SCR_1_PLANE, 0, 8, 17, "XV:");
-		PrintDecimal(SCR_1_PLANE, 0, 11, 17, iVelocityX, 8);
-		PrintString(SCR_1_PLANE, 0, 8, 18, "YV:");
-		PrintDecimal(SCR_1_PLANE, 0, 11, 18, iVelocityY, 8);
-
 	}
 }
 
@@ -533,11 +528,13 @@ void DrawVectorObject(u16 * BitmapAddress, VECTOROBJECT VectorObject, u8 iHorizo
 			iEndY = (VectorObject.Position.y>>7)+iTempY+VectorObject.Origin.y;
 			//if (iEndY<0) iEndY=0;
 
-			DrawLine((u16*)BitmapAddress,(u8)(iStartX),(u8)(iStartY),(u8)(iEndX),(u8)(iEndY),VectorObject.VectorList[iPoint].colour);
-
+			// Bounds check to ensure that rotated points are still within the bitmap boundary
+			if (iStartX>=0&&iStartY>=0&&iEndX>=0&&iEndY>=0&&iStartX<=BitmapAddress[0]&&iStartY<=BitmapAddress[1]&&iEndX<=BitmapAddress[0]&&iEndY<=BitmapAddress[1])
+			{
+				DrawLine((u16*)BitmapAddress,(u8)(iStartX),(u8)(iStartY),(u8)(iEndX),(u8)(iEndY),VectorObject.VectorList[iPoint].colour);
+			}
 			iStartX = VectorObject.VectorList[iPoint].x;
 			iStartY = VectorObject.VectorList[iPoint].y;
-
 		}
 	}
 }
