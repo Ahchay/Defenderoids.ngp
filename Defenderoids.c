@@ -196,18 +196,18 @@ void DefenderoidsMain()
 	u8 iHorizontalOffset;
 	bool bShoot;
 	VECTOROBJECT Asteroid[] = {
-									{{6,6},{12192,8192},0,0,0,0,0,0},
-									{{6,6},{43096,10096},0,0,0,0,0,0},
-									{{6,6},{59048,10192},0,0,0,0,0,0},
-									{{6,6},{21192,40098},0,0,0,0,0,0},
-									{{6,6},{34092,2048},0,0,0,0,0,0},
-									{{6,6},{7048,2048},0,0,0,0,0,0},
-									{{6,6},{10432,2048},0,0,0,0,0,0},
-									{{6,6},{45048,7634},0,0,0,0,0,0},
-									{{6,6},{32748,7763},0,0,0,0,0,0},
-									{{6,6},{17048,2048},0,0,0,0,0,0},
-									{{6,6},{47048,10048},0,0,0,0,0,0},
-									{{6,6},{12432,2048},0,0,0,0,0,0}
+									{{6,6},{2000,8192},0,0,0,0,0,0},
+									{{6,6},{5000,10096},0,0,0,0,0,0},
+									{{6,6},{8000,10192},0,0,0,0,0,0},
+									{{6,6},{11000,40098},0,0,0,0,0,0},
+									{{6,6},{14000,2048},0,0,0,0,0,0},
+									{{6,6},{17000,2048},0,0,0,0,0,0},
+									{{6,6},{20000,2048},0,0,0,0,0,0},
+									{{6,6},{23000,7634},0,0,0,0,0,0},
+									{{6,6},{26000,7763},0,0,0,0,0,0},
+									{{6,6},{29000,2048},0,0,0,0,0,0},
+									{{6,6},{32000,10048},0,0,0,0,0,0},
+									{{6,6},{35000,2048},0,0,0,0,0,0}
 								};
 
 	VECTOROBJECT Shot[] = {
@@ -267,7 +267,7 @@ void DefenderoidsMain()
 	}
 
 	// Set up the asteroids
-	for (iLoopAsteroid=0;iLoopAsteroid<1;iLoopAsteroid++)
+	for (iLoopAsteroid=0;iLoopAsteroid<12;iLoopAsteroid++)
 	{
 		Asteroid[iLoopAsteroid].Points = 7 + (QRandom()>>5);
 		for (iLoopAsteroidPoint=0;iLoopAsteroidPoint<Asteroid[iLoopAsteroid].Points-1;iLoopAsteroidPoint++)
@@ -311,6 +311,8 @@ void DefenderoidsMain()
 	iLoopY=0;
 	iLoopQix=0;
 	iCounter=0;
+	iVelocityX=0;
+	iVelocityY=0;
 	while (!(JOYPAD & J_B))
 	{
 
@@ -327,7 +329,10 @@ void DefenderoidsMain()
 
 		// Draw and animate the qix.
 		// This will be an "evil otto" style enemy that cannot be destroyed...
-		DrawVectorObject((u16*)bmpPlayField,Qix,iHorizontalOffset);
+		// I have to draw the Qix with an "absolute" position within the bitmap, as the offset doesn't work?
+		// Presumably, because the position is (0,0) and does not move.
+		// Anyway, I'm keeping this in here because I like it - not really sure what it's going to do in terms of gameplay yet.
+		DrawVectorObjectAbsolute((u16*)bmpPlayField,Qix);
 		// Overwrite the "oldest" point in the list with a new random point.
 		Qix.VectorList[iLoopQix].x = (((s16)QRandom())>>3)+(Qix.MovementVector.x>>5);
 		Qix.VectorList[iLoopQix].y = (((s16)QRandom())>>3)+(Qix.MovementVector.y>>5);
@@ -342,7 +347,7 @@ void DefenderoidsMain()
 		//Qix.MovementVector.y++;
 
 		// Move and rotate the asteroids
-		for (iLoopAsteroid=0;iLoopAsteroid<12;iLoopAsteroid++)
+		for (iLoopAsteroid=0;iLoopAsteroid<1;iLoopAsteroid++)
 		{
 			DrawVectorObject((u16*)bmpPlayField,Asteroid[iLoopAsteroid],iHorizontalOffset);
 			Asteroid[iLoopAsteroid].RotationAngle+=Asteroid[iLoopAsteroid].RotationSpeed;
@@ -393,35 +398,35 @@ void DefenderoidsMain()
 			// Movement vector should grow or shrink by +/- 127 in any given frame?
 			if (PlayerOne.MovementVector.x + Cos(PlayerOne.RotationAngle+192) < 0)
 			{
-				iVelocityX = (PlayerOne.MovementVector.x + Cos(PlayerOne.RotationAngle+192)) * -1;
+				iVelocityX = (u16)((PlayerOne.MovementVector.x + Cos(PlayerOne.RotationAngle+192)) * -1)>>8;
 			}
 			else
 			{
-				iVelocityX = PlayerOne.MovementVector.x + Cos(PlayerOne.RotationAngle+192);
+				iVelocityX = (u16)((PlayerOne.MovementVector.x + Cos(PlayerOne.RotationAngle+192)))>>8;
 			}
 
 			if (PlayerOne.MovementVector.y + Sin(PlayerOne.RotationAngle+192) < 0)
 			{
-				iVelocityY = (PlayerOne.MovementVector.y + Sin(PlayerOne.RotationAngle+192) * -1);
+				iVelocityY = (u16)((PlayerOne.MovementVector.y + Sin(PlayerOne.RotationAngle+192)) * -1)>>8;
 			}
 			else
 			{
-				iVelocityY = PlayerOne.MovementVector.y + Sin(PlayerOne.RotationAngle+192);
+				iVelocityY = (u16)((PlayerOne.MovementVector.y + Sin(PlayerOne.RotationAngle+192)))>>8;
 			}
 
 			// Bugger it. We can have maximum vertical velocity and maximum horizontal velocity. We can call it a gravity effect...
 
-			//if (iVelocityX<8191)
-			//{
+			if (iVelocityX<8)
+			{
 				// Modify the movement vector by the angle.
 				// Because "zero" degrees is at right angles to "up", we need to rotate this by 270 degrees
 				// which on a 256 byte sine table is 192.
 				PlayerOne.MovementVector.x += (Cos(PlayerOne.RotationAngle+192));
-			//}
-			//if (iVelocityY<8191)
-			//{
+			}
+			if (iVelocityY<3)
+			{
 				PlayerOne.MovementVector.y += (Sin(PlayerOne.RotationAngle+192));
-			//}
+			}
 		}
 		if (JOYPAD & J_A && bShoot)
 		{
