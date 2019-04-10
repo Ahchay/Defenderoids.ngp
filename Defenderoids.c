@@ -201,13 +201,13 @@ void DefenderoidsMain()
 									{{6,6},{8000,10192},0,0,0,0,0,0},
 									{{6,6},{11000,40098},0,0,0,0,0,0},
 									{{6,6},{14000,2048},0,0,0,0,0,0},
-									{{6,6},{17000,2048},0,0,0,0,0,0},
-									{{6,6},{20000,2048},0,0,0,0,0,0},
-									{{6,6},{23000,7634},0,0,0,0,0,0},
-									{{6,6},{26000,7763},0,0,0,0,0,0},
-									{{6,6},{29000,2048},0,0,0,0,0,0},
-									{{6,6},{32000,10048},0,0,0,0,0,0},
-									{{6,6},{35000,2048},0,0,0,0,0,0}
+									{{6,6},{19000,2048},0,0,0,0,0,0},
+									{{6,6},{25000,2048},0,0,0,0,0,0},
+									{{6,6},{30000,7634},0,0,0,0,0,0},
+									{{6,6},{36000,7763},0,0,0,0,0,0},
+									{{6,6},{43000,2048},0,0,0,0,0,0},
+									{{6,6},{51000,10048},0,0,0,0,0,0},
+									{{6,6},{58000,2048},0,0,0,0,0,0}
 								};
 
 	VECTOROBJECT Shot[] = {
@@ -332,7 +332,8 @@ void DefenderoidsMain()
 		// I have to draw the Qix with an "absolute" position within the bitmap, as the offset doesn't work?
 		// Presumably, because the position is (0,0) and does not move.
 		// Anyway, I'm keeping this in here because I like it - not really sure what it's going to do in terms of gameplay yet.
-		//DrawVectorObjectAbsolute((u16*)bmpPlayField,Qix);
+		/*
+		DrawVectorObjectAbsolute((u16*)bmpPlayField,Qix);
 		// Overwrite the "oldest" point in the list with a new random point.
 		Qix.VectorList[iLoopQix].x = (((s16)QRandom())>>3)+(Qix.MovementVector.x>>5);
 		Qix.VectorList[iLoopQix].y = (((s16)QRandom())>>3)+(Qix.MovementVector.y>>5);
@@ -341,10 +342,10 @@ void DefenderoidsMain()
 		{
 			iLoopQix = 0;
 		}
-
 		// Move the Qix towards the player
-		//Qix.MovementVector.x++;
-		//Qix.MovementVector.y++;
+		Qix.MovementVector.x++;
+		Qix.MovementVector.y++;
+		*/
 
 		// Move and rotate the asteroids
 		for (iLoopAsteroid=0;iLoopAsteroid<12;iLoopAsteroid++)
