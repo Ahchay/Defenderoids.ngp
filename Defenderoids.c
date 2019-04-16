@@ -1,6 +1,7 @@
 #include "ngpc.h"
 #include "library.h"
 #include "Defenderoids.h"
+#include "Tiles\Sprites.c"
 
 /*
 
@@ -454,9 +455,10 @@ void DefenderoidsMain()
 		PlayerOne.Position.y += PlayerOne.MovementVector.y>>7;
 		// Draw some random engine noise...
 		iEngineLoop=PlayerOne.Points-5;
+		// Only do this if the player is currently pressing thrust
 		while (iEngineLoop<PlayerOne.Points)
 		{
-			PlayerOne.VectorList[iEngineLoop+1].colour = (QRandom()>>7) * 3;
+			PlayerOne.VectorList[iEngineLoop+1].colour = (((QRandom()>>7) && (JOYPAD & J_UP)) * 3);
 			iEngineLoop++;
 		}
 		// And then draw the sprite
