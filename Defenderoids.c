@@ -2,7 +2,6 @@
 #include "library.h"
 #include "Defenderoids.h"
 #include "Tiles\Sprites.c"
-
 /*
 
 So, this started as a defender/asteroids mash-up concept, but has now turned into a bitmap playground...
@@ -189,6 +188,7 @@ void DefenderoidsMain()
 	u8 iLoopQix;
 	u8 iLoopAsteroid;
 	u8 iLoopAsteroidPoint;
+	u8 iSpriteLoop;
 	u16 iCounter;
 	u8 iEngineLoop;
 	s16 iVelocityX;
@@ -218,7 +218,25 @@ void DefenderoidsMain()
 								{{1,1},{0,0},{0,0},1,{{1,1}},0,0,0}
 							};
 
+	SPRITE SpriteList[16];
+
 	VECTOROBJECT PlayerOne;
+
+	// Set up the test sprite
+	SetPalette(SPRITE_PLANE, PAL_SPRITE + SpriteList[0].SpriteType, RGB(0,0,0), RGB(0,15,0), RGB(15,15,0), RGB(15,0,0));
+
+	for (iSpriteLoop=0;iSpriteLoop<12;iSpriteLoop++)
+	{
+		SpriteList[iSpriteLoop].Position.x = ((u16)iSpriteLoop)<<12;
+		SpriteList[iSpriteLoop].Position.y = ((u16)QRandom())<<8;
+		SpriteList[iSpriteLoop].SpriteID = iSpriteLoop;
+		SpriteList[iSpriteLoop].SpriteType = 0;
+		SpriteList[iSpriteLoop].BaseTile = spTileBase + iSpriteLoop;
+		SpriteList[iSpriteLoop].Frame = 0;
+		SpriteList[iSpriteLoop].Direction = 0;
+
+		SetSprite(SpriteList[iSpriteLoop].SpriteID, spTileBase + SpriteList[iSpriteLoop].SpriteID, 0, (u8)(SpriteList[iSpriteLoop].Position.x>>8), (u8)(SpriteList[iSpriteLoop].Position.y>>8), PAL_SPRITE + SpriteList[iSpriteLoop].SpriteType);
+	}
 
 	// So, create a bitmap...
 
@@ -466,6 +484,15 @@ void DefenderoidsMain()
 
 		// Then copy the bitmap back into tile memory...
 		CopyBitmap((u16*)bmpPlayField, bgTileBase);
+
+		// Show the sprites...
+		for (iSpriteLoop=0;iSpriteLoop<12;iSpriteLoop++)
+		{
+			CopyAnimationFrame(Sprites, SpriteList[iSpriteLoop].BaseTile, SpriteList[iSpriteLoop].SpriteType, 1, SpriteList[iSpriteLoop].Frame);
+			SetSpritePosition(SpriteList[iSpriteLoop].SpriteID, (u8)(SpriteList[iSpriteLoop].Position.x>>8)-iHorizontalOffset, (u8)(SpriteList[iSpriteLoop].Position.y>>8));
+			if (++SpriteList[iSpriteLoop].Frame>3) SpriteList[iSpriteLoop].Frame=0;
+			SpriteList[iSpriteLoop].Position.y+=64;
+		}
 
 		// How many frames has all of this taken...
 		PrintString(SCR_1_PLANE, 0, 0, 18, "FPS:");

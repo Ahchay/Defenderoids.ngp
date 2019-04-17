@@ -2,7 +2,7 @@
 NAME = DEFENDEROIDS
 OBJS = 	main.rel \
 	library.rel \
-	Defenderoids.rel 
+	Defenderoids.rel
 	
 
 $(NAME).ngp: makefile ngpc.lcf $(OBJS)

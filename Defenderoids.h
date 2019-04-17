@@ -1,10 +1,30 @@
 #define bgTileBase 256
+#define spTileBase 128
+
+#define PAL_SPRITE 0
 
 typedef struct Point
 {
 	s16 x;
 	s16 y;
 } POINT;
+
+typedef struct SpritePoint
+{
+	u16 x;
+	u16 y;
+} SPRITEPOINT;
+
+typedef struct Sprite
+{
+	SPRITEPOINT Position;
+	u8 SpriteID;
+	u8 SpriteType;
+	u16 BaseTile;
+	u16 Frame;
+	u16 Direction;
+} SPRITE;
+
 
 typedef struct ColourPoint
 {
