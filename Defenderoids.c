@@ -314,7 +314,7 @@ void DefenderoidsMain()
 	PlayerOne.Origin.x = (PlayerOne.Scale * 4);
 	PlayerOne.Origin.y = (PlayerOne.Scale * 8);
 	PlayerOne.Points = 40;
-	PlayerOne.RotationAngle = 0;
+	PlayerOne.RotationAngle = 64;
 	PlayerOne.RotationSpeed = 0;
 	iLoopX=0;
 	while (iLoopX++<PlayerOne.Points)
