@@ -1,6 +1,7 @@
 #include "ngpc.h"
 #include "library.h"
 #include "Defenderoids.h"
+#include "VectorObjects.h"
 #include "Tiles\Sprites.c"
 /*
 
