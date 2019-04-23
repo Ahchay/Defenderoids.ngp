@@ -508,12 +508,11 @@ void DefenderoidsMain()
 					break;
 				case DIR_WEST:
 					SpriteList[iSpriteLoop].Position.x-=128;
-					SpriteList[iSpriteLoop].Position.y = (u16)(HeightMap[((u8)(SpriteList[iSpriteLoop].Position.x>>8))])<<8;
+					SpriteList[iSpriteLoop].Position.y = (u16)(HeightMap[((u8)(SpriteList[iSpriteLoop].Position.x>>8))+4]+4)<<8;
 					break;
 				case DIR_EAST:
 					SpriteList[iSpriteLoop].Position.x+=128;
-					SpriteList[iSpriteLoop].Position.y = ((u16)(HeightMap[((u8)(SpriteList[iSpriteLoop].Position.x>>8))+24])<<8)+256;
-					break;
+					SpriteList[iSpriteLoop].Position.y = (u16)(HeightMap[((u8)(SpriteList[iSpriteLoop].Position.x>>8))+4]+4)<<8;
 				default:
 					break;
 			}
