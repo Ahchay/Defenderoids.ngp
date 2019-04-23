@@ -232,13 +232,8 @@ void DefenderoidsMain()
 		SpriteList[iSpriteLoop].Position.x = ((u16)iSpriteLoop)<<12;
 		SpriteList[iSpriteLoop].Position.y = ((u16)QRandom())<<8;
 		SpriteList[iSpriteLoop].SpriteID = iSpriteLoop;
-		SpriteList[iSpriteLoop].SpriteType = 0;
-		SpriteList[iSpriteLoop].Direction = DIR_SOUTH;
-		if (iSpriteLoop<5)
-		{
-			SpriteList[iSpriteLoop].SpriteType = 1;
-			SpriteList[iSpriteLoop].Direction = DIR_EAST;
-		}
+		SpriteList[iSpriteLoop].SpriteType = iSpriteLoop%2;
+		SpriteList[iSpriteLoop].Direction = iSpriteLoop%4;
 		SpriteList[iSpriteLoop].BaseTile = spTileBase + iSpriteLoop;
 		SpriteList[iSpriteLoop].Frame = 0;
 
