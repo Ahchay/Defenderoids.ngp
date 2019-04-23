@@ -22,9 +22,13 @@ typedef struct Sprite
 	u8 SpriteType;
 	u16 BaseTile;
 	u16 Frame;
-	u16 Direction;
+	u16 Direction; // 1 North 2 East 3 South 4 West
 } SPRITE;
 
+#define DIR_NORTH 0
+#define DIR_EAST 1
+#define DIR_SOUTH 2
+#define DIR_WEST 3
 
 typedef struct ColourPoint
 {

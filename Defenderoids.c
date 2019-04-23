@@ -224,7 +224,8 @@ void DefenderoidsMain()
 	VECTOROBJECT PlayerOne;
 
 	// Set up the test sprite
-	SetPalette(SPRITE_PLANE, PAL_SPRITE + SpriteList[0].SpriteType, RGB(0,0,0), RGB(0,15,0), RGB(15,15,0), RGB(15,0,0));
+	SetPalette(SPRITE_PLANE, PAL_SPRITE + 0, RGB(0,0,0), RGB(0,15,0), RGB(15,15,0), RGB(15,0,0));
+	SetPalette(SPRITE_PLANE, PAL_SPRITE + 1, RGB(0,0,0), RGB(8,8,0), RGB(0,0,15), RGB(0,15,0));
 
 	for (iSpriteLoop=0;iSpriteLoop<12;iSpriteLoop++)
 	{
@@ -232,9 +233,14 @@ void DefenderoidsMain()
 		SpriteList[iSpriteLoop].Position.y = ((u16)QRandom())<<8;
 		SpriteList[iSpriteLoop].SpriteID = iSpriteLoop;
 		SpriteList[iSpriteLoop].SpriteType = 0;
+		SpriteList[iSpriteLoop].Direction = DIR_SOUTH;
+		if (iSpriteLoop<5)
+		{
+			SpriteList[iSpriteLoop].SpriteType = 1;
+			SpriteList[iSpriteLoop].Direction = DIR_EAST;
+		}
 		SpriteList[iSpriteLoop].BaseTile = spTileBase + iSpriteLoop;
 		SpriteList[iSpriteLoop].Frame = 0;
-		SpriteList[iSpriteLoop].Direction = 0;
 
 		SetSprite(SpriteList[iSpriteLoop].SpriteID, spTileBase + SpriteList[iSpriteLoop].SpriteID, 0, (u8)(SpriteList[iSpriteLoop].Position.x>>8), (u8)(SpriteList[iSpriteLoop].Position.y>>8), PAL_SPRITE + SpriteList[iSpriteLoop].SpriteType);
 	}
@@ -308,7 +314,7 @@ void DefenderoidsMain()
 	// Set up the player
 	PlayerOne.Position.x = 72;
 	PlayerOne.Position.y = 66;
-	PlayerOne.MovementVector.x = 0;
+	PlayerOne.MovementVector.x = 256;
 	PlayerOne.MovementVector.y = 0;
 	PlayerOne.Scale = 2;
 	PlayerOne.Origin.x = (PlayerOne.Scale * 4);
@@ -489,10 +495,28 @@ void DefenderoidsMain()
 		// Show the sprites...
 		for (iSpriteLoop=0;iSpriteLoop<12;iSpriteLoop++)
 		{
-			CopyAnimationFrame(Sprites, SpriteList[iSpriteLoop].BaseTile, SpriteList[iSpriteLoop].SpriteType, 1, SpriteList[iSpriteLoop].Frame);
-			SetSpritePosition(SpriteList[iSpriteLoop].SpriteID, (u8)(SpriteList[iSpriteLoop].Position.x>>8)-iHorizontalOffset, (u8)(SpriteList[iSpriteLoop].Position.y>>8));
+			CopyAnimationFrame(Sprites, SpriteList[iSpriteLoop].BaseTile, SpriteList[iSpriteLoop].SpriteType * 16, 1, SpriteList[iSpriteLoop].Frame * SpriteList[iSpriteLoop].Direction);
+			SetSpritePosition(SpriteList[iSpriteLoop].SpriteID, (u8)(SpriteList[iSpriteLoop].Position.x>>8)-iHorizontalOffset+4, (u8)(SpriteList[iSpriteLoop].Position.y>>8));
 			if (++SpriteList[iSpriteLoop].Frame>3) SpriteList[iSpriteLoop].Frame=0;
-			SpriteList[iSpriteLoop].Position.y+=64;
+			switch(SpriteList[iSpriteLoop].Direction)
+			{
+				case DIR_SOUTH:
+					SpriteList[iSpriteLoop].Position.y+=64;
+					break;
+				case DIR_NORTH:
+					SpriteList[iSpriteLoop].Position.y-=64;
+					break;
+				case DIR_WEST:
+					SpriteList[iSpriteLoop].Position.x-=128;
+					SpriteList[iSpriteLoop].Position.y = (u16)(HeightMap[((u8)(SpriteList[iSpriteLoop].Position.x>>8))])<<8;
+					break;
+				case DIR_EAST:
+					SpriteList[iSpriteLoop].Position.x+=128;
+					SpriteList[iSpriteLoop].Position.y = ((u16)(HeightMap[((u8)(SpriteList[iSpriteLoop].Position.x>>8))+24])<<8)+256;
+					break;
+				default:
+					break;
+			}
 		}
 
 		// How many frames has all of this taken...
