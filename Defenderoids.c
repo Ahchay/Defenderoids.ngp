@@ -334,7 +334,7 @@ void DefenderoidsMain()
 	iCounter=0;
 	iVelocityX=0;
 	iVelocityY=0;
-	while (!(JOYPAD & J_B))
+	while (!(JOYPAD & J_OPTION))
 	{
 
 		iStartFrame=VBCounter;
@@ -398,7 +398,7 @@ void DefenderoidsMain()
 		// Ship Sprite
 		if (JOYPAD & J_LEFT) PlayerOne.RotationAngle-=8;
 		if (JOYPAD & J_RIGHT) PlayerOne.RotationAngle+=8;
-		if (JOYPAD & J_UP)
+		if (JOYPAD & J_B)
 		{
 			// Also, need to constrain the Movement Vector to a maximum velocity.
 			// I could do that in seperately in the x or y directions easily enough,
