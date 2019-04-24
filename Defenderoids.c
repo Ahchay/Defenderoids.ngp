@@ -232,12 +232,12 @@ void DefenderoidsMain()
 		SpriteList[iSpriteLoop].Position.x = ((u16)iSpriteLoop)<<12;
 		SpriteList[iSpriteLoop].Position.y = ((u16)QRandom())<<8;
 		SpriteList[iSpriteLoop].SpriteID = iSpriteLoop;
-		SpriteList[iSpriteLoop].SpriteType = iSpriteLoop%2;
-		SpriteList[iSpriteLoop].Direction = iSpriteLoop%4;
-		SpriteList[iSpriteLoop].BaseTile = spTileBase + iSpriteLoop;
+		SpriteList[iSpriteLoop].SpriteType = iSpriteLoop%2; // 0 or 1
+		SpriteList[iSpriteLoop].Direction = iSpriteLoop%4; // 0, 1, 2 or 3
+		SpriteList[iSpriteLoop].BaseTile = spTileBase + SpriteList[iSpriteLoop].SpriteID;
 		SpriteList[iSpriteLoop].Frame = 0;
 
-		SetSprite(SpriteList[iSpriteLoop].SpriteID, spTileBase + SpriteList[iSpriteLoop].SpriteID, 0, (u8)(SpriteList[iSpriteLoop].Position.x>>8), (u8)(SpriteList[iSpriteLoop].Position.y>>8), PAL_SPRITE + SpriteList[iSpriteLoop].SpriteType);
+		SetSprite(SpriteList[iSpriteLoop].SpriteID, SpriteList[iSpriteLoop].BaseTile , 0, (u8)(SpriteList[iSpriteLoop].Position.x>>8), (u8)(SpriteList[iSpriteLoop].Position.y>>8), PAL_SPRITE + SpriteList[iSpriteLoop].SpriteType);
 	}
 
 	// So, create a bitmap...
@@ -490,7 +490,7 @@ void DefenderoidsMain()
 		// Show the sprites...
 		for (iSpriteLoop=0;iSpriteLoop<12;iSpriteLoop++)
 		{
-			CopyAnimationFrame(Sprites, SpriteList[iSpriteLoop].BaseTile, SpriteList[iSpriteLoop].SpriteType * 16, 1, SpriteList[iSpriteLoop].Frame * SpriteList[iSpriteLoop].Direction);
+			CopyAnimationFrame(Sprites, SpriteList[iSpriteLoop].BaseTile, 1, (SpriteList[iSpriteLoop].SpriteType << 4) + (SpriteList[iSpriteLoop].Direction << 2) + SpriteList[iSpriteLoop].Frame);
 			SetSpritePosition(SpriteList[iSpriteLoop].SpriteID, (u8)(SpriteList[iSpriteLoop].Position.x>>8)-iHorizontalOffset+4, (u8)(SpriteList[iSpriteLoop].Position.y>>8));
 			if (++SpriteList[iSpriteLoop].Frame>3) SpriteList[iSpriteLoop].Frame=0;
 			switch(SpriteList[iSpriteLoop].Direction)

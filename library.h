@@ -109,7 +109,7 @@ void DrawLineHorizontal(u16 * BitmapAddress, u16 x1, u16 x2, u16 y, u16 Colour);
 
 // Helper function to streamline copying animation frames between a buffer and the tile memory
 // copies a new animation frame into tile memory.
-void CopyAnimationFrame(const u16 SpriteTiles[][8], u16 TileNumber, u16 Sprite, u16 TileCount, u16 AnimNumber);
+void CopyAnimationFrame(const u16 SpriteTiles[][8], u16 TileNumber, u16 TileCount, u16 AnimNumber);
 
 /*
  * Defines used by the library
