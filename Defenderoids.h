@@ -49,6 +49,14 @@ typedef struct VectorObject
 	s8 RotationSpeed;
 } VECTOROBJECT;
 
+typedef struct Level
+{
+	char LevelName[30];
+	u8 InvaderCount;
+	u8 LemmanoidCount;
+	u8 AsteroidCount;
+} LEVEL;
+
 bool DefenderoidsLogo();
 void DefenderoidsMain();
 

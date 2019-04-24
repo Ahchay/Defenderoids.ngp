@@ -196,6 +196,8 @@ void DefenderoidsMain()
 	s16 iVelocityY;
 	u8 iHeightMapLoop;
 	u8 iHorizontalOffset;
+	u8 iCurrentLevel;
+	u8 iLives;
 	bool bShoot;
 	VECTOROBJECT Asteroid[] = {
 									{{6,6},{2000,8192},0,0,0,0,0,0},
@@ -219,40 +221,31 @@ void DefenderoidsMain()
 								{{1,1},{0,0},{0,0},1,{{1,1}},0,0,0}
 							};
 
+	LEVEL DefenderoidsLevels[] = {
+									{"Start me up",5,5,2},
+									{"Getting Harder",12,12,3}
+								};
+
 	SPRITE SpriteList[16];
 
 	VECTOROBJECT PlayerOne;
+
+	iCurrentLevel=0;
+	iLives=3;
 
 	// Set up the test sprite
 	SetPalette(SPRITE_PLANE, PAL_SPRITE + 0, RGB(0,0,0), RGB(0,15,0), RGB(15,15,0), RGB(15,0,0));
 	SetPalette(SPRITE_PLANE, PAL_SPRITE + 1, RGB(0,0,0), RGB(8,8,0), RGB(0,0,15), RGB(0,15,0));
 
-	for (iSpriteLoop=0;iSpriteLoop<12;iSpriteLoop++)
-	{
-		SpriteList[iSpriteLoop].Position.x = ((u16)iSpriteLoop)<<12;
-		SpriteList[iSpriteLoop].Position.y = ((u16)QRandom())<<8;
-		SpriteList[iSpriteLoop].SpriteID = iSpriteLoop;
-		SpriteList[iSpriteLoop].SpriteType = iSpriteLoop%2; // 0 or 1
-		SpriteList[iSpriteLoop].Direction = iSpriteLoop%4; // 0, 1, 2 or 3
-		SpriteList[iSpriteLoop].BaseTile = spTileBase + SpriteList[iSpriteLoop].SpriteID;
-		SpriteList[iSpriteLoop].Frame = 0;
-
-		SetSprite(SpriteList[iSpriteLoop].SpriteID, SpriteList[iSpriteLoop].BaseTile , 0, (u8)(SpriteList[iSpriteLoop].Position.x>>8), (u8)(SpriteList[iSpriteLoop].Position.y>>8), PAL_SPRITE + SpriteList[iSpriteLoop].SpriteType);
-	}
-
 	// So, create a bitmap...
-
 	SetBackgroundColour(RGB(0,0,4));
 
 	SetPalette(SCR_1_PLANE, 0, 0, RGB(15,15,15), RGB(0,0,15), RGB(15,0,0));
-
-	InitialiseQRandom();
 
 	CreateBitmap((u16*)bmpPlayField, 144, 112);
 	CopyBitmap((u16*)bmpPlayField, bgTileBase);
 
 	iTile=0;
-	bShoot=0;
 	//Copy the bitmap to SCR_1_PLANE
 	// Watch the order...
 	for (iLoopY=0;iLoopY<14;iLoopY++)
@@ -264,260 +257,303 @@ void DefenderoidsMain()
 		}
 	}
 
-	// Setup the qix object
-	// So, the Qix itself is a lot simpler than it first appears.
-	// Essentially, it's a list of lines, each starting from the end position of the last
-	// where the "first" line falls off the stack and is replaced at the end with a new one
-	// with a random(?) length and direction.
-	// Changing the length would essentially control the speed and overall size of the Qix
-	Qix.Origin.x=0;
-	Qix.Origin.y=0;
-	Qix.Position.x=0;
-	Qix.Position.y=0;
-	Qix.MovementVector.x=376;
-	Qix.MovementVector.y=32;
-	Qix.Points=12;
-	Qix.Scale=1;
-	Qix.RotationAngle=0;
-	Qix.RotationSpeed=0;
-	for (iLoopQix=0;iLoopQix<Qix.Points;iLoopQix++)
+	// Main lives/game loop
+	while ((!(JOYPAD & J_OPTION)) && iLives>0)
 	{
-		Qix.VectorList[iLoopQix].x = 6000;
-		Qix.VectorList[iLoopQix].y = 0;
-		Qix.VectorList[iLoopQix].colour = 3;
-	}
+		// Create the level
 
-	// Set up the asteroids
-	for (iLoopAsteroid=0;iLoopAsteroid<12;iLoopAsteroid++)
-	{
-		Asteroid[iLoopAsteroid].Points = 7 + (QRandom()>>5);
-		for (iLoopAsteroidPoint=0;iLoopAsteroidPoint<Asteroid[iLoopAsteroid].Points-1;iLoopAsteroidPoint++)
+		for (iSpriteLoop=0;iSpriteLoop<DefenderoidsLevels[iCurrentLevel].InvaderCount;iSpriteLoop++)
 		{
-			Asteroid[iLoopAsteroid].VectorList[iLoopAsteroidPoint] = AsteroidTemplate[iLoopAsteroidPoint][QRandom()>>7];
-		}
-		// Make sure the asteroid is closed...
-		Asteroid[iLoopAsteroid].VectorList[iLoopAsteroidPoint] = Asteroid[iLoopAsteroid].VectorList[0];
-		Asteroid[iLoopAsteroid].Scale=3;
-		Asteroid[iLoopAsteroid].RotationSpeed=(Sin(QRandom())>>4)+1;
-		Asteroid[iLoopAsteroid].RotationAngle=Sin(QRandom());
-		//Asteroid[iLoopAsteroid].Position.x=((u16)QRandom())<<4;
-		//Asteroid[iLoopAsteroid].Position.y=((u16)QRandom())<<4;
-		Asteroid[iLoopAsteroid].MovementVector.x=QRandom();
-		Asteroid[iLoopAsteroid].MovementVector.y=QRandom();
-	}
+			SpriteList[iSpriteLoop].Position.x = ((u16)QRandom())<<10;
+			SpriteList[iSpriteLoop].Position.y = 0;
+			SpriteList[iSpriteLoop].SpriteID = iSpriteLoop;
+			SpriteList[iSpriteLoop].SpriteType = 0; // 0 or 1
+			SpriteList[iSpriteLoop].Direction = DIR_SOUTH;
+			SpriteList[iSpriteLoop].BaseTile = spTileBase + SpriteList[iSpriteLoop].SpriteID;
+			SpriteList[iSpriteLoop].Frame = 0;
 
-	// Set up the player
-	PlayerOne.Position.x = 72;
-	PlayerOne.Position.y = 66;
-	PlayerOne.MovementVector.x = 256;
-	PlayerOne.MovementVector.y = 0;
-	PlayerOne.Scale = 2;
-	PlayerOne.Origin.x = (PlayerOne.Scale * 4);
-	PlayerOne.Origin.y = (PlayerOne.Scale * 8);
-	PlayerOne.Points = 40;
-	PlayerOne.RotationAngle = 64;
-	PlayerOne.RotationSpeed = 0;
-	iLoopX=0;
-	while (iLoopX++<PlayerOne.Points)
-	{
-		PlayerOne.VectorList[iLoopX].x = PlayerSprite[iLoopX].x;
-		PlayerOne.VectorList[iLoopX].y = PlayerSprite[iLoopX].y;
-		PlayerOne.VectorList[iLoopX].colour = PlayerSprite[iLoopX].colour;
-	}
-
-	// Set up the horizontal offset.
-	iHorizontalOffset=0;
-
-	iLoopX=0;
-	iLoopY=0;
-	iLoopQix=0;
-	iCounter=0;
-	iVelocityX=0;
-	iVelocityY=0;
-	while (!(JOYPAD & J_OPTION))
-	{
-
-		iStartFrame=VBCounter;
-
-		//Reset the bitmap for every frame.
-		CreateBitmap((u16*)bmpPlayField, 144, 112);
-
-		// Draw the height map
-		for (iHeightMapLoop=0;iHeightMapLoop<143;iHeightMapLoop++)
-		{
-			SetPixel((u16*)bmpPlayField,iHeightMapLoop,HeightMap[iHorizontalOffset+iHeightMapLoop],3);
+			SetSprite(SpriteList[iSpriteLoop].SpriteID, SpriteList[iSpriteLoop].BaseTile , 0, (u8)(SpriteList[iSpriteLoop].Position.x>>8), (u8)(SpriteList[iSpriteLoop].Position.y>>8), PAL_SPRITE + SpriteList[iSpriteLoop].SpriteType);
 		}
 
-		// Draw and animate the qix.
-		// This will be an "evil otto" style enemy that cannot be destroyed...
-		// I have to draw the Qix with an "absolute" position within the bitmap, as the offset doesn't work?
-		// Presumably, because the position is (0,0) and does not move.
-		// Anyway, I'm keeping this in here because I like it - not really sure what it's going to do in terms of gameplay yet.
-		/*
-		DrawVectorObjectAbsolute((u16*)bmpPlayField,Qix);
-		// Overwrite the "oldest" point in the list with a new random point.
-		Qix.VectorList[iLoopQix].x = (((s16)QRandom())>>3)+(Qix.MovementVector.x>>5);
-		Qix.VectorList[iLoopQix].y = (((s16)QRandom())>>3)+(Qix.MovementVector.y>>5);
-		Qix.VectorList[iLoopQix].colour = 3;
-		if (++iLoopQix >= Qix.Points)
+		for (;iSpriteLoop<DefenderoidsLevels[iCurrentLevel].InvaderCount+DefenderoidsLevels[iCurrentLevel].LemmanoidCount;iSpriteLoop++)
 		{
-			iLoopQix = 0;
-		}
-		// Move the Qix towards the player
-		Qix.MovementVector.x++;
-		Qix.MovementVector.y++;
-		*/
+			SpriteList[iSpriteLoop].Position.x = ((u16)QRandom())<<10;
+			SpriteList[iSpriteLoop].Position.y = (u16)(HeightMap[((u8)(SpriteList[iSpriteLoop].Position.x>>8))+4]+4)<<8;
+			SpriteList[iSpriteLoop].SpriteID = iSpriteLoop;
+			SpriteList[iSpriteLoop].SpriteType = 1;
+			SpriteList[iSpriteLoop].Direction = 1 + ((QRandom()>>7)<<1); // NORTH or SOUTH for SpriteType 0, EAST/WEST for Sprite Type 1
+			SpriteList[iSpriteLoop].BaseTile = spTileBase + SpriteList[iSpriteLoop].SpriteID;
+			SpriteList[iSpriteLoop].Frame = 0;
 
-		// Move and rotate the asteroids
-		for (iLoopAsteroid=0;iLoopAsteroid<12;iLoopAsteroid++)
-		{
-			// Is this causing the hanging?
-			DrawVectorObject((u16*)bmpPlayField,Asteroid[iLoopAsteroid],iHorizontalOffset);
-			Asteroid[iLoopAsteroid].RotationAngle+=Asteroid[iLoopAsteroid].RotationSpeed;
-			// Need to do some bounds checking here...
-			Asteroid[iLoopAsteroid].Position.x += Asteroid[iLoopAsteroid].MovementVector.x;
-			if (Asteroid[iLoopAsteroid].Position.x < 4000)
-			{
-				Asteroid[iLoopAsteroid].MovementVector.x = Asteroid[iLoopAsteroid].MovementVector.x*-1;
-			}
-			if (Asteroid[iLoopAsteroid].Position.x > 60000)
-			{
-				Asteroid[iLoopAsteroid].MovementVector.x = Asteroid[iLoopAsteroid].MovementVector.x*-1;
-			}
-			//Asteroid[iLoopAsteroid].Position.y += Asteroid[iLoopAsteroid].MovementVector.y;
-			if (Asteroid[iLoopAsteroid].Position.y < 2000)
-			{
-				Asteroid[iLoopAsteroid].MovementVector.y = Asteroid[iLoopAsteroid].MovementVector.y*-1;
-			}
-			if (Asteroid[iLoopAsteroid].Position.y > 12000)
-			{
-				Asteroid[iLoopAsteroid].MovementVector.y = Asteroid[iLoopAsteroid].MovementVector.y*-1;
-			}
+			SetSprite(SpriteList[iSpriteLoop].SpriteID, SpriteList[iSpriteLoop].BaseTile , 0, (u8)(SpriteList[iSpriteLoop].Position.x>>8), (u8)(SpriteList[iSpriteLoop].Position.y>>8), PAL_SPRITE + SpriteList[iSpriteLoop].SpriteType);
 		}
 
-		// Ship Sprite
-		if (JOYPAD & J_LEFT) PlayerOne.RotationAngle-=8;
-		if (JOYPAD & J_RIGHT) PlayerOne.RotationAngle+=8;
-		if (JOYPAD & J_B)
+
+		// Setup the qix object
+		// So, the Qix itself is a lot simpler than it first appears.
+		// Essentially, it's a list of lines, each starting from the end position of the last
+		// where the "first" line falls off the stack and is replaced at the end with a new one
+		// with a random(?) length and direction.
+		// Changing the length would essentially control the speed and overall size of the Qix
+		Qix.Origin.x=0;
+		Qix.Origin.y=0;
+		Qix.Position.x=0;
+		Qix.Position.y=0;
+		Qix.MovementVector.x=376;
+		Qix.MovementVector.y=32;
+		Qix.Points=12;
+		Qix.Scale=1;
+		Qix.RotationAngle=0;
+		Qix.RotationSpeed=0;
+		for (iLoopQix=0;iLoopQix<Qix.Points;iLoopQix++)
 		{
-			// Also, need to constrain the Movement Vector to a maximum velocity.
-			// I could do that in seperately in the x or y directions easily enough,
-			// Length of a vector is SQRT(x^2 + y^2)
-			// I don't need to calculate the square root, as I can work on the squared result.
-			//if (PlayerOne.MovementVector.x < 0)
-			//{
-			//	iVelocityX = (PlayerOne.MovementVector.x<<48 * -1);
-			//}
-			//else
-			//{
-			//	iVelocityX = (PlayerOne.MovementVector.x<<48);
-			//}
-			//iVelocityX = ((iVelocityX + (Cos(PlayerOne.RotationAngle+192))>>2) * (iVelocityX + (Cos(PlayerOne.RotationAngle+192))>>2));
-			//iVelocityY = ((PlayerOne.MovementVector.y + (Sin(PlayerOne.RotationAngle+192)))* (PlayerOne.MovementVector.y + (Sin(PlayerOne.RotationAngle+192))));
-			// This seems to jump rapidly to huge numbers? Which means it doesn't work at all.
-			// (which makes sense Iguess given that I'm using a 16 bit scale so it rapidly gets out of control)
-			//iVelocity = (u16)(iVelocityX>>8) + (u16)(iVelocityY>>8);
-
-			// Movement vector should grow or shrink by +/- 127 in any given frame?
-			if (PlayerOne.MovementVector.x + Cos(PlayerOne.RotationAngle+192) < 0)
-			{
-				iVelocityX = (u16)((PlayerOne.MovementVector.x + Cos(PlayerOne.RotationAngle+192)) * -1)>>8;
-			}
-			else
-			{
-				iVelocityX = (u16)((PlayerOne.MovementVector.x + Cos(PlayerOne.RotationAngle+192)))>>8;
-			}
-
-			if (PlayerOne.MovementVector.y + Sin(PlayerOne.RotationAngle+192) < 0)
-			{
-				iVelocityY = (u16)((PlayerOne.MovementVector.y + Sin(PlayerOne.RotationAngle+192)) * -1)>>8;
-			}
-			else
-			{
-				iVelocityY = (u16)((PlayerOne.MovementVector.y + Sin(PlayerOne.RotationAngle+192)))>>8;
-			}
-
-			// Bugger it. We can have maximum vertical velocity and maximum horizontal velocity. We can call it a gravity effect...
-
-			if (iVelocityX<8)
-			{
-				// Modify the movement vector by the angle.
-				// Because "zero" degrees is at right angles to "up", we need to rotate this by 270 degrees
-				// which on a 256 byte sine table is 192.
-				PlayerOne.MovementVector.x += (Cos(PlayerOne.RotationAngle+192));
-			}
-			if (iVelocityY<3)
-			{
-				PlayerOne.MovementVector.y += (Sin(PlayerOne.RotationAngle+192));
-			}
-		}
-		if (JOYPAD & J_A && bShoot)
-		{
-			// Fire a shot.
-			// Set the shot flag so that we don't get continuous fire. Got to make the player work for it...
-			// Might make it a timer rather than a single yes/no flag...
-			bShoot=1;
-		}
-		if (!(JOYPAD & J_A))
-		{
-			bShoot=0;
-		}
-		// Bounds checking? How do I constrain the player within the visible screen without breaking the immersion?
-		// Bitmap address [0] contains the bitmap width, and address[1] the bitmap height.
-		// So we can use that and just loop around to the opposite edge when we reach the side
-		// I don't need to worry about horizontal position as the player is now fixed to the centre of the screen.
-		//if (PlayerOne.Position.x<0) PlayerOne.Position.x=((u16*)bmpPlayField)[0];
-		//if (PlayerOne.Position.x>(((u16*)bmpPlayField)[0])) PlayerOne.Position.x=0;
-		//PlayerOne.Position.x += PlayerOne.MovementVector.x>>7;
-		iHorizontalOffset += PlayerOne.MovementVector.x>>7;
-		if (PlayerOne.Position.y<0) PlayerOne.Position.y=((u16*)bmpPlayField)[1];
-		if (PlayerOne.Position.y>((u16*)bmpPlayField)[1]) PlayerOne.Position.y=0;
-		PlayerOne.Position.y += PlayerOne.MovementVector.y>>7;
-		// Draw some random engine noise...
-		iEngineLoop=PlayerOne.Points-5;
-		// Only do this if the player is currently pressing thrust
-		while (iEngineLoop<PlayerOne.Points)
-		{
-			PlayerOne.VectorList[iEngineLoop+1].colour = (((QRandom()>>7) && (JOYPAD & J_UP)) * 3);
-			iEngineLoop++;
-		}
-		// And then draw the sprite
-		DrawVectorSprite((u16*)bmpPlayField, PlayerOne);
-
-		// Then copy the bitmap back into tile memory...
-		CopyBitmap((u16*)bmpPlayField, bgTileBase);
-
-		// Show the sprites...
-		for (iSpriteLoop=0;iSpriteLoop<12;iSpriteLoop++)
-		{
-			CopyAnimationFrame(Sprites, SpriteList[iSpriteLoop].BaseTile, 1, (SpriteList[iSpriteLoop].SpriteType << 4) + (SpriteList[iSpriteLoop].Direction << 2) + SpriteList[iSpriteLoop].Frame);
-			SetSpritePosition(SpriteList[iSpriteLoop].SpriteID, (u8)(SpriteList[iSpriteLoop].Position.x>>8)-iHorizontalOffset+4, (u8)(SpriteList[iSpriteLoop].Position.y>>8));
-			if (++SpriteList[iSpriteLoop].Frame>3) SpriteList[iSpriteLoop].Frame=0;
-			switch(SpriteList[iSpriteLoop].Direction)
-			{
-				case DIR_SOUTH:
-					SpriteList[iSpriteLoop].Position.y+=64;
-					break;
-				case DIR_NORTH:
-					SpriteList[iSpriteLoop].Position.y-=64;
-					break;
-				case DIR_WEST:
-					SpriteList[iSpriteLoop].Position.x-=128;
-					SpriteList[iSpriteLoop].Position.y = (u16)(HeightMap[((u8)(SpriteList[iSpriteLoop].Position.x>>8))+4]+4)<<8;
-					break;
-				case DIR_EAST:
-					SpriteList[iSpriteLoop].Position.x+=128;
-					SpriteList[iSpriteLoop].Position.y = (u16)(HeightMap[((u8)(SpriteList[iSpriteLoop].Position.x>>8))+4]+4)<<8;
-				default:
-					break;
-			}
+			Qix.VectorList[iLoopQix].x = 6000;
+			Qix.VectorList[iLoopQix].y = 0;
+			Qix.VectorList[iLoopQix].colour = 3;
 		}
 
-		// How many frames has all of this taken...
-		PrintString(SCR_1_PLANE, 0, 0, 18, "FPS:");
-		PrintDecimal(SCR_1_PLANE, 0, 4, 18, 60/(VBCounter-iStartFrame), 2);
+		// Set up the asteroids
+		for (iLoopAsteroid=0;iLoopAsteroid<DefenderoidsLevels[iCurrentLevel].AsteroidCount;iLoopAsteroid++)
+		{
+			Asteroid[iLoopAsteroid].Points = 7 + (QRandom()>>5);
+			for (iLoopAsteroidPoint=0;iLoopAsteroidPoint<Asteroid[iLoopAsteroid].Points-1;iLoopAsteroidPoint++)
+			{
+				Asteroid[iLoopAsteroid].VectorList[iLoopAsteroidPoint] = AsteroidTemplate[iLoopAsteroidPoint][QRandom()>>7];
+			}
+			// Make sure the asteroid is closed...
+			Asteroid[iLoopAsteroid].VectorList[iLoopAsteroidPoint] = Asteroid[iLoopAsteroid].VectorList[0];
+			Asteroid[iLoopAsteroid].Scale=3;
+			Asteroid[iLoopAsteroid].RotationSpeed=(Sin(QRandom())>>4)+1;
+			Asteroid[iLoopAsteroid].RotationAngle=Sin(QRandom());
+			//Asteroid[iLoopAsteroid].Position.x=((u16)QRandom())<<4;
+			//Asteroid[iLoopAsteroid].Position.y=((u16)QRandom())<<4;
+			Asteroid[iLoopAsteroid].MovementVector.x=QRandom();
+			Asteroid[iLoopAsteroid].MovementVector.y=QRandom();
+		}
 
-	}
+		// Set up the player
+		PlayerOne.Position.x = 72;
+		PlayerOne.Position.y = 66;
+		PlayerOne.MovementVector.x = 256;
+		PlayerOne.MovementVector.y = 0;
+		PlayerOne.Scale = 2;
+		PlayerOne.Origin.x = (PlayerOne.Scale * 4);
+		PlayerOne.Origin.y = (PlayerOne.Scale * 8);
+		PlayerOne.Points = 40;
+		PlayerOne.RotationAngle = 64;
+		PlayerOne.RotationSpeed = 0;
+		iLoopX=0;
+		while (iLoopX++<PlayerOne.Points)
+		{
+			PlayerOne.VectorList[iLoopX].x = PlayerSprite[iLoopX].x;
+			PlayerOne.VectorList[iLoopX].y = PlayerSprite[iLoopX].y;
+			PlayerOne.VectorList[iLoopX].colour = PlayerSprite[iLoopX].colour;
+		}
+
+		// Set up the horizontal offset.
+		iHorizontalOffset=127;
+
+		iLoopX=0;
+		iLoopY=0;
+		iLoopQix=0;
+		iCounter=0;
+		iVelocityX=0;
+		iVelocityY=0;
+		bShoot=0;
+
+		// Main level loop
+		while ((!(JOYPAD & J_OPTION)) && iLives>0 && DefenderoidsLevels[iCurrentLevel].InvaderCount>0)
+		{
+
+			iStartFrame=VBCounter;
+
+			//Reset the bitmap for every frame.
+			CreateBitmap((u16*)bmpPlayField, 144, 112);
+
+			// Draw the height map
+			for (iHeightMapLoop=0;iHeightMapLoop<143;iHeightMapLoop++)
+			{
+				SetPixel((u16*)bmpPlayField,iHeightMapLoop,HeightMap[iHorizontalOffset+iHeightMapLoop],3);
+			}
+
+			// Draw and animate the qix.
+			// This will be an "evil otto" style enemy that cannot be destroyed...
+			// I have to draw the Qix with an "absolute" position within the bitmap, as the offset doesn't work?
+			// Presumably, because the position is (0,0) and does not move.
+			// Anyway, I'm keeping this in here because I like it - not really sure what it's going to do in terms of gameplay yet.
+			/*
+			DrawVectorObjectAbsolute((u16*)bmpPlayField,Qix);
+			// Overwrite the "oldest" point in the list with a new random point.
+			Qix.VectorList[iLoopQix].x = (((s16)QRandom())>>3)+(Qix.MovementVector.x>>5);
+			Qix.VectorList[iLoopQix].y = (((s16)QRandom())>>3)+(Qix.MovementVector.y>>5);
+			Qix.VectorList[iLoopQix].colour = 3;
+			if (++iLoopQix >= Qix.Points)
+			{
+				iLoopQix = 0;
+			}
+			// Move the Qix towards the player
+			Qix.MovementVector.x++;
+			Qix.MovementVector.y++;
+			*/
+
+			// Move and rotate the asteroids
+			for (iLoopAsteroid=0;iLoopAsteroid<DefenderoidsLevels[iCurrentLevel].AsteroidCount;iLoopAsteroid++)
+			{
+				// Is this causing the hanging?
+				DrawVectorObject((u16*)bmpPlayField,Asteroid[iLoopAsteroid],iHorizontalOffset);
+				Asteroid[iLoopAsteroid].RotationAngle+=Asteroid[iLoopAsteroid].RotationSpeed;
+				// Need to do some bounds checking here...
+				Asteroid[iLoopAsteroid].Position.x += Asteroid[iLoopAsteroid].MovementVector.x;
+				if (Asteroid[iLoopAsteroid].Position.x < 4000)
+				{
+					Asteroid[iLoopAsteroid].MovementVector.x = Asteroid[iLoopAsteroid].MovementVector.x*-1;
+				}
+				if (Asteroid[iLoopAsteroid].Position.x > 60000)
+				{
+					Asteroid[iLoopAsteroid].MovementVector.x = Asteroid[iLoopAsteroid].MovementVector.x*-1;
+				}
+				//Asteroid[iLoopAsteroid].Position.y += Asteroid[iLoopAsteroid].MovementVector.y;
+				if (Asteroid[iLoopAsteroid].Position.y < 2000)
+				{
+					Asteroid[iLoopAsteroid].MovementVector.y = Asteroid[iLoopAsteroid].MovementVector.y*-1;
+				}
+				if (Asteroid[iLoopAsteroid].Position.y > 12000)
+				{
+					Asteroid[iLoopAsteroid].MovementVector.y = Asteroid[iLoopAsteroid].MovementVector.y*-1;
+				}
+			}
+
+			// Ship Sprite
+			if (JOYPAD & J_LEFT) PlayerOne.RotationAngle-=8;
+			if (JOYPAD & J_RIGHT) PlayerOne.RotationAngle+=8;
+			if (JOYPAD & J_B)
+			{
+				// Also, need to constrain the Movement Vector to a maximum velocity.
+				// I could do that in seperately in the x or y directions easily enough,
+				// Length of a vector is SQRT(x^2 + y^2)
+				// I don't need to calculate the square root, as I can work on the squared result.
+				//if (PlayerOne.MovementVector.x < 0)
+				//{
+				//	iVelocityX = (PlayerOne.MovementVector.x<<48 * -1);
+				//}
+				//else
+				//{
+				//	iVelocityX = (PlayerOne.MovementVector.x<<48);
+				//}
+				//iVelocityX = ((iVelocityX + (Cos(PlayerOne.RotationAngle+192))>>2) * (iVelocityX + (Cos(PlayerOne.RotationAngle+192))>>2));
+				//iVelocityY = ((PlayerOne.MovementVector.y + (Sin(PlayerOne.RotationAngle+192)))* (PlayerOne.MovementVector.y + (Sin(PlayerOne.RotationAngle+192))));
+				// This seems to jump rapidly to huge numbers? Which means it doesn't work at all.
+				// (which makes sense Iguess given that I'm using a 16 bit scale so it rapidly gets out of control)
+				//iVelocity = (u16)(iVelocityX>>8) + (u16)(iVelocityY>>8);
+
+				// Movement vector should grow or shrink by +/- 127 in any given frame?
+				if (PlayerOne.MovementVector.x + Cos(PlayerOne.RotationAngle+192) < 0)
+				{
+					iVelocityX = (u16)((PlayerOne.MovementVector.x + Cos(PlayerOne.RotationAngle+192)) * -1)>>8;
+				}
+				else
+				{
+					iVelocityX = (u16)((PlayerOne.MovementVector.x + Cos(PlayerOne.RotationAngle+192)))>>8;
+				}
+
+				if (PlayerOne.MovementVector.y + Sin(PlayerOne.RotationAngle+192) < 0)
+				{
+					iVelocityY = (u16)((PlayerOne.MovementVector.y + Sin(PlayerOne.RotationAngle+192)) * -1)>>8;
+				}
+				else
+				{
+					iVelocityY = (u16)((PlayerOne.MovementVector.y + Sin(PlayerOne.RotationAngle+192)))>>8;
+				}
+
+				// Bugger it. We can have maximum vertical velocity and maximum horizontal velocity. We can call it a gravity effect...
+
+				if (iVelocityX<8)
+				{
+					// Modify the movement vector by the angle.
+					// Because "zero" degrees is at right angles to "up", we need to rotate this by 270 degrees
+					// which on a 256 byte sine table is 192.
+					PlayerOne.MovementVector.x += (Cos(PlayerOne.RotationAngle+192));
+				}
+				if (iVelocityY<3)
+				{
+					PlayerOne.MovementVector.y += (Sin(PlayerOne.RotationAngle+192));
+				}
+			}
+			if (JOYPAD & J_A && bShoot)
+			{
+				// Fire a shot.
+				// Set the shot flag so that we don't get continuous fire. Got to make the player work for it...
+				// Might make it a timer rather than a single yes/no flag...
+				bShoot=1;
+			}
+			if (!(JOYPAD & J_A))
+			{
+				bShoot=0;
+			}
+			// Bounds checking? How do I constrain the player within the visible screen without breaking the immersion?
+			// Bitmap address [0] contains the bitmap width, and address[1] the bitmap height.
+			// So we can use that and just loop around to the opposite edge when we reach the side
+			// I don't need to worry about horizontal position as the player is now fixed to the centre of the screen.
+			//if (PlayerOne.Position.x<0) PlayerOne.Position.x=((u16*)bmpPlayField)[0];
+			//if (PlayerOne.Position.x>(((u16*)bmpPlayField)[0])) PlayerOne.Position.x=0;
+			//PlayerOne.Position.x += PlayerOne.MovementVector.x>>7;
+			iHorizontalOffset += PlayerOne.MovementVector.x>>7;
+			if (PlayerOne.Position.y<0) PlayerOne.Position.y=((u16*)bmpPlayField)[1];
+			if (PlayerOne.Position.y>((u16*)bmpPlayField)[1]) PlayerOne.Position.y=0;
+			PlayerOne.Position.y += PlayerOne.MovementVector.y>>7;
+			// Draw some random engine noise...
+			iEngineLoop=PlayerOne.Points-5;
+			// Only do this if the player is currently pressing thrust
+			while (iEngineLoop<PlayerOne.Points)
+			{
+				PlayerOne.VectorList[iEngineLoop+1].colour = (((QRandom()>>7) && (JOYPAD & J_B)) * 3);
+				iEngineLoop++;
+			}
+			// And then draw the sprite
+			DrawVectorSprite((u16*)bmpPlayField, PlayerOne);
+
+			// Then copy the bitmap back into tile memory...
+			CopyBitmap((u16*)bmpPlayField, bgTileBase);
+
+			// Show the sprites...
+			for (iSpriteLoop=0;iSpriteLoop<(DefenderoidsLevels[iCurrentLevel].InvaderCount+DefenderoidsLevels[iCurrentLevel].LemmanoidCount);iSpriteLoop++)
+			{
+				CopyAnimationFrame(Sprites, SpriteList[iSpriteLoop].BaseTile, 1, (SpriteList[iSpriteLoop].SpriteType << 4) + (SpriteList[iSpriteLoop].Direction << 2) + SpriteList[iSpriteLoop].Frame);
+				SetSpritePosition(SpriteList[iSpriteLoop].SpriteID, (u8)(SpriteList[iSpriteLoop].Position.x>>8)-iHorizontalOffset+4, (u8)(SpriteList[iSpriteLoop].Position.y>>8));
+				if (++SpriteList[iSpriteLoop].Frame>3) SpriteList[iSpriteLoop].Frame=0;
+				switch(SpriteList[iSpriteLoop].Direction)
+				{
+					case DIR_SOUTH:
+						SpriteList[iSpriteLoop].Position.y+=64;
+						break;
+					case DIR_NORTH:
+						SpriteList[iSpriteLoop].Position.y-=64;
+						break;
+					case DIR_WEST:
+						SpriteList[iSpriteLoop].Position.x-=128;
+						SpriteList[iSpriteLoop].Position.y = (u16)(HeightMap[((u8)(SpriteList[iSpriteLoop].Position.x>>8))+4]+4)<<8;
+						break;
+					case DIR_EAST:
+						SpriteList[iSpriteLoop].Position.x+=128;
+						SpriteList[iSpriteLoop].Position.y = (u16)(HeightMap[((u8)(SpriteList[iSpriteLoop].Position.x>>8))+4]+4)<<8;
+					default:
+						break;
+				}
+			}
+
+			// How many frames has all of this taken...
+			PrintString(SCR_1_PLANE, 0, 0, 18, "FPS:");
+			PrintDecimal(SCR_1_PLANE, 0, 4, 18, 60/(VBCounter-iStartFrame), 2);
+
+		} // Level Loop
+
+		// Need to clear down any still open sprites between levels
+		for (iSpriteLoop=0;iSpriteLoop<64;iSpriteLoop++)
+		{
+			SetSprite(iSpriteLoop, 0, 0, 0, 0, PAL_SPRITE);
+		}
+
+	} // Lives Loop
 }
 
 void DrawVectorObjectAbsolute(u16 * BitmapAddress, VECTOROBJECT VectorObject)
