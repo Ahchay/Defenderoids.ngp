@@ -483,6 +483,9 @@ void DefenderoidsMain()
 						Shots[iLoopShot].MovementVector.x = ((s16)Cos(Shots[iLoopShot].RotationAngle+192))<<3;
 						Shots[iLoopShot].MovementVector.y = ((s16)Sin(Shots[iLoopShot].RotationAngle+192))<<3;
 
+						// We'll use RotationSpeed to control the life of the shot. Kill it when it hits 128...
+						Shots[iLoopShot].RotationSpeed=0;
+
 						iLoopShot = 5;
 					}
 				}
@@ -505,7 +508,8 @@ void DefenderoidsMain()
 				if (Shots[iLoopShot].Scale == 1)
 				{
 					// Destroy the shot when it leaves the playfield.
-					if (Shots[iLoopShot].Position.x < 0 | Shots[iLoopShot].Position.x > bmpPlayField[0] | Shots[iLoopShot].Position.y < 0 | Shots[iLoopShot].Position.y > bmpPlayField[1])
+					Shots[iLoopShot].RotationSpeed++;
+					if (Shots[iLoopShot].RotationSpeed == 15 |Shots[iLoopShot].Position.y < 0 | Shots[iLoopShot].Position.y > bmpPlayField[1])
 					{
 						Shots[iLoopShot].Scale = 0;
 					}
@@ -517,10 +521,23 @@ void DefenderoidsMain()
 						// Only do this if the player is currently pressing thrust
 						while (iEngineLoop<Shots[iLoopShot].Points)
 						{
-							Shots[iLoopShot].VectorList[iEngineLoop+1].colour = (((QRandom()>>7) && (JOYPAD & J_B)) * 3);
+							Shots[iLoopShot].VectorList[iEngineLoop+1].colour = (((QRandom()>>7)) * 3);
 							iEngineLoop++;
 						}
 					}
+
+					if (Shots[iLoopShot].Position.x < 0)
+					{
+						Shots[iLoopShot].Position.x = 255;
+					}
+					else
+					{
+						if (Shots[iLoopShot].Position.x > 255)
+						{
+							Shots[iLoopShot].Position.x = 0;
+						}
+					}
+
 					DrawVectorSprite((u16*)bmpPlayField, Shots[iLoopShot], iHorizontalOffset);
 				}
 			}
@@ -703,6 +720,7 @@ void DrawVectorSprite(u16 * BitmapAddress, VECTOROBJECT VectorObject, u8 iHorizo
 	s8 cCos;
 	u8 iLoopX;
 	u8 iLoopY;
+	u8 iPositionX;
 
 	cSin = Sin(VectorObject.RotationAngle);
 	cCos = Cos(VectorObject.RotationAngle);
@@ -721,7 +739,15 @@ void DrawVectorSprite(u16 * BitmapAddress, VECTOROBJECT VectorObject, u8 iHorizo
 			iTempY = ((iStartX * cSin)>>7) + ((iStartY * cCos)>>7);
 
 			// translate point back to it's original position:
-			iStartX = VectorObject.Position.x+iTempX-iHorizontalOffset;
+			// x = -32767...32767
+			// iTempX=0
+			// iHorizontalX=72
+			// Only display when Position.x - iHorizontalOffset > 72 and <144
+			// Need to restict "Position.x" to a 256 byte value?
+			// Which needs to wrap around at 0/256
+			// Will MOD() do that?
+			iPositionX = VectorObject.Position.x % 256;
+			iStartX = (iPositionX-iHorizontalOffset)+iTempX;
 			iStartY = VectorObject.Position.y+iTempY;
 
 			// Quick and dirty method to scale up the individual points
