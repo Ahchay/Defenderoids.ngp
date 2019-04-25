@@ -1,8 +1,8 @@
 #include "ngpc.h"
 #include "library.h"
 #include "Defenderoids.h"
-#include "VectorObjects.h"
 #include "Tiles\Sprites.c"
+#include "VectorObjects.h"
 /*
 
 So, this started as a defender/asteroids mash-up concept, but has now turned into a bitmap playground...
@@ -198,6 +198,7 @@ void DefenderoidsMain()
 	u8 iHorizontalOffset;
 	u8 iCurrentLevel;
 	u8 iLives;
+	u8 iLoopShot;
 	bool bShoot;
 	VECTOROBJECT Asteroid[] = {
 									{{6,6},{2000,8192},0,0,0,0,0,0},
@@ -214,7 +215,7 @@ void DefenderoidsMain()
 									{{6,6},{58000,2048},0,0,0,0,0,0}
 								};
 
-	VECTOROBJECT Shot[] = {
+	VECTOROBJECT Shots[] = {
 								{{1,1},{0,0},{0,0},1,{{1,1}},0,0,0},
 								{{1,1},{0,0},{0,0},1,{{1,1}},0,0,0},
 								{{1,1},{0,0},{0,0},1,{{1,1}},0,0,0},
@@ -334,11 +335,11 @@ void DefenderoidsMain()
 		// Set up the player
 		PlayerOne.Position.x = 72;
 		PlayerOne.Position.y = 66;
-		PlayerOne.MovementVector.x = 256;
+		PlayerOne.MovementVector.x = 0; // Use 256 to set up an initial drift...;
 		PlayerOne.MovementVector.y = 0;
 		PlayerOne.Scale = 2;
-		PlayerOne.Origin.x = (PlayerOne.Scale * 4);
-		PlayerOne.Origin.y = (PlayerOne.Scale * 8);
+		PlayerOne.Origin.x = 4;
+		PlayerOne.Origin.y = 8;
 		PlayerOne.Points = 40;
 		PlayerOne.RotationAngle = 64;
 		PlayerOne.RotationSpeed = 0;
@@ -351,7 +352,7 @@ void DefenderoidsMain()
 		}
 
 		// Set up the horizontal offset.
-		iHorizontalOffset=127;
+		iHorizontalOffset=128;
 
 		iLoopX=0;
 		iLoopY=0;
@@ -359,7 +360,7 @@ void DefenderoidsMain()
 		iCounter=0;
 		iVelocityX=0;
 		iVelocityY=0;
-		bShoot=0;
+		bShoot=(JOYPAD & J_A);
 
 		// Main level loop
 		while ((!(JOYPAD & J_OPTION)) && iLives>0 && DefenderoidsLevels[iCurrentLevel].InvaderCount>0)
@@ -395,33 +396,6 @@ void DefenderoidsMain()
 			Qix.MovementVector.x++;
 			Qix.MovementVector.y++;
 			*/
-
-			// Move and rotate the asteroids
-			for (iLoopAsteroid=0;iLoopAsteroid<DefenderoidsLevels[iCurrentLevel].AsteroidCount;iLoopAsteroid++)
-			{
-				// Is this causing the hanging?
-				DrawVectorObject((u16*)bmpPlayField,Asteroid[iLoopAsteroid],iHorizontalOffset);
-				Asteroid[iLoopAsteroid].RotationAngle+=Asteroid[iLoopAsteroid].RotationSpeed;
-				// Need to do some bounds checking here...
-				Asteroid[iLoopAsteroid].Position.x += Asteroid[iLoopAsteroid].MovementVector.x;
-				if (Asteroid[iLoopAsteroid].Position.x < 4000)
-				{
-					Asteroid[iLoopAsteroid].MovementVector.x = Asteroid[iLoopAsteroid].MovementVector.x*-1;
-				}
-				if (Asteroid[iLoopAsteroid].Position.x > 60000)
-				{
-					Asteroid[iLoopAsteroid].MovementVector.x = Asteroid[iLoopAsteroid].MovementVector.x*-1;
-				}
-				//Asteroid[iLoopAsteroid].Position.y += Asteroid[iLoopAsteroid].MovementVector.y;
-				if (Asteroid[iLoopAsteroid].Position.y < 2000)
-				{
-					Asteroid[iLoopAsteroid].MovementVector.y = Asteroid[iLoopAsteroid].MovementVector.y*-1;
-				}
-				if (Asteroid[iLoopAsteroid].Position.y > 12000)
-				{
-					Asteroid[iLoopAsteroid].MovementVector.y = Asteroid[iLoopAsteroid].MovementVector.y*-1;
-				}
-			}
 
 			// Ship Sprite
 			if (JOYPAD & J_LEFT) PlayerOne.RotationAngle-=8;
@@ -465,7 +439,7 @@ void DefenderoidsMain()
 					iVelocityY = (u16)((PlayerOne.MovementVector.y + Sin(PlayerOne.RotationAngle+192)))>>8;
 				}
 
-				// Bugger it. We can have maximum vertical velocity and maximum horizontal velocity. We can call it a gravity effect...
+				// Bugger it. We can have separate maximum vertical and horizontal velocities. We can call it a gravity effect...
 
 				if (iVelocityX<8)
 				{
@@ -482,22 +456,76 @@ void DefenderoidsMain()
 			if (JOYPAD & J_A && bShoot)
 			{
 				// Fire a shot.
+				// Essentially, find an "empty" shot in the array, and copy the template "shot" vector into it.
+				// MovementVector will be based on tr whe current ship vector with a multiplier to give the velocity. Hopefully one that never out-runs the ship.
 				// Set the shot flag so that we don't get continuous fire. Got to make the player work for it...
+				// Find the first "empty" shot - scale will be set to zero if it's not valid.
+				for (iLoopShot=0;iLoopShot<4;iLoopShot++)
+				{
+					if (Shots[iLoopShot].Scale == 0)
+					{
+						Shots[iLoopShot].Scale = 1;
+						// Copy the shot object from the template
+						Shots[iLoopShot].Points = 10;
+						iLoopX=0;
+						while (iLoopX++<Shots[iLoopShot].Points)
+						{
+							Shots[iLoopShot].VectorList[iLoopX].x = Shot[iLoopX].x;
+							Shots[iLoopShot].VectorList[iLoopX].y = Shot[iLoopX].y;
+							Shots[iLoopShot].VectorList[iLoopX].colour = Shot[iLoopX].colour;
+						}
+						Shots[iLoopShot].Origin.x = 3;
+						Shots[iLoopShot].Origin.y = 3;
+						Shots[iLoopShot].Position.x = PlayerOne.Position.x + iHorizontalOffset;
+						Shots[iLoopShot].Position.y = PlayerOne.Position.y;
+						Shots[iLoopShot].RotationAngle = PlayerOne.RotationAngle;
+						// Give the shots a bit of speed. Should be faster than the ship but in the same direction as the ship is "facing" (rather than moving)
+						Shots[iLoopShot].MovementVector.x = ((s16)Cos(Shots[iLoopShot].RotationAngle+192))<<3;
+						Shots[iLoopShot].MovementVector.y = ((s16)Sin(Shots[iLoopShot].RotationAngle+192))<<3;
+
+						iLoopShot = 5;
+					}
+				}
 				// Might make it a timer rather than a single yes/no flag...
-				bShoot=1;
+				bShoot=0;
 			}
 			if (!(JOYPAD & J_A))
 			{
-				bShoot=0;
+				bShoot=1;
 			}
 			// Bounds checking? How do I constrain the player within the visible screen without breaking the immersion?
 			// Bitmap address [0] contains the bitmap width, and address[1] the bitmap height.
 			// So we can use that and just loop around to the opposite edge when we reach the side
 			// I don't need to worry about horizontal position as the player is now fixed to the centre of the screen.
-			//if (PlayerOne.Position.x<0) PlayerOne.Position.x=((u16*)bmpPlayField)[0];
-			//if (PlayerOne.Position.x>(((u16*)bmpPlayField)[0])) PlayerOne.Position.x=0;
-			//PlayerOne.Position.x += PlayerOne.MovementVector.x>>7;
+
 			iHorizontalOffset += PlayerOne.MovementVector.x>>7;
+			// Display the shots first
+			for (iLoopShot=0;iLoopShot<4;iLoopShot++)
+			{
+				if (Shots[iLoopShot].Scale == 1)
+				{
+					// Destroy the shot when it leaves the playfield.
+					if (Shots[iLoopShot].Position.x < 0 | Shots[iLoopShot].Position.x > bmpPlayField[0] | Shots[iLoopShot].Position.y < 0 | Shots[iLoopShot].Position.y > bmpPlayField[1])
+					{
+						Shots[iLoopShot].Scale = 0;
+					}
+					else
+					{
+						Shots[iLoopShot].Position.x += Shots[iLoopShot].MovementVector.x >> 7;
+						Shots[iLoopShot].Position.y += Shots[iLoopShot].MovementVector.y >> 7;
+						iEngineLoop=Shots[iLoopShot].Points-5;
+						// Only do this if the player is currently pressing thrust
+						while (iEngineLoop<Shots[iLoopShot].Points)
+						{
+							Shots[iLoopShot].VectorList[iEngineLoop+1].colour = (((QRandom()>>7) && (JOYPAD & J_B)) * 3);
+							iEngineLoop++;
+						}
+					}
+					DrawVectorSprite((u16*)bmpPlayField, Shots[iLoopShot], iHorizontalOffset);
+				}
+			}
+
+			// And then the player ship
 			if (PlayerOne.Position.y<0) PlayerOne.Position.y=((u16*)bmpPlayField)[1];
 			if (PlayerOne.Position.y>((u16*)bmpPlayField)[1]) PlayerOne.Position.y=0;
 			PlayerOne.Position.y += PlayerOne.MovementVector.y>>7;
@@ -509,8 +537,37 @@ void DefenderoidsMain()
 				PlayerOne.VectorList[iEngineLoop+1].colour = (((QRandom()>>7) && (JOYPAD & J_B)) * 3);
 				iEngineLoop++;
 			}
-			// And then draw the sprite
-			DrawVectorSprite((u16*)bmpPlayField, PlayerOne);
+			DrawVectorSpriteAbsolute((u16*)bmpPlayField, PlayerOne);
+
+			// And finally the asteroids
+			// Move and rotate the asteroids
+			for (iLoopAsteroid=0;iLoopAsteroid<DefenderoidsLevels[iCurrentLevel].AsteroidCount;iLoopAsteroid++)
+			{
+				// Is this causing the hanging?
+				DrawVectorObject((u16*)bmpPlayField,Asteroid[iLoopAsteroid],iHorizontalOffset);
+				Asteroid[iLoopAsteroid].RotationAngle+=Asteroid[iLoopAsteroid].RotationSpeed;
+				// Need to do some bounds checking here...
+				Asteroid[iLoopAsteroid].Position.x += Asteroid[iLoopAsteroid].MovementVector.x;
+				if (Asteroid[iLoopAsteroid].Position.x < 4000)
+				{
+					Asteroid[iLoopAsteroid].MovementVector.x = Asteroid[iLoopAsteroid].MovementVector.x*-1;
+				}
+				if (Asteroid[iLoopAsteroid].Position.x > 60000)
+				{
+					Asteroid[iLoopAsteroid].MovementVector.x = Asteroid[iLoopAsteroid].MovementVector.x*-1;
+				}
+				//Asteroid[iLoopAsteroid].Position.y += Asteroid[iLoopAsteroid].MovementVector.y;
+				if (Asteroid[iLoopAsteroid].Position.y < 2000)
+				{
+					Asteroid[iLoopAsteroid].MovementVector.y = Asteroid[iLoopAsteroid].MovementVector.y*-1;
+				}
+				if (Asteroid[iLoopAsteroid].Position.y > 12000)
+				{
+					Asteroid[iLoopAsteroid].MovementVector.y = Asteroid[iLoopAsteroid].MovementVector.y*-1;
+				}
+			}
+
+			// And any explosions
 
 			// Then copy the bitmap back into tile memory...
 			CopyBitmap((u16*)bmpPlayField, bgTileBase);
@@ -542,8 +599,10 @@ void DefenderoidsMain()
 			}
 
 			// How many frames has all of this taken...
-			PrintString(SCR_1_PLANE, 0, 0, 18, "FPS:");
+			PrintString(SCR_1_PLANE, 0, 0, 18, "HZL:");
 			PrintDecimal(SCR_1_PLANE, 0, 4, 18, 60/(VBCounter-iStartFrame), 2);
+			PrintDecimal(SCR_1_PLANE, 0, 4, 17, iHorizontalOffset, 3);
+			PrintDecimal(SCR_1_PLANE, 0, 8, 17, Shots[0].Position.x, 8);
 
 		} // Level Loop
 
@@ -586,8 +645,8 @@ void DrawVectorObject(u16 * BitmapAddress, VECTOROBJECT VectorObject, u8 iHorizo
 		{
 
 			// Modifier here is to find the centre of rotation
-			iStartX = (iStartX*VectorObject.Scale)-VectorObject.Origin.x;
-			iStartY = (iStartY*VectorObject.Scale)-VectorObject.Origin.y;
+			iStartX = (iStartX-VectorObject.Origin.x)*VectorObject.Scale;
+			iStartY = (iStartY-VectorObject.Origin.y)*VectorObject.Scale;
 
 			// rotate point.
 			iTempX = ((iStartX * cCos)>>7) - ((iStartY * cSin)>>7);
@@ -595,22 +654,22 @@ void DrawVectorObject(u16 * BitmapAddress, VECTOROBJECT VectorObject, u8 iHorizo
 
 			// translate point back to it's original position:
 			// Modify back from the centre of rotation above, and then add the X & Y co-ordinates
-			iStartX = (VectorObject.Position.x>>7)-iHorizontalOffset+iTempX+VectorObject.Origin.x;
+			iStartX = (VectorObject.Position.x>>7)+iTempX-iHorizontalOffset;
 			//if (iStartX<0) iStartX=0;
-			iStartY = (VectorObject.Position.y>>7)+iTempY+VectorObject.Origin.y;
+			iStartY = (VectorObject.Position.y>>7)+iTempY;
 			//if (iStartY<0) iStartY=0;
 
-			iEndX = (VectorObject.VectorList[iPoint].x*VectorObject.Scale)-VectorObject.Origin.x;
-			iEndY = (VectorObject.VectorList[iPoint].y*VectorObject.Scale)-VectorObject.Origin.y;
+			iEndX = (VectorObject.VectorList[iPoint].x-VectorObject.Origin.x)*VectorObject.Scale;
+			iEndY = (VectorObject.VectorList[iPoint].y-VectorObject.Origin.y)*VectorObject.Scale;
 
 			// rotate point
 			iTempX = ((iEndX * cCos)>>7) - ((iEndY * cSin)>>7);
 			iTempY = ((iEndX * cSin)>>7) + ((iEndY * cCos)>>7);
 
 			// translate point back:
-			iEndX = (VectorObject.Position.x>>7)-iHorizontalOffset+iTempX+VectorObject.Origin.x;
+			iEndX = (VectorObject.Position.x>>7)-iHorizontalOffset+iTempX;
 			//if (iEndX<0) iEndX=0;
-			iEndY = (VectorObject.Position.y>>7)+iTempY+VectorObject.Origin.y;
+			iEndY = (VectorObject.Position.y>>7)+iTempY;
 			//if (iEndY<0) iEndY=0;
 
 			// Bounds check to ensure that rotated points are still within the bitmap boundary
@@ -624,7 +683,14 @@ void DrawVectorObject(u16 * BitmapAddress, VECTOROBJECT VectorObject, u8 iHorizo
 	}
 }
 
-void DrawVectorSprite(u16 * BitmapAddress, VECTOROBJECT VectorObject)
+void DrawVectorSpriteAbsolute(u16 * BitmapAddress, VECTOROBJECT VectorObject)
+{
+	DrawVectorSprite(BitmapAddress, VectorObject, 0);
+}
+// Only works when HorizontalOffset is between 0 and 72?
+// i.e. half the bitmap width. So, it must have something to do with that...
+// Might be affecting the drawobject above as well...
+void DrawVectorSprite(u16 * BitmapAddress, VECTOROBJECT VectorObject, u8 iHorizontalOffset)
 {
 	s16 iStartX;
 	s16 iStartY;
@@ -641,25 +707,22 @@ void DrawVectorSprite(u16 * BitmapAddress, VECTOROBJECT VectorObject)
 	cSin = Sin(VectorObject.RotationAngle);
 	cCos = Cos(VectorObject.RotationAngle);
 
-	iStartX = VectorObject.VectorList[0].x;
-	iStartY = VectorObject.VectorList[0].y;
-
 	while (iPoint++<VectorObject.Points)
 	{
 
 		if (PlayerSprite[iPoint].colour != 0)
 		{
 
-			iStartX = (PlayerSprite[iPoint].x*VectorObject.Scale)-VectorObject.Origin.x;
-			iStartY = (PlayerSprite[iPoint].y*VectorObject.Scale)-VectorObject.Origin.y;
+			iStartX = (PlayerSprite[iPoint].x-VectorObject.Origin.x)*VectorObject.Scale;
+			iStartY = (PlayerSprite[iPoint].y-VectorObject.Origin.y)*VectorObject.Scale;
 
 			// rotate point.
 			iTempX = ((iStartX * cCos)>>7) - ((iStartY * cSin)>>7);
 			iTempY = ((iStartX * cSin)>>7) + ((iStartY * cCos)>>7);
 
 			// translate point back to it's original position:
-			iStartX = VectorObject.Position.x+iTempX; //+VectorObject.Origin.x;
-			iStartY = VectorObject.Position.y+iTempY; //+VectorObject.Origin.y;
+			iStartX = VectorObject.Position.x+iTempX-iHorizontalOffset;
+			iStartY = VectorObject.Position.y+iTempY;
 
 			// Quick and dirty method to scale up the individual points
 			for (iLoopX=0;iLoopX<VectorObject.Scale;iLoopX++)

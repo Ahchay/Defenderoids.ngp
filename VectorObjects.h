@@ -1,3 +1,4 @@
+
 const COLOURPOINT AsteroidTemplate[14][2] = {{{6,0,1},{6,2,1}},{{8,1,1},{7,2,1}},{{9,2,1},{8,3,1}},{{10,4,1},{8,4,1}},{{9,6,1},{8,5,1}},{{8,7,1},{7,6,1}},{{6,8,1},{6,6,1}},{{4,8,1},{5,6,1}},{{2,7,1},{3,5,1}},{{1,6,1},{2,5,1}},{{0,4,1},{2,4,1}},{{1,2,1},{2,3,1}},{{2,1,1},{3,2,1}},{{4,0,1},{5,2,1}}};
 
 const u8 HeightMap[] = {
@@ -52,6 +53,17 @@ const COLOURPOINT PlayerSprite[] = {
 							                  {2,12,1},{3,12,1},{4,12,1},
 							                  {2,13,1},         {4,13,1}
 						};
+
+const COLOURPOINT Shot[] = {
+	        {3,0,2},
+	        {3,1,1},
+	        {3,2,1},
+	        {3,3,1},
+	        {3,4,1},
+	// Again, five elements for engine noise
+	{2,5,0},{3,5,0},{2,5,0},
+	{2,6,0},        {4,6,0}
+};
 
 // VECTOROBJECT Constructor
 // {{ORIGINX,ORIGINY},{POSITIONX,POSITIONY},{MOVEMENTVECTORX,MOVEMENTVECTORY},POINTS,{colourpoints},SCALE,ROTATIONANGLE,ROTATIONSPEED}
