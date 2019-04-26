@@ -441,14 +441,14 @@ void DefenderoidsMain()
 
 				// Bugger it. We can have separate maximum vertical and horizontal velocities. We can call it a gravity effect...
 
-				if (iVelocityX<8)
+				if (iVelocityX<3)
 				{
 					// Modify the movement vector by the angle.
 					// Because "zero" degrees is at right angles to "up", we need to rotate this by 270 degrees
 					// which on a 256 byte sine table is 192.
 					PlayerOne.MovementVector.x += (Cos(PlayerOne.RotationAngle+192));
 				}
-				if (iVelocityY<3)
+				if (iVelocityY<2)
 				{
 					PlayerOne.MovementVector.y += (Sin(PlayerOne.RotationAngle+192));
 				}
@@ -480,8 +480,8 @@ void DefenderoidsMain()
 						Shots[iLoopShot].Position.y = PlayerOne.Position.y;
 						Shots[iLoopShot].RotationAngle = PlayerOne.RotationAngle;
 						// Give the shots a bit of speed. Should be faster than the ship but in the same direction as the ship is "facing" (rather than moving)
-						Shots[iLoopShot].MovementVector.x = ((s16)Cos(Shots[iLoopShot].RotationAngle+192))<<3;
-						Shots[iLoopShot].MovementVector.y = ((s16)Sin(Shots[iLoopShot].RotationAngle+192))<<3;
+						Shots[iLoopShot].MovementVector.x = ((s16)Cos(Shots[iLoopShot].RotationAngle+192))<<4;
+						Shots[iLoopShot].MovementVector.y = ((s16)Sin(Shots[iLoopShot].RotationAngle+192))<<4;
 
 						// We'll use RotationSpeed to control the life of the shot. Kill it when it hits 128...
 						Shots[iLoopShot].RotationSpeed=0;
