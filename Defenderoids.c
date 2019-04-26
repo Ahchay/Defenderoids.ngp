@@ -209,10 +209,10 @@ void DefenderoidsMain()
 									{{6,6},{19000,2048},0,0,0,0,0,0},
 									{{6,6},{25000,2048},0,0,0,0,0,0},
 									{{6,6},{30000,7634},0,0,0,0,0,0},
-									{{6,6},{36000,7763},0,0,0,0,0,0},
-									{{6,6},{43000,2048},0,0,0,0,0,0},
-									{{6,6},{51000,10048},0,0,0,0,0,0},
-									{{6,6},{58000,2048},0,0,0,0,0,0}
+									{{6,6},{23000,7763},0,0,0,0,0,0},
+									{{6,6},{31000,2048},0,0,0,0,0,0},
+									{{6,6},{12000,10048},0,0,0,0,0,0},
+									{{6,6},{8000,2048},0,0,0,0,0,0}
 								};
 
 	VECTOROBJECT Shots[] = {
@@ -223,7 +223,7 @@ void DefenderoidsMain()
 							};
 
 	LEVEL DefenderoidsLevels[] = {
-									{"Start me up",5,5,2},
+									{"Start me up",5,5,7},
 									{"Getting Harder",12,12,3}
 								};
 
@@ -561,27 +561,27 @@ void DefenderoidsMain()
 			for (iLoopAsteroid=0;iLoopAsteroid<DefenderoidsLevels[iCurrentLevel].AsteroidCount;iLoopAsteroid++)
 			{
 				// Is this causing the hanging?
-				DrawVectorObject((u16*)bmpPlayField,Asteroid[iLoopAsteroid],iHorizontalOffset);
 				Asteroid[iLoopAsteroid].RotationAngle+=Asteroid[iLoopAsteroid].RotationSpeed;
 				// Need to do some bounds checking here...
 				Asteroid[iLoopAsteroid].Position.x += Asteroid[iLoopAsteroid].MovementVector.x;
-				if (Asteroid[iLoopAsteroid].Position.x < 4000)
+				if (Asteroid[iLoopAsteroid].Position.x < 256)
 				{
 					Asteroid[iLoopAsteroid].MovementVector.x = Asteroid[iLoopAsteroid].MovementVector.x*-1;
 				}
-				if (Asteroid[iLoopAsteroid].Position.x > 60000)
+				if (Asteroid[iLoopAsteroid].Position.x > (((u16)bmpPlayField[0])-256)<<7)
 				{
 					Asteroid[iLoopAsteroid].MovementVector.x = Asteroid[iLoopAsteroid].MovementVector.x*-1;
 				}
-				//Asteroid[iLoopAsteroid].Position.y += Asteroid[iLoopAsteroid].MovementVector.y;
-				if (Asteroid[iLoopAsteroid].Position.y < 2000)
+				Asteroid[iLoopAsteroid].Position.y += Asteroid[iLoopAsteroid].MovementVector.y;
+				if (Asteroid[iLoopAsteroid].Position.y < 256)
 				{
 					Asteroid[iLoopAsteroid].MovementVector.y = Asteroid[iLoopAsteroid].MovementVector.y*-1;
 				}
-				if (Asteroid[iLoopAsteroid].Position.y > 12000)
+				if (Asteroid[iLoopAsteroid].Position.y > (((u16)bmpPlayField[1])-256)<<7)
 				{
 					Asteroid[iLoopAsteroid].MovementVector.y = Asteroid[iLoopAsteroid].MovementVector.y*-1;
 				}
+				DrawVectorObject((u16*)bmpPlayField,Asteroid[iLoopAsteroid],iHorizontalOffset);
 			}
 
 			// And any explosions
@@ -645,6 +645,8 @@ void DrawVectorObject(u16 * BitmapAddress, VECTOROBJECT VectorObject, u8 iHorizo
 	s16 iEndY;
 	s16 iTempX;
 	s16 iTempY;
+	s16 sPositionX;
+	u8 iPositionX;
 	u8 iPoint = 0;
 	s8 cSin;
 	s8 cCos;
@@ -654,6 +656,9 @@ void DrawVectorObject(u16 * BitmapAddress, VECTOROBJECT VectorObject, u8 iHorizo
 
 		cSin = Sin(VectorObject.RotationAngle);
 		cCos = Cos(VectorObject.RotationAngle);
+
+		sPositionX = VectorObject.Position.x>>7;
+		iPositionX = sPositionX % 256;
 
 		iStartX = VectorObject.VectorList[0].x;
 		iStartY = VectorObject.VectorList[0].y;
@@ -671,7 +676,7 @@ void DrawVectorObject(u16 * BitmapAddress, VECTOROBJECT VectorObject, u8 iHorizo
 
 			// translate point back to it's original position:
 			// Modify back from the centre of rotation above, and then add the X & Y co-ordinates
-			iStartX = (VectorObject.Position.x>>7)+iTempX-iHorizontalOffset;
+			iStartX = (iPositionX-iHorizontalOffset)+iTempX;
 			//if (iStartX<0) iStartX=0;
 			iStartY = (VectorObject.Position.y>>7)+iTempY;
 			//if (iStartY<0) iStartY=0;
@@ -684,7 +689,7 @@ void DrawVectorObject(u16 * BitmapAddress, VECTOROBJECT VectorObject, u8 iHorizo
 			iTempY = ((iEndX * cSin)>>7) + ((iEndY * cCos)>>7);
 
 			// translate point back:
-			iEndX = (VectorObject.Position.x>>7)-iHorizontalOffset+iTempX;
+			iEndX = (iPositionX-iHorizontalOffset)+iTempX;
 			//if (iEndX<0) iEndX=0;
 			iEndY = (VectorObject.Position.y>>7)+iTempY;
 			//if (iEndY<0) iEndY=0;
@@ -694,6 +699,7 @@ void DrawVectorObject(u16 * BitmapAddress, VECTOROBJECT VectorObject, u8 iHorizo
 			{
 				DrawLine((u16*)BitmapAddress,(u8)(iStartX),(u8)(iStartY),(u8)(iEndX),(u8)(iEndY),VectorObject.VectorList[iPoint].colour);
 			}
+
 			iStartX = VectorObject.VectorList[iPoint].x;
 			iStartY = VectorObject.VectorList[iPoint].y;
 		}
