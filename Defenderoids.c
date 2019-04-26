@@ -216,10 +216,10 @@ void DefenderoidsMain()
 								};
 
 	VECTOROBJECT Shots[] = {
-								{{1,1},{0,0},{0,0},1,{{1,1}},0,0,0},
-								{{1,1},{0,0},{0,0},1,{{1,1}},0,0,0},
-								{{1,1},{0,0},{0,0},1,{{1,1}},0,0,0},
-								{{1,1},{0,0},{0,0},1,{{1,1}},0,0,0}
+								{{1,1},{0,0},{0,0},1,{{0,0,0},{0,0,0},{0,0,0},{0,0,0},{0,0,0},{0,0,0},{0,0,0},{0,0,0},{0,0,0},{0,0,0},{0,0,0},{0,0,0},{0,0,0},{0,0,0},{0,0,0},{0,0,0}},0,0,0},
+								{{1,1},{0,0},{0,0},1,{{0,0,0},{0,0,0},{0,0,0},{0,0,0},{0,0,0},{0,0,0},{0,0,0},{0,0,0},{0,0,0},{0,0,0},{0,0,0},{0,0,0},{0,0,0},{0,0,0},{0,0,0},{0,0,0}},0,0,0},
+								{{1,1},{0,0},{0,0},1,{{0,0,0},{0,0,0},{0,0,0},{0,0,0},{0,0,0},{0,0,0},{0,0,0},{0,0,0},{0,0,0},{0,0,0},{0,0,0},{0,0,0},{0,0,0},{0,0,0},{0,0,0},{0,0,0}},0,0,0},
+								{{1,1},{0,0},{0,0},1,{{0,0,0},{0,0,0},{0,0,0},{0,0,0},{0,0,0},{0,0,0},{0,0,0},{0,0,0},{0,0,0},{0,0,0},{0,0,0},{0,0,0},{0,0,0},{0,0,0},{0,0,0},{0,0,0}},0,0,0}
 							};
 
 	LEVEL DefenderoidsLevels[] = {
@@ -344,11 +344,12 @@ void DefenderoidsMain()
 		PlayerOne.RotationAngle = 64;
 		PlayerOne.RotationSpeed = 0;
 		iLoopX=0;
-		while (iLoopX++<PlayerOne.Points)
+		while (iLoopX<PlayerOne.Points)
 		{
 			PlayerOne.VectorList[iLoopX].x = PlayerSprite[iLoopX].x;
 			PlayerOne.VectorList[iLoopX].y = PlayerSprite[iLoopX].y;
 			PlayerOne.VectorList[iLoopX].colour = PlayerSprite[iLoopX].colour;
+			iLoopX++;
 		}
 
 		// Set up the horizontal offset.
@@ -466,15 +467,16 @@ void DefenderoidsMain()
 					{
 						Shots[iLoopShot].Scale = 1;
 						// Copy the shot object from the template
-						Shots[iLoopShot].Points = 10;
+						Shots[iLoopShot].Points = 16;
 						iLoopX=0;
-						while (iLoopX++<Shots[iLoopShot].Points)
+						while (iLoopX<Shots[iLoopShot].Points)
 						{
 							Shots[iLoopShot].VectorList[iLoopX].x = Shot[iLoopX].x;
 							Shots[iLoopShot].VectorList[iLoopX].y = Shot[iLoopX].y;
 							Shots[iLoopShot].VectorList[iLoopX].colour = Shot[iLoopX].colour;
+							iLoopX++;
 						}
-						Shots[iLoopShot].Origin.x = 3;
+						Shots[iLoopShot].Origin.x = 1;
 						Shots[iLoopShot].Origin.y = 3;
 						Shots[iLoopShot].Position.x = PlayerOne.Position.x + iHorizontalOffset;
 						Shots[iLoopShot].Position.y = PlayerOne.Position.y;
@@ -527,14 +529,16 @@ void DefenderoidsMain()
 								POINT pEndShot;
 								POINT pStartSprite;
 								POINT pEndSprite;
-								// Offset the shot by the line origin.
-								pStartShot.x = Shots[iLoopShot].Position.x - Shots[iLoopShot].Origin.x;
-								pStartShot.y = Shots[iLoopShot].Position.y - Shots[iLoopShot].Origin.y;
+								// Offset the shot by the line origin. Hang on, that won't work without applying the rotation...
+								// So the position is about as much as we can hope for. The Origin "should" be in the centre of the object anyway,
+								// so this will still go centre to centre
+								pStartShot.x = Shots[iLoopShot].Position.x; // - Shots[iLoopShot].Origin.x;
+								pStartShot.y = Shots[iLoopShot].Position.y; // - Shots[iLoopShot].Origin.y;
 								pEndShot.x = pStartShot.x + (Shots[iLoopShot].MovementVector.x >> 7);
 								pEndShot.y = pStartShot.y + (Shots[iLoopShot].MovementVector.y >> 7);
 								// Offset the sprite to the centre of the box
-								pStartSprite.x = (SpriteList[iSpriteLoop].Position.x >> 8) - 4;
-								pStartSprite.y = (SpriteList[iSpriteLoop].Position.y >> 8) - 4;
+								pStartSprite.x = (SpriteList[iSpriteLoop].Position.x >> 8) - 8;
+								pStartSprite.y = (SpriteList[iSpriteLoop].Position.y >> 8) - 8;
 								pEndSprite.x = pStartSprite.x + 8;
 								pEndSprite.y = pStartSprite.y + 8;
 
@@ -573,7 +577,7 @@ void DefenderoidsMain()
 							// Only do this if the player is currently pressing thrust
 							while (iEngineLoop<Shots[iLoopShot].Points)
 							{
-								Shots[iLoopShot].VectorList[iEngineLoop+1].colour = (((QRandom()>>7)) * 3);
+								Shots[iLoopShot].VectorList[iEngineLoop].colour = (((QRandom()>>7)) * 3);
 								iEngineLoop++;
 							}
 						}
@@ -602,11 +606,11 @@ void DefenderoidsMain()
 			if (PlayerOne.Position.y>((u16*)bmpPlayField)[1]) PlayerOne.Position.y=0;
 			PlayerOne.Position.y += PlayerOne.MovementVector.y>>7;
 			// Draw some random engine noise...
-			iEngineLoop=PlayerOne.Points-5;
+			iEngineLoop=PlayerOne.Points-4;
 			// Only do this if the player is currently pressing thrust
-			while (iEngineLoop<PlayerOne.Points)
+			while (iEngineLoop<=PlayerOne.Points)
 			{
-				PlayerOne.VectorList[iEngineLoop+1].colour = (((QRandom()>>7) && (JOYPAD & J_B)) * 3);
+				PlayerOne.VectorList[iEngineLoop].colour = (((QRandom()>>7) && (JOYPAD & J_B)) * 3);
 				iEngineLoop++;
 			}
 			DrawVectorSpriteAbsolute((u16*)bmpPlayField, PlayerOne);
@@ -792,14 +796,14 @@ void DrawVectorSprite(u16 * BitmapAddress, VECTOROBJECT VectorObject, u8 iHorizo
 	cSin = Sin(VectorObject.RotationAngle);
 	cCos = Cos(VectorObject.RotationAngle);
 
-	while (iPoint++<VectorObject.Points)
+	while (iPoint<VectorObject.Points)
 	{
 
-		if (PlayerSprite[iPoint].colour != 0)
+		if (VectorObject.VectorList[iPoint].colour != 0)
 		{
 
-			iStartX = (PlayerSprite[iPoint].x-VectorObject.Origin.x)*VectorObject.Scale;
-			iStartY = (PlayerSprite[iPoint].y-VectorObject.Origin.y)*VectorObject.Scale;
+			iStartX = (VectorObject.VectorList[iPoint].x-VectorObject.Origin.x)*VectorObject.Scale;
+			iStartY = (VectorObject.VectorList[iPoint].y-VectorObject.Origin.y)*VectorObject.Scale;
 
 			// rotate point.
 			iTempX = ((iStartX * cCos)>>7) - ((iStartY * cSin)>>7);
@@ -826,7 +830,7 @@ void DrawVectorSprite(u16 * BitmapAddress, VECTOROBJECT VectorObject, u8 iHorizo
 				}
 			}
 		}
-
+		iPoint++;
 	}
 }
 

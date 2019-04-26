@@ -54,15 +54,18 @@ const COLOURPOINT PlayerSprite[] = {
 							                  {2,13,1},         {4,13,1}
 						};
 
+// Why does everything to one side of this object not get displayed? Really odd.
 const COLOURPOINT Shot[] = {
-	        {3,0,2},
-	        {3,1,1},
-	        {3,2,1},
-	        {3,3,1},
-	        {3,4,1},
+    	        {1,0,2},
+    	        {1,1,1},
+    	        {1,2,1},
+    	        {1,3,1},
+    	{0,4,1},{1,4,1},{2,4,1},
+        {0,5,1},{1,5,1},{2,5,1},
+                {1,6,1},
 	// Again, five elements for engine noise
-	{2,5,0},{3,5,0},{2,5,0},
-	{2,6,0},        {4,6,0}
+		{0,6,0},        {2,6,0},
+		{0,7,0},{1,7,0},{2,7,0}
 };
 
 // VECTOROBJECT Constructor
