@@ -64,3 +64,4 @@ void DrawVectorObjectAbsolute(u16 * BitmapAddress, VECTOROBJECT VectorObject);
 void DrawVectorObject(u16 * BitmapAddress, VECTOROBJECT VectorObject,u8 iHorizontalOffset);
 void DrawVectorSpriteAbsolute(u16 * BitmapAddress, VECTOROBJECT VectorObject);
 void DrawVectorSprite(u16 * BitmapAddress, VECTOROBJECT VectorObject,u8 iHorizontalOffset);
+bool LineIntersect(POINT l1, POINT l2, POINT b1, POINT b2);

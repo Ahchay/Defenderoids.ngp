@@ -223,7 +223,7 @@ void DefenderoidsMain()
 							};
 
 	LEVEL DefenderoidsLevels[] = {
-									{"Start me up",5,5,7},
+									{"Start me up",12,5,7},
 									{"Getting Harder",12,12,3}
 								};
 
@@ -268,7 +268,7 @@ void DefenderoidsMain()
 			SpriteList[iSpriteLoop].Position.x = ((u16)QRandom())<<10;
 			SpriteList[iSpriteLoop].Position.y = 0;
 			SpriteList[iSpriteLoop].SpriteID = iSpriteLoop;
-			SpriteList[iSpriteLoop].SpriteType = 0; // 0 or 1
+			SpriteList[iSpriteLoop].SpriteType = Invader; // 0 or 1
 			SpriteList[iSpriteLoop].Direction = DIR_SOUTH;
 			SpriteList[iSpriteLoop].BaseTile = spTileBase + SpriteList[iSpriteLoop].SpriteID;
 			SpriteList[iSpriteLoop].Frame = 0;
@@ -281,7 +281,7 @@ void DefenderoidsMain()
 			SpriteList[iSpriteLoop].Position.x = ((u16)QRandom())<<10;
 			SpriteList[iSpriteLoop].Position.y = (u16)(HeightMap[((u8)(SpriteList[iSpriteLoop].Position.x>>8))+4]+4)<<8;
 			SpriteList[iSpriteLoop].SpriteID = iSpriteLoop;
-			SpriteList[iSpriteLoop].SpriteType = 1;
+			SpriteList[iSpriteLoop].SpriteType = Lemmanoid;
 			SpriteList[iSpriteLoop].Direction = 1 + ((QRandom()>>7)<<1); // NORTH or SOUTH for SpriteType 0, EAST/WEST for Sprite Type 1
 			SpriteList[iSpriteLoop].BaseTile = spTileBase + SpriteList[iSpriteLoop].SpriteID;
 			SpriteList[iSpriteLoop].Frame = 0;
@@ -515,30 +515,85 @@ void DefenderoidsMain()
 					}
 					else
 					{
-						Shots[iLoopShot].Position.x += Shots[iLoopShot].MovementVector.x >> 7;
-						Shots[iLoopShot].Position.y += Shots[iLoopShot].MovementVector.y >> 7;
-						iEngineLoop=Shots[iLoopShot].Points-5;
-						// Only do this if the player is currently pressing thrust
-						while (iEngineLoop<Shots[iLoopShot].Points)
+
+						// Calculate any collisions...
+						for (iSpriteLoop=0;iSpriteLoop<(DefenderoidsLevels[iCurrentLevel].InvaderCount);iSpriteLoop++)
 						{
-							Shots[iLoopShot].VectorList[iEngineLoop+1].colour = (((QRandom()>>7)) * 3);
-							iEngineLoop++;
+							// If any sprite exists along the bullet's movement vector, then it's dead.
+							// Shots and sprites are in different scales, so need to be translated to match
+							if (SpriteList[iSpriteLoop].SpriteType == Invader)
+							{
+								POINT pStartShot;
+								POINT pEndShot;
+								POINT pStartSprite;
+								POINT pEndSprite;
+								// Offset the shot by the line origin.
+								pStartShot.x = Shots[iLoopShot].Position.x - Shots[iLoopShot].Origin.x;
+								pStartShot.y = Shots[iLoopShot].Position.y - Shots[iLoopShot].Origin.y;
+								pEndShot.x = pStartShot.x + (Shots[iLoopShot].MovementVector.x >> 7);
+								pEndShot.y = pStartShot.y + (Shots[iLoopShot].MovementVector.y >> 7);
+								// Offset the sprite to the centre of the box
+								pStartSprite.x = (SpriteList[iSpriteLoop].Position.x >> 8) - 4;
+								pStartSprite.y = (SpriteList[iSpriteLoop].Position.y >> 8) - 4;
+								pEndSprite.x = pStartSprite.x + 8;
+								pEndSprite.y = pStartSprite.y + 8;
+
+								/*
+								PrintString(SCR_1_PLANE, 0, 5, 15, "START   END");
+								PrintString(SCR_1_PLANE, 0, 0, 16, "SHOT");
+								PrintDecimal(SCR_1_PLANE, 0, 5, 16, pStartShot.x,3);
+								PrintString(SCR_1_PLANE, 0, 8, 16, "/");
+								PrintDecimal(SCR_1_PLANE, 0, 9, 16, pStartShot.y,3);
+								PrintDecimal(SCR_1_PLANE, 0, 13, 16, pEndShot.x,3);
+								PrintString(SCR_1_PLANE, 0, 16, 16, "/");
+								PrintDecimal(SCR_1_PLANE, 0, 17, 16, pEndShot.y,3);
+								PrintString(SCR_1_PLANE, 0, 0, 17, "SPRT");
+								PrintDecimal(SCR_1_PLANE, 0, 5, 17, pStartSprite.x,3);
+								PrintString(SCR_1_PLANE, 0, 8, 17, "/");
+								PrintDecimal(SCR_1_PLANE, 0, 9, 17, pStartSprite.y,3);
+								PrintDecimal(SCR_1_PLANE, 0, 13, 17, pEndSprite.x,3);
+								PrintString(SCR_1_PLANE, 0, 16, 17, "/");
+								PrintDecimal(SCR_1_PLANE, 0, 17, 17, pEndSprite.y,3);
+								*/
+								if (LineIntersect(Shots[iLoopShot].Position, pEndShot, pStartSprite, pEndSprite) == 1)
+								{
+									PrintString(SCR_1_PLANE, 0, 0, 15, "BANG");
+									SpriteList[iSpriteLoop].SpriteType = NullSprite;
+									SetSprite(SpriteList[iSpriteLoop].SpriteID, 0, 0, 0, 0, PAL_SPRITE);
+									Shots[iLoopShot].Scale = 0;
+									iSpriteLoop = DefenderoidsLevels[iCurrentLevel].InvaderCount + 1;
+								}
+							}
+						}
+						if (Shots[iLoopShot].Scale == 1)
+						{
+							Shots[iLoopShot].Position.x += Shots[iLoopShot].MovementVector.x >> 7;
+							Shots[iLoopShot].Position.y += Shots[iLoopShot].MovementVector.y >> 7;
+							iEngineLoop=Shots[iLoopShot].Points-5;
+							// Only do this if the player is currently pressing thrust
+							while (iEngineLoop<Shots[iLoopShot].Points)
+							{
+								Shots[iLoopShot].VectorList[iEngineLoop+1].colour = (((QRandom()>>7)) * 3);
+								iEngineLoop++;
+							}
 						}
 					}
-
-					if (Shots[iLoopShot].Position.x < 0)
+					if (Shots[iLoopShot].Scale == 1)
 					{
-						Shots[iLoopShot].Position.x = 255;
-					}
-					else
-					{
-						if (Shots[iLoopShot].Position.x > 255)
+						if (Shots[iLoopShot].Position.x < 0)
 						{
-							Shots[iLoopShot].Position.x = 0;
+							Shots[iLoopShot].Position.x = 255;
 						}
-					}
+						else
+						{
+							if (Shots[iLoopShot].Position.x > 255)
+							{
+								Shots[iLoopShot].Position.x = 0;
+							}
+						}
 
-					DrawVectorSprite((u16*)bmpPlayField, Shots[iLoopShot], iHorizontalOffset);
+						DrawVectorSprite((u16*)bmpPlayField, Shots[iLoopShot], iHorizontalOffset);
+					}
 				}
 			}
 
@@ -592,34 +647,40 @@ void DefenderoidsMain()
 			// Show the sprites...
 			for (iSpriteLoop=0;iSpriteLoop<(DefenderoidsLevels[iCurrentLevel].InvaderCount+DefenderoidsLevels[iCurrentLevel].LemmanoidCount);iSpriteLoop++)
 			{
-				CopyAnimationFrame(Sprites, SpriteList[iSpriteLoop].BaseTile, 1, (SpriteList[iSpriteLoop].SpriteType << 4) + (SpriteList[iSpriteLoop].Direction << 2) + SpriteList[iSpriteLoop].Frame);
-				SetSpritePosition(SpriteList[iSpriteLoop].SpriteID, (u8)(SpriteList[iSpriteLoop].Position.x>>8)-iHorizontalOffset+4, (u8)(SpriteList[iSpriteLoop].Position.y>>8));
-				if (++SpriteList[iSpriteLoop].Frame>3) SpriteList[iSpriteLoop].Frame=0;
-				switch(SpriteList[iSpriteLoop].Direction)
+				if (!(SpriteList[iSpriteLoop].SpriteType == NullSprite))
 				{
-					case DIR_SOUTH:
-						SpriteList[iSpriteLoop].Position.y+=64;
-						break;
-					case DIR_NORTH:
-						SpriteList[iSpriteLoop].Position.y-=64;
-						break;
-					case DIR_WEST:
-						SpriteList[iSpriteLoop].Position.x-=128;
-						SpriteList[iSpriteLoop].Position.y = (u16)(HeightMap[((u8)(SpriteList[iSpriteLoop].Position.x>>8))+4]+4)<<8;
-						break;
-					case DIR_EAST:
-						SpriteList[iSpriteLoop].Position.x+=128;
-						SpriteList[iSpriteLoop].Position.y = (u16)(HeightMap[((u8)(SpriteList[iSpriteLoop].Position.x>>8))+4]+4)<<8;
-					default:
-						break;
+					CopyAnimationFrame(Sprites, SpriteList[iSpriteLoop].BaseTile, 1, (SpriteList[iSpriteLoop].SpriteType << 4) + (SpriteList[iSpriteLoop].Direction << 2) + SpriteList[iSpriteLoop].Frame);
+					SetSpritePosition(SpriteList[iSpriteLoop].SpriteID, (u8)(SpriteList[iSpriteLoop].Position.x>>8)-iHorizontalOffset+4, (u8)(SpriteList[iSpriteLoop].Position.y>>8));
+					if (++SpriteList[iSpriteLoop].Frame>3) SpriteList[iSpriteLoop].Frame=0;
+					switch(SpriteList[iSpriteLoop].Direction)
+					{
+						case DIR_SOUTH:
+							SpriteList[iSpriteLoop].Position.y+=64;
+							break;
+						case DIR_NORTH:
+							SpriteList[iSpriteLoop].Position.y-=64;
+							break;
+						case DIR_WEST:
+							SpriteList[iSpriteLoop].Position.x-=128;
+							SpriteList[iSpriteLoop].Position.y = (u16)(HeightMap[((u8)(SpriteList[iSpriteLoop].Position.x>>8))+4]+4)<<8;
+							break;
+						case DIR_EAST:
+							SpriteList[iSpriteLoop].Position.x+=128;
+							SpriteList[iSpriteLoop].Position.y = (u16)(HeightMap[((u8)(SpriteList[iSpriteLoop].Position.x>>8))+4]+4)<<8;
+						default:
+							break;
+					}
 				}
 			}
 
 			// How many frames has all of this taken...
-			PrintString(SCR_1_PLANE, 0, 0, 18, "HZL:");
+			PrintString(SCR_1_PLANE, 0, 0, 18, "FPS:");
 			PrintDecimal(SCR_1_PLANE, 0, 4, 18, 60/(VBCounter-iStartFrame), 2);
+			/*
+			PrintString(SCR_1_PLANE, 0, 0, 17, "HZL:");
 			PrintDecimal(SCR_1_PLANE, 0, 4, 17, iHorizontalOffset, 3);
 			PrintDecimal(SCR_1_PLANE, 0, 8, 17, Shots[0].Position.x, 8);
+			*/
 
 		} // Level Loop
 
@@ -767,4 +828,98 @@ void DrawVectorSprite(u16 * BitmapAddress, VECTOROBJECT VectorObject, u8 iHorizo
 		}
 
 	}
+}
+
+bool LineIntersect(POINT l1, POINT l2, POINT b1, POINT b2)
+{
+	//Stolen wholesale from gamedev...
+	s16 xinc1;
+	s16 xinc2;
+	s16 yinc1;
+	s16 yinc2;
+	s16 den;
+	s16 num;
+	s16 numadd;
+	s16 numpixels;
+	s16 curpixel;
+	s16 deltax;
+	s16 deltay;
+	s16 x;
+	s16 y;
+
+
+	if (l2.x >= l1.x)
+		deltax = l2.x - l1.x;        // The difference between the x's
+	else
+		deltax = l1.x - l2.x;
+	if (l2.y>=l1.y)
+		deltay = l2.y - l1.y;        // The difference between the y's
+	else
+		deltay = l1.y - l2.y;
+
+	x = l1.x;                       // Start x off at the first pixel
+	y = l1.y;                       // Start y off at the first pixel
+
+	if (l2.x >= l1.x)                 // The x-values are increasing
+	{
+		xinc1 = 1;
+		xinc2 = 1;
+	}
+	else                          // The x-values are decreasing
+	{
+		xinc1 = -1;
+		xinc2 = -1;
+	}
+
+	if (l2.y >= l1.y)                 // The y-values are increasing
+	{
+		yinc1 = 1;
+		yinc2 = 1;
+	}
+	else                          // The y-values are decreasing
+	{
+		yinc1 = -1;
+		yinc2 = -1;
+	}
+
+	if (deltax >= deltay)         // There is at least one x-value for every y-value
+	{
+		xinc1 = 0;                  // Don't change the x when numerator >= denominator
+		yinc2 = 0;                  // Don't change the y for every iteration
+		den = deltax;
+		num = deltax / 2;
+		numadd = deltay;
+		numpixels = deltax;         // There are more x-values than y-values
+	}
+	else                          // There is at least one y-value for every x-value
+	{
+		xinc2 = 0;                  // Don't change the x for every iteration
+		yinc1 = 0;                  // Don't change the y when numerator >= denominator
+		den = deltay;
+		num = deltay / 2;
+		numadd = deltax;
+		numpixels = deltay;         // There are more y-values than x-values
+	}
+
+	for (curpixel = 0; curpixel <= numpixels; curpixel++)
+	{
+		// Check current point against the rectangle
+		if (x >= b1.x && x <=b2.x && y>=b1.y && y<=b2.y)
+		{
+			// point is inside the bounds of the box. We've hit something!
+			return 1;
+		}
+
+		num += numadd;              // Increase the numerator by the top of the fraction
+		if (num >= den)             // Check if numerator >= denominator
+		{
+			num -= den;               // Calculate the new numerator value
+			x += xinc1;               // Change the x as appropriate
+			y += yinc1;               // Change the y as appropriate
+		}
+		x += xinc2;                 // Change the x as appropriate
+		y += yinc2;                 // Change the y as appropriate
+	}
+
+	return 0;
 }
