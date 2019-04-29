@@ -650,9 +650,9 @@ void DefenderoidsMain()
 			{
 				if (Explosions[iLoopExplosion].Scale == 1)
 				{
-					// Destroy the Explosion when it leaves the playfield.
+					// Destroy the Explosion after a few frames
 					Explosions[iLoopExplosion].RotationSpeed++;
-					if (Explosions[iLoopExplosion].RotationSpeed == 15)
+					if (Explosions[iLoopExplosion].RotationSpeed == 7)
 					{
 						Explosions[iLoopExplosion].Scale = 0;
 					}
@@ -660,9 +660,8 @@ void DefenderoidsMain()
 					{
 						for (iLoopExplosionPoint=0;iLoopExplosionPoint<Explosions[iLoopExplosion].Points;iLoopExplosionPoint++)
 						{
-							Explosions[iLoopExplosion].VectorList[iLoopExplosionPoint].x = (Explosions[iLoopExplosion].VectorList[iLoopExplosionPoint].x * Cos(iLoopExplosionPoint<<4)>>7) - (Explosions[iLoopExplosion].VectorList[iLoopExplosionPoint].y * Sin(iLoopExplosionPoint<<4)>>7);
-							Explosions[iLoopExplosion].VectorList[iLoopExplosionPoint].y = (Explosions[iLoopExplosion].VectorList[iLoopExplosionPoint].x * Sin(iLoopExplosionPoint<<4)>>7) + (Explosions[iLoopExplosion].VectorList[iLoopExplosionPoint].y * Cos(iLoopExplosionPoint<<4)>>7);
-
+							Explosions[iLoopExplosion].VectorList[iLoopExplosionPoint].x = (Explosions[iLoopExplosion].VectorList[iLoopExplosionPoint].x * Cos(iLoopExplosionPoint<<5)>>7) - (Explosions[iLoopExplosion].VectorList[iLoopExplosionPoint].y * Sin(iLoopExplosionPoint<<5)>>7);
+							Explosions[iLoopExplosion].VectorList[iLoopExplosionPoint].y = (Explosions[iLoopExplosion].VectorList[iLoopExplosionPoint].x * Sin(iLoopExplosionPoint<<5)>>7) + (Explosions[iLoopExplosion].VectorList[iLoopExplosionPoint].y * Cos(iLoopExplosionPoint<<5)>>7);
 						}
 						DrawVectorSprite((u16*)bmpPlayField, Explosions[iLoopExplosion], iHorizontalOffset);
 					}
