@@ -36,6 +36,7 @@ const u8 HeightMap[] = {
 							102,101,100,99,100,101,100,101
 						};
 
+// The Galaga ship - Gyaraga apparently (https://galaga.fandom.com/wiki/Gyaraga)
 const COLOURPOINT PlayerSprite[] = {
 							                           {3, 0,1},
 							                           {3, 1,2},
@@ -55,17 +56,22 @@ const COLOURPOINT PlayerSprite[] = {
 						};
 
 // Why does everything to one side of this object not get displayed? Really odd.
+// Something to do with the Origin? Changing that to .x=2 seems to sort it?
 const COLOURPOINT Shot[] = {
     	        {1,0,2},
     	        {1,1,1},
     	        {1,2,1},
     	        {1,3,1},
-    	{0,4,1},{1,4,1},{2,4,1},
-        {0,5,1},{1,5,1},{2,5,1},
-                {1,6,1},
+    	        {1,4,1},
+                {1,5,1},
+        {0,5,1},{1,6,1},{2,5,1},
+        {0,7,1},        {2,7,1},
 	// Again, five elements for engine noise
-		{0,6,0},        {2,6,0},
-		{0,7,0},{1,7,0},{2,7,0}
+				{1,8,0},
+				{1,9,0},
+				{1,10,0},
+				{1,11,0},
+				{1,12,0}
 };
 
 // VECTOROBJECT Constructor

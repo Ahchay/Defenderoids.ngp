@@ -199,6 +199,8 @@ void DefenderoidsMain()
 	u8 iCurrentLevel;
 	u8 iLives;
 	u8 iLoopShot;
+	u8 iLoopExplosion;
+	u8 iLoopExplosionPoint;
 	bool bShoot;
 	VECTOROBJECT Asteroid[] = {
 									{{6,6},{2000,8192},0,0,0,0,0,0},
@@ -221,6 +223,17 @@ void DefenderoidsMain()
 								{{1,1},{0,0},{0,0},1,{{0,0,0},{0,0,0},{0,0,0},{0,0,0},{0,0,0},{0,0,0},{0,0,0},{0,0,0},{0,0,0},{0,0,0},{0,0,0},{0,0,0},{0,0,0},{0,0,0},{0,0,0},{0,0,0}},0,0,0},
 								{{1,1},{0,0},{0,0},1,{{0,0,0},{0,0,0},{0,0,0},{0,0,0},{0,0,0},{0,0,0},{0,0,0},{0,0,0},{0,0,0},{0,0,0},{0,0,0},{0,0,0},{0,0,0},{0,0,0},{0,0,0},{0,0,0}},0,0,0}
 							};
+
+	VECTOROBJECT Explosions[] = {
+								{{1,1},{0,0},{0,0},1,{{0,0,0},{0,0,0},{0,0,0},{0,0,0},{0,0,0},{0,0,0},{0,0,0},{0,0,0},{0,0,0},{0,0,0},{0,0,0},{0,0,0},{0,0,0},{0,0,0},{0,0,0},{0,0,0}},0,0,0},
+								{{1,1},{0,0},{0,0},1,{{0,0,0},{0,0,0},{0,0,0},{0,0,0},{0,0,0},{0,0,0},{0,0,0},{0,0,0},{0,0,0},{0,0,0},{0,0,0},{0,0,0},{0,0,0},{0,0,0},{0,0,0},{0,0,0}},0,0,0},
+								{{1,1},{0,0},{0,0},1,{{0,0,0},{0,0,0},{0,0,0},{0,0,0},{0,0,0},{0,0,0},{0,0,0},{0,0,0},{0,0,0},{0,0,0},{0,0,0},{0,0,0},{0,0,0},{0,0,0},{0,0,0},{0,0,0}},0,0,0},
+								{{1,1},{0,0},{0,0},1,{{0,0,0},{0,0,0},{0,0,0},{0,0,0},{0,0,0},{0,0,0},{0,0,0},{0,0,0},{0,0,0},{0,0,0},{0,0,0},{0,0,0},{0,0,0},{0,0,0},{0,0,0},{0,0,0}},0,0,0},
+								{{1,1},{0,0},{0,0},1,{{0,0,0},{0,0,0},{0,0,0},{0,0,0},{0,0,0},{0,0,0},{0,0,0},{0,0,0},{0,0,0},{0,0,0},{0,0,0},{0,0,0},{0,0,0},{0,0,0},{0,0,0},{0,0,0}},0,0,0},
+								{{1,1},{0,0},{0,0},1,{{0,0,0},{0,0,0},{0,0,0},{0,0,0},{0,0,0},{0,0,0},{0,0,0},{0,0,0},{0,0,0},{0,0,0},{0,0,0},{0,0,0},{0,0,0},{0,0,0},{0,0,0},{0,0,0}},0,0,0},
+								{{1,1},{0,0},{0,0},1,{{0,0,0},{0,0,0},{0,0,0},{0,0,0},{0,0,0},{0,0,0},{0,0,0},{0,0,0},{0,0,0},{0,0,0},{0,0,0},{0,0,0},{0,0,0},{0,0,0},{0,0,0},{0,0,0}},0,0,0},
+								{{1,1},{0,0},{0,0},1,{{0,0,0},{0,0,0},{0,0,0},{0,0,0},{0,0,0},{0,0,0},{0,0,0},{0,0,0},{0,0,0},{0,0,0},{0,0,0},{0,0,0},{0,0,0},{0,0,0},{0,0,0},{0,0,0}},0,0,0}
+								};
 
 	LEVEL DefenderoidsLevels[] = {
 									{"Start me up",12,5,7},
@@ -262,7 +275,7 @@ void DefenderoidsMain()
 	while ((!(JOYPAD & J_OPTION)) && iLives>0)
 	{
 		// Create the level
-
+		// Invaders
 		for (iSpriteLoop=0;iSpriteLoop<DefenderoidsLevels[iCurrentLevel].InvaderCount;iSpriteLoop++)
 		{
 			SpriteList[iSpriteLoop].Position.x = ((u16)QRandom())<<10;
@@ -275,7 +288,7 @@ void DefenderoidsMain()
 
 			SetSprite(SpriteList[iSpriteLoop].SpriteID, SpriteList[iSpriteLoop].BaseTile , 0, (u8)(SpriteList[iSpriteLoop].Position.x>>8), (u8)(SpriteList[iSpriteLoop].Position.y>>8), PAL_SPRITE + SpriteList[iSpriteLoop].SpriteType);
 		}
-
+		// Lemmanoids
 		for (;iSpriteLoop<DefenderoidsLevels[iCurrentLevel].InvaderCount+DefenderoidsLevels[iCurrentLevel].LemmanoidCount;iSpriteLoop++)
 		{
 			SpriteList[iSpriteLoop].Position.x = ((u16)QRandom())<<10;
@@ -288,7 +301,6 @@ void DefenderoidsMain()
 
 			SetSprite(SpriteList[iSpriteLoop].SpriteID, SpriteList[iSpriteLoop].BaseTile , 0, (u8)(SpriteList[iSpriteLoop].Position.x>>8), (u8)(SpriteList[iSpriteLoop].Position.y>>8), PAL_SPRITE + SpriteList[iSpriteLoop].SpriteType);
 		}
-
 
 		// Setup the qix object
 		// So, the Qix itself is a lot simpler than it first appears.
@@ -338,7 +350,7 @@ void DefenderoidsMain()
 		PlayerOne.MovementVector.x = 0; // Use 256 to set up an initial drift...;
 		PlayerOne.MovementVector.y = 0;
 		PlayerOne.Scale = 2;
-		PlayerOne.Origin.x = 4;
+		PlayerOne.Origin.x = 3;
 		PlayerOne.Origin.y = 8;
 		PlayerOne.Points = 40;
 		PlayerOne.RotationAngle = 64;
@@ -476,7 +488,7 @@ void DefenderoidsMain()
 							Shots[iLoopShot].VectorList[iLoopX].colour = Shot[iLoopX].colour;
 							iLoopX++;
 						}
-						Shots[iLoopShot].Origin.x = 1;
+						Shots[iLoopShot].Origin.x = 2;
 						Shots[iLoopShot].Origin.y = 3;
 						Shots[iLoopShot].Position.x = PlayerOne.Position.x + iHorizontalOffset;
 						Shots[iLoopShot].Position.y = PlayerOne.Position.y;
@@ -485,7 +497,7 @@ void DefenderoidsMain()
 						Shots[iLoopShot].MovementVector.x = ((s16)Cos(Shots[iLoopShot].RotationAngle+192))<<4;
 						Shots[iLoopShot].MovementVector.y = ((s16)Sin(Shots[iLoopShot].RotationAngle+192))<<4;
 
-						// We'll use RotationSpeed to control the life of the shot. Kill it when it hits 128...
+						// We'll use RotationSpeed to control the life of the shot. Kill it when it hits a limit...
 						Shots[iLoopShot].RotationSpeed=0;
 
 						iLoopShot = 5;
@@ -566,6 +578,38 @@ void DefenderoidsMain()
 									SetSprite(SpriteList[iSpriteLoop].SpriteID, 0, 0, 0, 0, PAL_SPRITE);
 									Shots[iLoopShot].Scale = 0;
 									iSpriteLoop = DefenderoidsLevels[iCurrentLevel].InvaderCount + 1;
+
+									// Add an explosion
+									// Can't seem to create more than 32 of these...
+									// Make that 8. Memory I guess?
+									for (iLoopExplosion=0;iLoopExplosion<8;iLoopExplosion++)
+									{
+										if (Explosions[iLoopExplosion].Scale == 0)
+										{
+											Explosions[iLoopExplosion].Scale = 1;
+											// Copy the Explosion object from the template
+											Explosions[iLoopExplosion].Points = 16;
+											iLoopX=0;
+											while (iLoopX<Explosions[iLoopExplosion].Points)
+											{
+												Explosions[iLoopExplosion].VectorList[iLoopX].x = 4;
+												Explosions[iLoopExplosion].VectorList[iLoopX].y = 4;
+												Explosions[iLoopExplosion].VectorList[iLoopX].colour = QRandom()>>6;
+												iLoopX++;
+											}
+											Explosions[iLoopExplosion].Origin.x = 4;
+											Explosions[iLoopExplosion].Origin.y = 4;
+											Explosions[iLoopExplosion].Position.x = Shots[iLoopShot].Position.x;
+											Explosions[iLoopExplosion].Position.y = Shots[iLoopShot].Position.y;
+											Explosions[iLoopExplosion].RotationAngle = 0;
+
+											// We'll use RotationSpeed to control the life of the Explosion. Kill it when it hits a limit...
+											Explosions[iLoopExplosion].RotationSpeed=0;
+
+											iLoopExplosion = 9;
+										}
+									}
+
 								}
 							}
 						}
@@ -597,6 +641,30 @@ void DefenderoidsMain()
 						}
 
 						DrawVectorSprite((u16*)bmpPlayField, Shots[iLoopShot], iHorizontalOffset);
+					}
+				}
+			}
+
+			// Move and animate the explosions (points heading off in 16 directions basically)
+			for (iLoopExplosion=0;iLoopExplosion<8;iLoopExplosion++)
+			{
+				if (Explosions[iLoopExplosion].Scale == 1)
+				{
+					// Destroy the Explosion when it leaves the playfield.
+					Explosions[iLoopExplosion].RotationSpeed++;
+					if (Explosions[iLoopExplosion].RotationSpeed == 15)
+					{
+						Explosions[iLoopExplosion].Scale = 0;
+					}
+					if (Explosions[iLoopExplosion].Scale == 1)
+					{
+						for (iLoopExplosionPoint=0;iLoopExplosionPoint<Explosions[iLoopExplosion].Points;iLoopExplosionPoint++)
+						{
+							Explosions[iLoopExplosion].VectorList[iLoopExplosionPoint].x = (Explosions[iLoopExplosion].VectorList[iLoopExplosionPoint].x * Cos(iLoopExplosionPoint<<4)>>7) - (Explosions[iLoopExplosion].VectorList[iLoopExplosionPoint].y * Sin(iLoopExplosionPoint<<4)>>7);
+							Explosions[iLoopExplosion].VectorList[iLoopExplosionPoint].y = (Explosions[iLoopExplosion].VectorList[iLoopExplosionPoint].x * Sin(iLoopExplosionPoint<<4)>>7) + (Explosions[iLoopExplosion].VectorList[iLoopExplosionPoint].y * Cos(iLoopExplosionPoint<<4)>>7);
+
+						}
+						DrawVectorSprite((u16*)bmpPlayField, Explosions[iLoopExplosion], iHorizontalOffset);
 					}
 				}
 			}
@@ -834,9 +902,11 @@ void DrawVectorSprite(u16 * BitmapAddress, VECTOROBJECT VectorObject, u8 iHorizo
 	}
 }
 
-bool LineIntersect(POINT l1, POINT l2, POINT b1, POINT b2)
+bool LineIntersect(POINT pLineStart, POINT pLineEnd, POINT pBoxTopLeft, POINT pBoxBottomRight)
 {
-	//Stolen wholesale from gamedev...
+	// Stolen from the library function DrawLine()
+	// Step through the line and test each point against the rectangle for the hit box. If they intersect, then they must be in contact.
+	// Bit of a brute force method and I'm sure can be improved.
 	s16 xinc1;
 	s16 xinc2;
 	s16 yinc1;
@@ -852,19 +922,19 @@ bool LineIntersect(POINT l1, POINT l2, POINT b1, POINT b2)
 	s16 y;
 
 
-	if (l2.x >= l1.x)
-		deltax = l2.x - l1.x;        // The difference between the x's
+	if (pLineEnd.x >= pLineStart.x)
+		deltax = pLineEnd.x - pLineStart.x;        // The difference between the x's
 	else
-		deltax = l1.x - l2.x;
-	if (l2.y>=l1.y)
-		deltay = l2.y - l1.y;        // The difference between the y's
+		deltax = pLineStart.x - pLineEnd.x;
+	if (pLineEnd.y>=pLineStart.y)
+		deltay = pLineEnd.y - pLineStart.y;        // The difference between the y's
 	else
-		deltay = l1.y - l2.y;
+		deltay = pLineStart.y - pLineEnd.y;
 
-	x = l1.x;                       // Start x off at the first pixel
-	y = l1.y;                       // Start y off at the first pixel
+	x = pLineStart.x;                       // Start x off at the first pixel
+	y = pLineStart.y;                       // Start y off at the first pixel
 
-	if (l2.x >= l1.x)                 // The x-values are increasing
+	if (pLineEnd.x >= pLineStart.x)                 // The x-values are increasing
 	{
 		xinc1 = 1;
 		xinc2 = 1;
@@ -875,7 +945,7 @@ bool LineIntersect(POINT l1, POINT l2, POINT b1, POINT b2)
 		xinc2 = -1;
 	}
 
-	if (l2.y >= l1.y)                 // The y-values are increasing
+	if (pLineEnd.y >= pLineStart.y)                 // The y-values are increasing
 	{
 		yinc1 = 1;
 		yinc2 = 1;
@@ -908,7 +978,7 @@ bool LineIntersect(POINT l1, POINT l2, POINT b1, POINT b2)
 	for (curpixel = 0; curpixel <= numpixels; curpixel++)
 	{
 		// Check current point against the rectangle
-		if (x >= b1.x && x <=b2.x && y>=b1.y && y<=b2.y)
+		if (x >= pBoxTopLeft.x && x <=pBoxBottomRight.x && y>=pBoxTopLeft.y && y<=pBoxBottomRight.y)
 		{
 			// point is inside the bounds of the box. We've hit something!
 			return 1;
