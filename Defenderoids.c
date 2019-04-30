@@ -586,7 +586,7 @@ void DefenderoidsMain()
 									{
 										if (Explosions[iLoopExplosion].Scale == 0)
 										{
-											Explosions[iLoopExplosion].Scale = 1;
+											Explosions[iLoopExplosion].Scale = 2;
 											// Copy the Explosion object from the template
 											Explosions[iLoopExplosion].Points = 16;
 											iLoopX=0;
@@ -601,7 +601,7 @@ void DefenderoidsMain()
 											Explosions[iLoopExplosion].Origin.y = 4;
 											Explosions[iLoopExplosion].Position.x = Shots[iLoopShot].Position.x;
 											Explosions[iLoopExplosion].Position.y = Shots[iLoopShot].Position.y;
-											Explosions[iLoopExplosion].RotationAngle = 0;
+											Explosions[iLoopExplosion].RotationAngle = Shots[iLoopShot].RotationAngle;
 
 											// We'll use RotationSpeed to control the life of the Explosion. Kill it when it hits a limit...
 											Explosions[iLoopExplosion].RotationSpeed=0;
@@ -648,7 +648,7 @@ void DefenderoidsMain()
 			// Move and animate the explosions (points heading off in 16 directions basically)
 			for (iLoopExplosion=0;iLoopExplosion<8;iLoopExplosion++)
 			{
-				if (Explosions[iLoopExplosion].Scale == 1)
+				if (Explosions[iLoopExplosion].Scale == 2)
 				{
 					// Destroy the Explosion after a few frames
 					Explosions[iLoopExplosion].RotationSpeed++;
@@ -656,10 +656,11 @@ void DefenderoidsMain()
 					{
 						Explosions[iLoopExplosion].Scale = 0;
 					}
-					if (Explosions[iLoopExplosion].Scale == 1)
+					if (Explosions[iLoopExplosion].Scale == 2)
 					{
 						for (iLoopExplosionPoint=0;iLoopExplosionPoint<Explosions[iLoopExplosion].Points;iLoopExplosionPoint++)
 						{
+							// Wrong, but still manages to look quite good. No idea what's going on...
 							Explosions[iLoopExplosion].VectorList[iLoopExplosionPoint].x = (Explosions[iLoopExplosion].VectorList[iLoopExplosionPoint].x * Cos(iLoopExplosionPoint<<5)>>7) - (Explosions[iLoopExplosion].VectorList[iLoopExplosionPoint].y * Sin(iLoopExplosionPoint<<5)>>7);
 							Explosions[iLoopExplosion].VectorList[iLoopExplosionPoint].y = (Explosions[iLoopExplosion].VectorList[iLoopExplosionPoint].x * Sin(iLoopExplosionPoint<<5)>>7) + (Explosions[iLoopExplosion].VectorList[iLoopExplosionPoint].y * Cos(iLoopExplosionPoint<<5)>>7);
 						}
