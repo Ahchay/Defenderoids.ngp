@@ -1,7 +1,9 @@
 #include "ngpc.h"
 #include "library.h"
 #include "Defenderoids.h"
+#include "veclib.h"
 #include "Tiles\Sprites.c"
+#include "Tiles\Logo.c"
 #include "VectorObjects.h"
 /*
 
@@ -10,6 +12,49 @@ So, this started as a defender/asteroids mash-up concept, but has now turned int
 Not sure where I'm going with it yet, but it's entertaining enough
 
 */
+
+VECTOROBJECT CreateAsteroid()
+{
+	VECTOROBJECT vReturn;
+	u8 iLoopAsteroidPoint;
+
+	vReturn.Origin.x=6;
+	vReturn.Origin.y=6;
+	vReturn.Position.x=QRandom();
+	vReturn.Position.y=QRandom()<<4;
+	vReturn.Points = 7 + (QRandom()>>5);
+	for (iLoopAsteroidPoint=0;iLoopAsteroidPoint<vReturn.Points-1;iLoopAsteroidPoint++)
+		{
+			vReturn.VectorList[iLoopAsteroidPoint] = AsteroidTemplate[iLoopAsteroidPoint][QRandom()>>7];
+		}
+	// Make sure the asteroid is closed...
+	vReturn.VectorList[iLoopAsteroidPoint] = vReturn.VectorList[0];
+	vReturn.Scale=3;
+	vReturn.RotationSpeed=(Sin(QRandom())>>4)+1;
+	vReturn.RotationAngle=Sin(QRandom());
+	//Asteroid[iLoopAsteroid].Position.x=((u16)QRandom())<<4;
+	//Asteroid[iLoopAsteroid].Position.y=((u16)QRandom())<<4;
+	vReturn.MovementVector.x=QRandom();
+	vReturn.MovementVector.y=QRandom();
+
+	return vReturn;
+}
+
+SPRITE CreateSprite(u16 x, u16 y, u8 ID, u8 Type, u8 Direction, u8 Frame)
+{
+	SPRITE sprReturn;
+	sprReturn.Position.x = x;
+	sprReturn.Position.y = y;
+	sprReturn.SpriteID = ID;
+	sprReturn.SpriteType = Type;
+	sprReturn.Direction = Direction;
+	sprReturn.BaseTile = spTileBase + ID;
+	sprReturn.Frame = Frame;
+
+	SetSprite(sprReturn.SpriteID, sprReturn.BaseTile , 0, (u8)(sprReturn.Position.x>>8), (u8)(sprReturn.Position.y>>8), (u8)(PAL_SPRITE + sprReturn.SpriteType));
+
+	return sprReturn;
+}
 
 bool DefenderoidsLogo()
 {
@@ -23,129 +68,48 @@ bool DefenderoidsLogo()
 	u8 iTile;
 	u8 iSourceLetter;
 	u8 iSourcePoint;
-	VECTOROBJECT GameLogo[] = {
-								{{0,0},{2000,2000},{0,0},0,0,3,0,0}, //D
-								{{0,0},{3500,2000},{0,0},1,0,3,0,0}, //e
-								{{0,0},{4500,2000},{0,0},2,0,3,0,0}, //f
-								{{0,0},{6000,2000},{0,0},1,0,3,0,0}, //e
-								{{0,0},{7500,2000},{0,0},3,0,3,0,0}, //n
-								{{0,0},{9000,2000},{0,0},4,0,3,0,0}, //d
-								{{0,0},{10500,2000},{0,0},1,0,3,0,0}, //e
-								{{0,0},{12000,2000},{0,0},5,0,3,0,0}, //r
-								{{0,0},{13000,2000},{0,0},6,0,3,0,0}, //o
-								{{0,0},{14000,2000},{0,0},7,0,3,0,0}, //i
-								{{0,0},{14750,2000},{0,0},4,0,3,0,0}, //d
-								{{0,0},{16000,2000},{0,0},8,0,3,0,0}, //s
-								{{0,0},{3000,7500},{0,0},9,0,2,0,0}, //P
-								{{0,0},{4500,7500},{0,0},5,0,2,0,0}, //r
-								{{0,0},{6000,7500},{0,0},1,0,2,0,0}, //e
-								{{0,0},{7000,7500},{0,0},8,0,2,0,0}, //s
-								{{0,0},{8000,7500},{0,0},8,0,2,0,0}, //s
-								{{0,0},{9500,7000},{0,0},12,0,2,0,0}, //'A'
-								{{0,0},{3000,10000},{0,0},10,0,2,0,0}, //t
-								{{0,0},{4500,10000},{0,0},6,0,2,0,0}, //o
-								{{0,0},{7000,10000},{0,0},8,0,2,0,0}, //s
-								{{0,0},{8000,10000},{0,0},10,0,2,0,0}, //t
-								{{0,0},{9000,10000},{0,0},11,0,2,0,0}, //a
-								{{0,0},{10250,10000},{0,0},5,0,2,0,0}, //r
-								{{0,0},{11250,10000},{0,0},10,0,2,0,0}, //t
-							};
-
-	// Display a logo animation and wait for the player to push the start button.
-	// Can also use this to init() the randomiser so that the player gets different starting objects when they do
-	// start the game.
-
-	//Copy my template "alphabet" objects into the GameLogo array
-	//The "points" member will contain the soruce object for the letter in the template array
-
-	for (iLoopLetter=0;iLoopLetter<25;iLoopLetter++)
-	{
-		iSourceLetter=GameLogo[iLoopLetter].Points;
-		// Copy the relevant bits (Origin, Points and Vectorlist from the template
-		GameLogo[iLoopLetter].Origin.x = Alphabet[iSourceLetter].Origin.x;
-		GameLogo[iLoopLetter].Origin.y = Alphabet[iSourceLetter].Origin.y;
-		GameLogo[iLoopLetter].Points = Alphabet[iSourceLetter].Points;
-		for (iSourcePoint=0;iSourcePoint<Alphabet[iSourceLetter].Points;iSourcePoint++)
-		{
-			GameLogo[iLoopLetter].VectorList[iSourcePoint].x = Alphabet[iSourceLetter].VectorList[iSourcePoint].x;
-			GameLogo[iLoopLetter].VectorList[iSourcePoint].y = Alphabet[iSourceLetter].VectorList[iSourcePoint].y;
-			GameLogo[iLoopLetter].VectorList[iSourcePoint].colour = Alphabet[iSourceLetter].VectorList[iSourcePoint].colour;
-		}
-		GameLogo[iLoopLetter].Scale=2;
-		GameLogo[iLoopLetter].RotationSpeed=(Sin(QRandom())>>7)+1;
-		GameLogo[iLoopLetter].RotationAngle=0;
-		GameLogo[iLoopLetter].MovementVector.x=((s8)QRandom() - (s8)QRandom())>>3;
-		GameLogo[iLoopLetter].MovementVector.y=((s8)QRandom() - (s8)QRandom())>>3;
-
-	}
-
+	u8 iSpriteLoop;
 
 	// Wait for the "A" button to be released
 	while (JOYPAD & J_A);
 
-	bGameStart=0;
+	//Install the logo tileset
+	InstallTileSetAt(Logo, sizeof(Logo)/2, LogoTileBase);
+	//Clear the screen
 
-	CreateBitmap((u16*)bmpLogo, 144, 112);
-	CopyBitmap((u16*)bmpLogo, bgTileBase);
+	SetBackgroundColour(0);
 
-	iTile=0;
-	for (iLoopY=0;iLoopY<14;iLoopY++)
+	ClearScreen(SCR_1_PLANE);
+	ClearScreen(SCR_2_PLANE);
+
+	SetPalette(SCR_1_PLANE, 0, 0, RGB(15,0,0), RGB(15,15,0), RGB(15,15,15));
+	SetPalette(SCR_2_PLANE, 0, 0, RGB(15,15,15), RGB(11,11,11), RGB(7,7,7));
+
+	//Also, clear the sprites....
+	for (iSpriteLoop=0;iSpriteLoop<64;iSpriteLoop++)
 	{
-		for (iLoopX=0;iLoopX<18;iLoopX++)
+		SetSprite(iSpriteLoop, 0, 0, 0, 0, 0);
+	}
+
+	while (JOYPAD & J_A);
+
+	//Paint the logo.
+	for (iLoopX=0;iLoopX<=19;iLoopX++)
+	{
+		for (iLoopY=0;iLoopY<=9;iLoopY++)
 		{
-			PutTile(SCR_1_PLANE, 0, 1 + iLoopX, 1 + iLoopY, bgTileBase+iTile);
-			iTile++;
+			PutTile(SCR_1_PLANE, 0, iLoopX, iLoopY+4, LogoTileBase +(iLoopY*20)+iLoopX);
 		}
 	}
 
+	PrintString(SCR_1_PLANE, 0, 2, 1, "  PRESENTED BY");
+	PrintString(SCR_1_PLANE, 0, 2, 2, "   AHCHAY.COM");
+	PrintString(SCR_1_PLANE, 0, 2, 13, "PRESS A TO START");
+
+	bGameStart=0;
+
 	while (!bGameStart)
 	{
-
-		CreateBitmap((u16*)bmpLogo, 144, 112);
-
-		// Rubbish star field...
-		for (iLoopStar=0;iLoopStar<25;iLoopStar++)
-		{
-			iLoopY = QRandom()>>1;
-			iLoopX = QRandom()>>1;
-			SetPixel((u16*)bmpLogo,(u8)(iLoopX),(u8)(iLoopY),QRandom()>>7);
-		}
-
-		// Game logo and instructions...
-		for (iLoopLetter=0;iLoopLetter<25;iLoopLetter++)
-		{
-			DrawVectorObject((u16*)bmpLogo,GameLogo[iLoopLetter],0);
-			GameLogo[iLoopLetter].RotationAngle+=GameLogo[iLoopLetter].RotationSpeed;
-			// Need to do some bounds checking here...
-			GameLogo[iLoopLetter].Position.x += GameLogo[iLoopLetter].MovementVector.x;
-			if (GameLogo[iLoopLetter].Position.x < 3000)
-			{
-				GameLogo[iLoopLetter].MovementVector.x = GameLogo[iLoopLetter].MovementVector.x*-1;
-			}
-			if (GameLogo[iLoopLetter].Position.x > 14000)
-			{
-				GameLogo[iLoopLetter].MovementVector.x = GameLogo[iLoopLetter].MovementVector.x*-1;
-			}
-			//Asteroid[iLoopAsteroid].Position.y += Asteroid[iLoopAsteroid].MovementVector.y;
-			if (GameLogo[iLoopLetter].Position.y < 3000)
-			{
-				GameLogo[iLoopLetter].MovementVector.y = GameLogo[iLoopLetter].MovementVector.y*-1;
-			}
-			if (GameLogo[iLoopLetter].Position.y > 12000)
-			{
-				GameLogo[iLoopLetter].MovementVector.y = GameLogo[iLoopLetter].MovementVector.y*-1;
-			}
-
-			if (JOYPAD & J_A)
-			{
-				bGameStart=1;
-				// Force the loop to terminate...
-				iLoopLetter=255;
-			}
-		}
-
-		// Then copy the bitmap back into tile memory...
-		CopyBitmap((u16*)bmpLogo, bgTileBase);
 
 		// Start the game if the player pushes the "A" button
 		if (JOYPAD & J_A)
@@ -158,6 +122,7 @@ bool DefenderoidsLogo()
 	while (JOYPAD & J_A);
 
 	ClearScreen(SCR_1_PLANE);
+	ClearScreen(SCR_2_PLANE);
 
 	//Just exiting this function causes the emulator to crash?
 	//Do I need to clear up memory or something?
@@ -185,10 +150,7 @@ void DefenderoidsMain()
 	s8 cSin;
 	s8 cCos;
 	u8 iSpriteScale;
-	VECTOROBJECT Qix;
-	u8 iLoopQix;
 	u8 iLoopAsteroid;
-	u8 iLoopAsteroidPoint;
 	u8 iSpriteLoop;
 	u16 iCounter;
 	u8 iEngineLoop;
@@ -202,6 +164,7 @@ void DefenderoidsMain()
 	u8 iLoopExplosion;
 	u8 iLoopExplosionPoint;
 	bool bShoot;
+
 	VECTOROBJECT Asteroid[] = {
 									{{6,6},{2000,8192},0,0,0,0,0,0},
 									{{6,6},{5000,10096},0,0,0,0,0,0},
@@ -248,13 +211,14 @@ void DefenderoidsMain()
 	iLives=3;
 
 	// Set up the test sprite
-	SetPalette(SPRITE_PLANE, PAL_SPRITE + 0, RGB(0,0,0), RGB(0,15,0), RGB(15,15,0), RGB(15,0,0));
-	SetPalette(SPRITE_PLANE, PAL_SPRITE + 1, RGB(0,0,0), RGB(8,8,0), RGB(0,0,15), RGB(0,15,0));
+	SetPalette(SPRITE_PLANE, (u8)(PAL_SPRITE + Invader), RGB(0,0,0), RGB(0,15,0), RGB(15,15,0), RGB(15,0,0));
+	SetPalette(SPRITE_PLANE, (u8)(PAL_SPRITE + Lemmanoid), RGB(0,0,0), RGB(15, 11, 12), RGB(0,0,15), RGB(0,15,0));
 
 	// So, create a bitmap...
 	SetBackgroundColour(RGB(0,0,4));
 
 	SetPalette(SCR_1_PLANE, 0, 0, RGB(15,15,15), RGB(0,0,15), RGB(15,0,0));
+	SetPalette(SCR_2_PLANE, 0, 0, RGB(15,15,15), RGB(0,0,15), RGB(15,0,0));
 
 	CreateBitmap((u16*)bmpPlayField, 144, 112);
 	CopyBitmap((u16*)bmpPlayField, bgTileBase);
@@ -278,70 +242,18 @@ void DefenderoidsMain()
 		// Invaders
 		for (iSpriteLoop=0;iSpriteLoop<DefenderoidsLevels[iCurrentLevel].InvaderCount;iSpriteLoop++)
 		{
-			SpriteList[iSpriteLoop].Position.x = ((u16)QRandom())<<10;
-			SpriteList[iSpriteLoop].Position.y = 0;
-			SpriteList[iSpriteLoop].SpriteID = iSpriteLoop;
-			SpriteList[iSpriteLoop].SpriteType = Invader; // 0 or 1
-			SpriteList[iSpriteLoop].Direction = DIR_SOUTH;
-			SpriteList[iSpriteLoop].BaseTile = spTileBase + SpriteList[iSpriteLoop].SpriteID;
-			SpriteList[iSpriteLoop].Frame = 0;
-
-			SetSprite(SpriteList[iSpriteLoop].SpriteID, SpriteList[iSpriteLoop].BaseTile , 0, (u8)(SpriteList[iSpriteLoop].Position.x>>8), (u8)(SpriteList[iSpriteLoop].Position.y>>8), PAL_SPRITE + SpriteList[iSpriteLoop].SpriteType);
+			SpriteList[iSpriteLoop] = CreateSprite(((u16)QRandom())<<10,0,iSpriteLoop,Invader,DIR_SOUTH,0);
 		}
 		// Lemmanoids
 		for (;iSpriteLoop<DefenderoidsLevels[iCurrentLevel].InvaderCount+DefenderoidsLevels[iCurrentLevel].LemmanoidCount;iSpriteLoop++)
 		{
-			SpriteList[iSpriteLoop].Position.x = ((u16)QRandom())<<10;
-			SpriteList[iSpriteLoop].Position.y = (u16)(HeightMap[((u8)(SpriteList[iSpriteLoop].Position.x>>8))+4]+4)<<8;
-			SpriteList[iSpriteLoop].SpriteID = iSpriteLoop;
-			SpriteList[iSpriteLoop].SpriteType = Lemmanoid;
-			SpriteList[iSpriteLoop].Direction = 1 + ((QRandom()>>7)<<1); // NORTH or SOUTH for SpriteType 0, EAST/WEST for Sprite Type 1
-			SpriteList[iSpriteLoop].BaseTile = spTileBase + SpriteList[iSpriteLoop].SpriteID;
-			SpriteList[iSpriteLoop].Frame = 0;
-
-			SetSprite(SpriteList[iSpriteLoop].SpriteID, SpriteList[iSpriteLoop].BaseTile , 0, (u8)(SpriteList[iSpriteLoop].Position.x>>8), (u8)(SpriteList[iSpriteLoop].Position.y>>8), PAL_SPRITE + SpriteList[iSpriteLoop].SpriteType);
-		}
-
-		// Setup the qix object
-		// So, the Qix itself is a lot simpler than it first appears.
-		// Essentially, it's a list of lines, each starting from the end position of the last
-		// where the "first" line falls off the stack and is replaced at the end with a new one
-		// with a random(?) length and direction.
-		// Changing the length would essentially control the speed and overall size of the Qix
-		Qix.Origin.x=0;
-		Qix.Origin.y=0;
-		Qix.Position.x=0;
-		Qix.Position.y=0;
-		Qix.MovementVector.x=376;
-		Qix.MovementVector.y=32;
-		Qix.Points=12;
-		Qix.Scale=1;
-		Qix.RotationAngle=0;
-		Qix.RotationSpeed=0;
-		for (iLoopQix=0;iLoopQix<Qix.Points;iLoopQix++)
-		{
-			Qix.VectorList[iLoopQix].x = 6000;
-			Qix.VectorList[iLoopQix].y = 0;
-			Qix.VectorList[iLoopQix].colour = 3;
+			SpriteList[iSpriteLoop] = CreateSprite(((u16)QRandom())<<10,(u16)(HeightMap[((u8)(SpriteList[iSpriteLoop].Position.x>>8))+4]+4)<<8,iSpriteLoop,Lemmanoid,1 + ((QRandom()>>7)<<1),0);
 		}
 
 		// Set up the asteroids
 		for (iLoopAsteroid=0;iLoopAsteroid<DefenderoidsLevels[iCurrentLevel].AsteroidCount;iLoopAsteroid++)
 		{
-			Asteroid[iLoopAsteroid].Points = 7 + (QRandom()>>5);
-			for (iLoopAsteroidPoint=0;iLoopAsteroidPoint<Asteroid[iLoopAsteroid].Points-1;iLoopAsteroidPoint++)
-			{
-				Asteroid[iLoopAsteroid].VectorList[iLoopAsteroidPoint] = AsteroidTemplate[iLoopAsteroidPoint][QRandom()>>7];
-			}
-			// Make sure the asteroid is closed...
-			Asteroid[iLoopAsteroid].VectorList[iLoopAsteroidPoint] = Asteroid[iLoopAsteroid].VectorList[0];
-			Asteroid[iLoopAsteroid].Scale=3;
-			Asteroid[iLoopAsteroid].RotationSpeed=(Sin(QRandom())>>4)+1;
-			Asteroid[iLoopAsteroid].RotationAngle=Sin(QRandom());
-			//Asteroid[iLoopAsteroid].Position.x=((u16)QRandom())<<4;
-			//Asteroid[iLoopAsteroid].Position.y=((u16)QRandom())<<4;
-			Asteroid[iLoopAsteroid].MovementVector.x=QRandom();
-			Asteroid[iLoopAsteroid].MovementVector.y=QRandom();
+			Asteroid[iLoopAsteroid] = CreateAsteroid();
 		}
 
 		// Set up the player
@@ -349,7 +261,7 @@ void DefenderoidsMain()
 		PlayerOne.Position.y = 66;
 		PlayerOne.MovementVector.x = 0; // Use 256 to set up an initial drift...;
 		PlayerOne.MovementVector.y = 0;
-		PlayerOne.Scale = 2;
+		PlayerOne.Scale = 1;
 		PlayerOne.Origin.x = 3;
 		PlayerOne.Origin.y = 8;
 		PlayerOne.Points = 40;
@@ -369,7 +281,6 @@ void DefenderoidsMain()
 
 		iLoopX=0;
 		iLoopY=0;
-		iLoopQix=0;
 		iCounter=0;
 		iVelocityX=0;
 		iVelocityY=0;
@@ -390,25 +301,7 @@ void DefenderoidsMain()
 				SetPixel((u16*)bmpPlayField,iHeightMapLoop,HeightMap[iHorizontalOffset+iHeightMapLoop],3);
 			}
 
-			// Draw and animate the qix.
-			// This will be an "evil otto" style enemy that cannot be destroyed...
-			// I have to draw the Qix with an "absolute" position within the bitmap, as the offset doesn't work?
-			// Presumably, because the position is (0,0) and does not move.
-			// Anyway, I'm keeping this in here because I like it - not really sure what it's going to do in terms of gameplay yet.
-			/*
-			DrawVectorObjectAbsolute((u16*)bmpPlayField,Qix);
-			// Overwrite the "oldest" point in the list with a new random point.
-			Qix.VectorList[iLoopQix].x = (((s16)QRandom())>>3)+(Qix.MovementVector.x>>5);
-			Qix.VectorList[iLoopQix].y = (((s16)QRandom())>>3)+(Qix.MovementVector.y>>5);
-			Qix.VectorList[iLoopQix].colour = 3;
-			if (++iLoopQix >= Qix.Points)
-			{
-				iLoopQix = 0;
-			}
-			// Move the Qix towards the player
-			Qix.MovementVector.x++;
-			Qix.MovementVector.y++;
-			*/
+			//Check player movement
 
 			// Ship Sprite
 			if (JOYPAD & J_LEFT) PlayerOne.RotationAngle-=8;
@@ -452,7 +345,7 @@ void DefenderoidsMain()
 					iVelocityY = (u16)((PlayerOne.MovementVector.y + Sin(PlayerOne.RotationAngle+192)))>>8;
 				}
 
-				// Bugger it. We can have separate maximum vertical and horizontal velocities. We can call it a gravity effect...
+				// We have separate max velocities for horizontal and vertical movement
 
 				if (iVelocityX<3)
 				{
@@ -573,20 +466,17 @@ void DefenderoidsMain()
 								*/
 								if (LineIntersect(Shots[iLoopShot].Position, pEndShot, pStartSprite, pEndSprite) == 1)
 								{
-									PrintString(SCR_1_PLANE, 0, 0, 15, "BANG");
 									SpriteList[iSpriteLoop].SpriteType = NullSprite;
 									SetSprite(SpriteList[iSpriteLoop].SpriteID, 0, 0, 0, 0, PAL_SPRITE);
 									Shots[iLoopShot].Scale = 0;
 									iSpriteLoop = DefenderoidsLevels[iCurrentLevel].InvaderCount + 1;
 
 									// Add an explosion
-									// Can't seem to create more than 32 of these...
-									// Make that 8. Memory I guess?
 									for (iLoopExplosion=0;iLoopExplosion<8;iLoopExplosion++)
 									{
 										if (Explosions[iLoopExplosion].Scale == 0)
 										{
-											Explosions[iLoopExplosion].Scale = 2;
+											Explosions[iLoopExplosion].Scale = 1;
 											// Copy the Explosion object from the template
 											Explosions[iLoopExplosion].Points = 16;
 											iLoopX=0;
@@ -597,11 +487,11 @@ void DefenderoidsMain()
 												Explosions[iLoopExplosion].VectorList[iLoopX].colour = QRandom()>>6;
 												iLoopX++;
 											}
-											Explosions[iLoopExplosion].Origin.x = 4;
-											Explosions[iLoopExplosion].Origin.y = 4;
-											Explosions[iLoopExplosion].Position.x = Shots[iLoopShot].Position.x;
-											Explosions[iLoopExplosion].Position.y = Shots[iLoopShot].Position.y;
-											Explosions[iLoopExplosion].RotationAngle = Shots[iLoopShot].RotationAngle;
+											Explosions[iLoopExplosion].Origin.x = 0;
+											Explosions[iLoopExplosion].Origin.y = 0;
+											Explosions[iLoopExplosion].Position.x = pStartSprite.x;
+											Explosions[iLoopExplosion].Position.y = pStartSprite.y;
+											Explosions[iLoopExplosion].RotationAngle = Shots[iLoopShot].RotationAngle+128;
 
 											// We'll use RotationSpeed to control the life of the Explosion. Kill it when it hits a limit...
 											Explosions[iLoopExplosion].RotationSpeed=0;
@@ -648,7 +538,7 @@ void DefenderoidsMain()
 			// Move and animate the explosions (points heading off in 16 directions basically)
 			for (iLoopExplosion=0;iLoopExplosion<8;iLoopExplosion++)
 			{
-				if (Explosions[iLoopExplosion].Scale == 2)
+				if (Explosions[iLoopExplosion].Scale != 0)
 				{
 					// Destroy the Explosion after a few frames
 					Explosions[iLoopExplosion].RotationSpeed++;
@@ -656,13 +546,16 @@ void DefenderoidsMain()
 					{
 						Explosions[iLoopExplosion].Scale = 0;
 					}
-					if (Explosions[iLoopExplosion].Scale == 2)
+					if (Explosions[iLoopExplosion].Scale != 0)
 					{
 						for (iLoopExplosionPoint=0;iLoopExplosionPoint<Explosions[iLoopExplosion].Points;iLoopExplosionPoint++)
 						{
 							// Wrong, but still manages to look quite good. No idea what's going on...
-							Explosions[iLoopExplosion].VectorList[iLoopExplosionPoint].x = (Explosions[iLoopExplosion].VectorList[iLoopExplosionPoint].x * Cos(iLoopExplosionPoint<<5)>>7) - (Explosions[iLoopExplosion].VectorList[iLoopExplosionPoint].y * Sin(iLoopExplosionPoint<<5)>>7);
-							Explosions[iLoopExplosion].VectorList[iLoopExplosionPoint].y = (Explosions[iLoopExplosion].VectorList[iLoopExplosionPoint].x * Sin(iLoopExplosionPoint<<5)>>7) + (Explosions[iLoopExplosion].VectorList[iLoopExplosionPoint].y * Cos(iLoopExplosionPoint<<5)>>7);
+							// Why not just a few QRandom() calls within the rotation speed area?
+							// Looks ace. Need to figure out the rotation angle to get the direction right is all
+							// Maybe increase the scale for later frames?
+							Explosions[iLoopExplosion].VectorList[iLoopExplosionPoint].x = (QRandom()>>(8-Explosions[iLoopExplosion].RotationSpeed));
+							Explosions[iLoopExplosion].VectorList[iLoopExplosionPoint].y = (QRandom()>>(8-Explosions[iLoopExplosion].RotationSpeed));
 						}
 						DrawVectorSprite((u16*)bmpPlayField, Explosions[iLoopExplosion], iHorizontalOffset);
 					}
@@ -670,8 +563,19 @@ void DefenderoidsMain()
 			}
 
 			// And then the player ship
-			if (PlayerOne.Position.y<0) PlayerOne.Position.y=((u16*)bmpPlayField)[1];
-			if (PlayerOne.Position.y>((u16*)bmpPlayField)[1]) PlayerOne.Position.y=0;
+			//PrintDecimal(SCR_2_PLANE, 0, 0, 0, PlayerOne.Position.y, 16);
+			//Constrain player within bounds
+			if (PlayerOne.Position.y<4 && PlayerOne.MovementVector.y<127){
+				//Keep player inside the playfield...
+				//Reduce vertical velocity to zero
+				PlayerOne.MovementVector.y = 127;
+				PlayerOne.Position.y=4;
+				//PlayerOne.Position.y=((u16*)bmpPlayField)[1];
+			} else if (PlayerOne.Position.y>bmpPlayField[1]-4 && PlayerOne.MovementVector.y>127){
+				PlayerOne.MovementVector.y = 0;
+				PlayerOne.Position.y=bmpPlayField[1]-4;
+			}
+
 			PlayerOne.Position.y += PlayerOne.MovementVector.y>>7;
 			// Draw some random engine noise...
 			iEngineLoop=PlayerOne.Points-4;
@@ -721,6 +625,9 @@ void DefenderoidsMain()
 			{
 				if (!(SpriteList[iSpriteLoop].SpriteType == NullSprite))
 				{
+					//PrintString(SCR_2_PLANE, 0, 0, iSpriteLoop, "S  :");
+					//PrintDecimal(SCR_2_PLANE, 0, 1, iSpriteLoop, iSpriteLoop, 2);
+					//PrintBinary(SCR_2_PLANE, 0, 4, iSpriteLoop, (SpriteList[iSpriteLoop].SpriteType << 3) + (SpriteList[iSpriteLoop].Direction << 2) + SpriteList[iSpriteLoop].Frame, 16);
 					CopyAnimationFrame(Sprites, SpriteList[iSpriteLoop].BaseTile, 1, (SpriteList[iSpriteLoop].SpriteType << 4) + (SpriteList[iSpriteLoop].Direction << 2) + SpriteList[iSpriteLoop].Frame);
 					SetSpritePosition(SpriteList[iSpriteLoop].SpriteID, (u8)(SpriteList[iSpriteLoop].Position.x>>8)-iHorizontalOffset+4, (u8)(SpriteList[iSpriteLoop].Position.y>>8));
 					if (++SpriteList[iSpriteLoop].Frame>3) SpriteList[iSpriteLoop].Frame=0;
@@ -746,13 +653,11 @@ void DefenderoidsMain()
 			}
 
 			// How many frames has all of this taken...
-			PrintString(SCR_1_PLANE, 0, 0, 18, "FPS:");
-			PrintDecimal(SCR_1_PLANE, 0, 4, 18, 60/(VBCounter-iStartFrame), 2);
-			/*
-			PrintString(SCR_1_PLANE, 0, 0, 17, "HZL:");
-			PrintDecimal(SCR_1_PLANE, 0, 4, 17, iHorizontalOffset, 3);
-			PrintDecimal(SCR_1_PLANE, 0, 8, 17, Shots[0].Position.x, 8);
-			*/
+			//PrintString(SCR_1_PLANE, 0, 0, 18, "FPS:");
+			//PrintDecimal(SCR_1_PLANE, 0, 4, 18, 60/(VBCounter-iStartFrame), 2);
+			PrintString(SCR_2_PLANE, 0, 0, 17, "HZL:");
+			PrintDecimal(SCR_2_PLANE, 0, 4, 17, iHorizontalOffset, 3);
+			//PrintDecimal(SCR_2_PLANE, 0, 8, 17, Shots[0].Position.x, 8);
 
 		} // Level Loop
 
@@ -763,237 +668,4 @@ void DefenderoidsMain()
 		}
 
 	} // Lives Loop
-}
-
-void DrawVectorObjectAbsolute(u16 * BitmapAddress, VECTOROBJECT VectorObject)
-{
-	DrawVectorObject(BitmapAddress, VectorObject, 0);
-}
-
-void DrawVectorObject(u16 * BitmapAddress, VECTOROBJECT VectorObject, u8 iHorizontalOffset)
-{
-	s16 iStartX;
-	s16 iStartY;
-	s16 iEndX;
-	s16 iEndY;
-	s16 iTempX;
-	s16 iTempY;
-	s16 sPositionX;
-	u8 iPositionX;
-	u8 iPoint = 0;
-	s8 cSin;
-	s8 cCos;
-
-	if (!((((VectorObject.Position.x>>7)-iHorizontalOffset) > BitmapAddress[0]) && ((VectorObject.Position.x>>7)<iHorizontalOffset)))
-	{
-
-		cSin = Sin(VectorObject.RotationAngle);
-		cCos = Cos(VectorObject.RotationAngle);
-
-		sPositionX = VectorObject.Position.x>>7;
-		iPositionX = sPositionX % 256;
-
-		iStartX = VectorObject.VectorList[0].x;
-		iStartY = VectorObject.VectorList[0].y;
-
-		while (iPoint++<VectorObject.Points)
-		{
-
-			// Modifier here is to find the centre of rotation
-			iStartX = (iStartX-VectorObject.Origin.x)*VectorObject.Scale;
-			iStartY = (iStartY-VectorObject.Origin.y)*VectorObject.Scale;
-
-			// rotate point.
-			iTempX = ((iStartX * cCos)>>7) - ((iStartY * cSin)>>7);
-			iTempY = ((iStartX * cSin)>>7) + ((iStartY * cCos)>>7);
-
-			// translate point back to it's original position:
-			// Modify back from the centre of rotation above, and then add the X & Y co-ordinates
-			iStartX = (iPositionX-iHorizontalOffset)+iTempX;
-			//if (iStartX<0) iStartX=0;
-			iStartY = (VectorObject.Position.y>>7)+iTempY;
-			//if (iStartY<0) iStartY=0;
-
-			iEndX = (VectorObject.VectorList[iPoint].x-VectorObject.Origin.x)*VectorObject.Scale;
-			iEndY = (VectorObject.VectorList[iPoint].y-VectorObject.Origin.y)*VectorObject.Scale;
-
-			// rotate point
-			iTempX = ((iEndX * cCos)>>7) - ((iEndY * cSin)>>7);
-			iTempY = ((iEndX * cSin)>>7) + ((iEndY * cCos)>>7);
-
-			// translate point back:
-			iEndX = (iPositionX-iHorizontalOffset)+iTempX;
-			//if (iEndX<0) iEndX=0;
-			iEndY = (VectorObject.Position.y>>7)+iTempY;
-			//if (iEndY<0) iEndY=0;
-
-			// Bounds check to ensure that rotated points are still within the bitmap boundary
-			if (iStartX>=0&&iStartY>=0&&iEndX>=0&&iEndY>=0&&iStartX<=BitmapAddress[0]&&iStartY<=BitmapAddress[1]&&iEndX<=BitmapAddress[0]&&iEndY<=BitmapAddress[1])
-			{
-				DrawLine((u16*)BitmapAddress,(u8)(iStartX),(u8)(iStartY),(u8)(iEndX),(u8)(iEndY),VectorObject.VectorList[iPoint].colour);
-			}
-
-			iStartX = VectorObject.VectorList[iPoint].x;
-			iStartY = VectorObject.VectorList[iPoint].y;
-		}
-	}
-}
-
-void DrawVectorSpriteAbsolute(u16 * BitmapAddress, VECTOROBJECT VectorObject)
-{
-	DrawVectorSprite(BitmapAddress, VectorObject, 0);
-}
-// Only works when HorizontalOffset is between 0 and 72?
-// i.e. half the bitmap width. So, it must have something to do with that...
-// Might be affecting the drawobject above as well...
-void DrawVectorSprite(u16 * BitmapAddress, VECTOROBJECT VectorObject, u8 iHorizontalOffset)
-{
-	s16 iStartX;
-	s16 iStartY;
-	s16 iEndX;
-	s16 iEndY;
-	s16 iTempX;
-	s16 iTempY;
-	u8 iPoint = 0;
-	s8 cSin;
-	s8 cCos;
-	u8 iLoopX;
-	u8 iLoopY;
-	u8 iPositionX;
-
-	cSin = Sin(VectorObject.RotationAngle);
-	cCos = Cos(VectorObject.RotationAngle);
-
-	while (iPoint<VectorObject.Points)
-	{
-
-		if (VectorObject.VectorList[iPoint].colour != 0)
-		{
-
-			iStartX = (VectorObject.VectorList[iPoint].x-VectorObject.Origin.x)*VectorObject.Scale;
-			iStartY = (VectorObject.VectorList[iPoint].y-VectorObject.Origin.y)*VectorObject.Scale;
-
-			// rotate point.
-			iTempX = ((iStartX * cCos)>>7) - ((iStartY * cSin)>>7);
-			iTempY = ((iStartX * cSin)>>7) + ((iStartY * cCos)>>7);
-
-			// translate point back to it's original position:
-			// x = -32767...32767
-			// iTempX=0
-			// iHorizontalX=72
-			// Only display when Position.x - iHorizontalOffset > 72 and <144
-			// Need to restict "Position.x" to a 256 byte value?
-			// Which needs to wrap around at 0/256
-			// Will MOD() do that?
-			iPositionX = VectorObject.Position.x % 256;
-			iStartX = (iPositionX-iHorizontalOffset)+iTempX;
-			iStartY = VectorObject.Position.y+iTempY;
-
-			// Quick and dirty method to scale up the individual points
-			for (iLoopX=0;iLoopX<VectorObject.Scale;iLoopX++)
-			{
-				for (iLoopY=0;iLoopY<VectorObject.Scale;iLoopY++)
-				{
-					SetPixel((u16*)BitmapAddress,(u8)(iStartX+iLoopX),(u8)(iStartY+iLoopY),VectorObject.VectorList[iPoint].colour);
-				}
-			}
-		}
-		iPoint++;
-	}
-}
-
-bool LineIntersect(POINT pLineStart, POINT pLineEnd, POINT pBoxTopLeft, POINT pBoxBottomRight)
-{
-	// Stolen from the library function DrawLine()
-	// Step through the line and test each point against the rectangle for the hit box. If they intersect, then they must be in contact.
-	// Bit of a brute force method and I'm sure can be improved.
-	s16 xinc1;
-	s16 xinc2;
-	s16 yinc1;
-	s16 yinc2;
-	s16 den;
-	s16 num;
-	s16 numadd;
-	s16 numpixels;
-	s16 curpixel;
-	s16 deltax;
-	s16 deltay;
-	s16 x;
-	s16 y;
-
-
-	if (pLineEnd.x >= pLineStart.x)
-		deltax = pLineEnd.x - pLineStart.x;        // The difference between the x's
-	else
-		deltax = pLineStart.x - pLineEnd.x;
-	if (pLineEnd.y>=pLineStart.y)
-		deltay = pLineEnd.y - pLineStart.y;        // The difference between the y's
-	else
-		deltay = pLineStart.y - pLineEnd.y;
-
-	x = pLineStart.x;                       // Start x off at the first pixel
-	y = pLineStart.y;                       // Start y off at the first pixel
-
-	if (pLineEnd.x >= pLineStart.x)                 // The x-values are increasing
-	{
-		xinc1 = 1;
-		xinc2 = 1;
-	}
-	else                          // The x-values are decreasing
-	{
-		xinc1 = -1;
-		xinc2 = -1;
-	}
-
-	if (pLineEnd.y >= pLineStart.y)                 // The y-values are increasing
-	{
-		yinc1 = 1;
-		yinc2 = 1;
-	}
-	else                          // The y-values are decreasing
-	{
-		yinc1 = -1;
-		yinc2 = -1;
-	}
-
-	if (deltax >= deltay)         // There is at least one x-value for every y-value
-	{
-		xinc1 = 0;                  // Don't change the x when numerator >= denominator
-		yinc2 = 0;                  // Don't change the y for every iteration
-		den = deltax;
-		num = deltax / 2;
-		numadd = deltay;
-		numpixels = deltax;         // There are more x-values than y-values
-	}
-	else                          // There is at least one y-value for every x-value
-	{
-		xinc2 = 0;                  // Don't change the x for every iteration
-		yinc1 = 0;                  // Don't change the y when numerator >= denominator
-		den = deltay;
-		num = deltay / 2;
-		numadd = deltax;
-		numpixels = deltay;         // There are more y-values than x-values
-	}
-
-	for (curpixel = 0; curpixel <= numpixels; curpixel++)
-	{
-		// Check current point against the rectangle
-		if (x >= pBoxTopLeft.x && x <=pBoxBottomRight.x && y>=pBoxTopLeft.y && y<=pBoxBottomRight.y)
-		{
-			// point is inside the bounds of the box. We've hit something!
-			return 1;
-		}
-
-		num += numadd;              // Increase the numerator by the top of the fraction
-		if (num >= den)             // Check if numerator >= denominator
-		{
-			num -= den;               // Calculate the new numerator value
-			x += xinc1;               // Change the x as appropriate
-			y += yinc1;               // Change the y as appropriate
-		}
-		x += xinc2;                 // Change the x as appropriate
-		y += yinc2;                 // Change the y as appropriate
-	}
-
-	return 0;
 }

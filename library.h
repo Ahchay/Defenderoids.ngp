@@ -25,6 +25,7 @@ void PutTile(u8 ScrollPlane, u8 PaletteNo, u8 XPos, u8 YPos, u16 TileNo);
 void PrintDecimal(u8 Plane, u8 PaletteNo, u8 x, u8 y, u16 Value, u8 Len);
 void PrintHex(u8 Plane, u8 PaletteNo, u8 x, u8 y, u16 Value, u8 Len);
 void PrintString(u8 Plane, u8 Palette, u8 XPos, u8 YPos, const char * theString);
+void PrintBinary(u8 Plane, u8 PaletteNo, u8 x, u8 y, u16 Value, u8 Len);
 
 void SetSprite(u8 SpriteNo, u16 TileNo, u8 Chain, u8 XPos, u8 YPos, u8 PaletteNo);
 void SetSpritePosition(u8 SpriteNo, u8 XPos, u8 YPos);

@@ -312,6 +312,24 @@ void PrintHex(u8 Plane, u8 PaletteNo, u8 x, u8 y, u16 Value, u8 Len)
    }
 }
 
+void PrintBinary(u8 Plane, u8 PaletteNo, u8 x, u8 y, u16 Value, u8 Len)
+{
+// Similar to PrintDecimal, but prints in Hexadecimal
+// works well with the BCD values returned by GetTime
+
+   u8 i;
+
+   for (i = Len; i > 0; i--)
+   {
+      if ((Value & 1))
+         PutTile(Plane, PaletteNo, x+i-1, y, '1');
+      else
+         PutTile(Plane, PaletteNo, x+i-1, y, '0');
+
+      Value = Value >> 1;
+   }
+}
+
 
 
 //////////////////////////////////////////////////////////////////////////////
