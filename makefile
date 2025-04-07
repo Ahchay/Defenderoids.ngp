@@ -2,6 +2,7 @@
 NAME = DEFENDEROIDS
 OBJS = 	main.rel \
 	library.rel \
+	veclib.rel \
 	Defenderoids.rel
 	
 

@@ -1,0 +1,186 @@
+(C)Copyright TOSHIBA CORPORATION 1993-2009  All rights reserved
+
+Mon Apr 07 13:16:13 2025
+
+Toshiba Unified Linker (32) V2.0p     [Page     1]     DEFENDEROIDS.map
+Runtime option : tulink -la -o DEFENDEROIDS.abs ngpc.lcf main.rel library.rel veclib.rel Defenderoids.rel 
+
+  Command file : ngpc.lcf
+    memory
+    {
+    	io(RW)	: org=0x000000, len=0x000100
+    	ram(RW)	: org=0x004000, len=0x002C00
+    	rom(RX)	: org=0x200000, len=0x200000
+    }
+    
+    sections
+    {
+    	far_area	org=0x004000								: {*(f_area)}
+    	far_startup	org=0x200000								: {*(f_header)}
+    	far_const	org=org(far_startup)+sizeof(far_startup)		: {*(f_const)}
+    	far_code	org=org(far_const)+sizeof(far_const)	: {*(f_code)}
+    	far_data	org=org(far_code)+sizeof(far_code)
+    				addr=org(far_area)+sizeof(far_area)			: {*(f_data)}
+    	__DataRAM = addr(far_data);
+    }
+
+  Input files (modules)
+    main.rel (main_c)
+    library.rel (library_c)
+    veclib.rel (veclib_c)
+    Defenderoids.rel (Defenderoids_c)
+
+  Link map
+    Memory     Out-sec    Attri   Base       Length     In-sec(In-file)        Information
+    ---------- ---------- ------- ---------- ---------- ---------------------- ---------------
+    io                                     0        100                        *** Gap ***
+    ram        far_area   DATA          4000          A f_area  (library.rel)  NORMAL
+    ram                                 400A       2BF6                        *** Gap ***
+    rom        far_const  ROMDATA     200000         40 f_const (main.rel)     NORMAL
+    rom        far_const  ROMDATA     200040       15AC f_const (library.rel)  NORMAL
+    rom        far_const  ROMDATA     2015EC       94DF f_const (Defenderoids.rel)
+                                                                               NORMAL
+    rom        far_code   CODE        20AACB         46 f_code  (main.rel)     NORMAL
+    rom        far_code   CODE        20AB11        B4C f_code  (library.rel)  NORMAL
+    rom        far_code   CODE        20B65D        46D f_code  (veclib.rel)   NORMAL
+    rom        far_code   CODE        20BACA       154F f_code  (Defenderoids.rel)
+                                                                               NORMAL
+    rom                               20D019     1F2FE7                        *** Gap ***
+
+  Symbol table for DEFENDEROIDS.abs
+      Symbol       Address  In-sec   Cross-reference
+      ------------ -------- -------- --------------------------------------
+    Input module : main_c
+      _CartID        200020 f_const  
+      _CartTitle     200024 f_const  
+      _Licensed      200000 f_const  
+      _Reserved      200030 f_const  
+      _System        200022 f_const  
+      _main          20AACB f_code   
+      _ptr           20001C f_const  
+    Input module : library_c
+      _BitmapMask    20158C f_const  
+      _BitmapNewMask
+                     20159C f_const  
+      _BlockCopy     20AF6F f_code   
+      _ClearScreen   20ABFC f_code   Defenderoids_c 
+      _CopyAnimationFrame
+                     20B60E f_code   Defenderoids_c 
+      _CopyBitmap    20B381 f_code   Defenderoids_c 
+      _Cos           20B0CE f_code   Defenderoids_c veclib_c 
+      _CpuSpeed      20B149 f_code   
+      _CreateBitmap
+                     20B21A f_code   Defenderoids_c 
+      _DayNames      200A90 f_const  
+      _DrawBitmap    20B3EE f_code   
+      _DrawLine      20B45B f_code   Defenderoids_c veclib_c 
+      _DrawLineHorizontal
+                     20B5D2 f_code   
+      _DrawLineVertical
+                     20B596 f_code   
+      _DummyFunction
+                     20AB11 f_code   
+      _GetRandom     20B054 f_code   
+      _GetTile       20ACC7 f_code   
+      _GetTime       20B0E1 f_code   
+      _InitNGPC      20AB4E f_code   main_c   
+      _InitialiseQRandom
+                     20B091 f_code   Defenderoids_c main_c   
+      _InstallSoundDriver
+                     20AF8F f_code   
+      _InstallSounds
+                     20AFB3 f_code   
+      _InstallTileSet
+                     20AE37 f_code   
+      _InstallTileSetAt
+                     20AE5B f_code   Defenderoids_c 
+      _Multiply32bit
+                     20B038 f_code   
+      _NeoTracker_Driver
+                     200AD6 f_const  
+      _NeoTracker_InstallDriver
+                     20B16D f_code   
+      _NeoTracker_PlayMusic
+                     20B1F3 f_code   
+      _NeoTracker_PlaySFX
+                     20B203 f_code   
+      _NeoTracker_SendGroup
+                     20B1A3 f_code   
+      _NeoTracker_StopAll
+                     20B213 f_code   
+      _OffsetValues
+                     2015DC f_const  
+      _PlaySound     20B015 f_code   
+      _PrintBinary   20ADE4 f_code   
+      _PrintDecimal
+                     20AD33 f_code   Defenderoids_c 
+      _PrintHex      20AD86 f_code   
+      _PrintString   20AE9A f_code   Defenderoids_c 
+      _PutBitmapTile
+                     20B351 f_code   
+      _PutTile       20AC8A f_code   Defenderoids_c 
+      _QRandom       20B0A8 f_code   Defenderoids_c 
+      _QuickRandomNumbers
+                     200590 f_const  
+      _QuickSetPixel
+                     20B301 f_code   
+      _RAND_RandomData
+                       4006 f_area   
+      _RandomNumberCounter
+                       4002 f_area   
+      _ResumeOff     20B166 f_code   
+      _SFXDriver_Z80
+                     200040 f_const  
+      _SFXInstalled
+                       4004 f_area   
+      _SeedRandom    20B023 f_code   
+      _SetAlarm      20B123 f_code   
+      _SetBackgroundColour
+                     20AE8D f_code   Defenderoids_c main_c   
+      _SetPalette    20AC25 f_code   Defenderoids_c main_c   
+      _SetPixel      20B262 f_code   Defenderoids_c veclib_c 
+      _SetSprite     20AEFF f_code   Defenderoids_c 
+      _SetSpritePosition
+                     20AF50 f_code   Defenderoids_c 
+      _SetWake       20B0FD f_code   
+      _Sin           20B0BE f_code   Defenderoids_c veclib_c 
+      _SineTable256
+                     200990 f_const  
+      _Sleep         20AD1B f_code   
+      _StopAllSound
+                     20B01D f_code   
+      _SysSetSystemFont
+                     20ABE3 f_code   main_c   
+      _SysShutdown   20ABCD f_code   
+      _VBCounter       4000 f_area   Defenderoids_c 
+      _VBInterrupt   20AB12 f_code   
+    Input module : veclib_c
+      _DrawVectorObject
+                     20B680 f_code   Defenderoids_c 
+      _DrawVectorObjectAbsolute
+                     20B65D f_code   
+      _DrawVectorSprite
+                     20B897 f_code   Defenderoids_c 
+      _DrawVectorSpriteAbsolute
+                     20B874 f_code   Defenderoids_c 
+      _LineIntersect
+                     20B9BC f_code   Defenderoids_c 
+    Input module : Defenderoids_c
+      _CreateAsteroid
+                     20BACA f_code   
+      _CreateSprite
+                     20BB4B f_code   
+      _DefenderoidsLogo
+                     20BBC0 f_code   main_c   
+      _DefenderoidsMain
+                     20BD2D f_code   main_c   
+      _DefenderoidsTest
+                     20C91D f_code   main_c   
+      _HeightMap     20256C f_const  
+      _Logo          2018EC f_const  
+      _PlayerSprite
+                     20276C f_const  
+      _Shot          202898 f_const  
+      _Sprites       2015EC f_const  
+
+Linker end,No error

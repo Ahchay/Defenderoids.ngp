@@ -7,7 +7,7 @@ void DrawVectorObjectAbsolute(u16 * BitmapAddress, VECTOROBJECT VectorObject)
 	DrawVectorObject(BitmapAddress, VectorObject, 0);
 }
 
-void DrawVectorObject(u16 * BitmapAddress, VECTOROBJECT VectorObject, u8 iHorizontalOffset)
+void DrawVectorObject(u16 * BitmapAddress, VECTOROBJECT VectorObject, u16 iHorizontalOffset)
 {
 	s16 iStartX;
 	s16 iStartY;
@@ -15,23 +15,49 @@ void DrawVectorObject(u16 * BitmapAddress, VECTOROBJECT VectorObject, u8 iHorizo
 	s16 iEndY;
 	s16 iTempX;
 	s16 iTempY;
-	s16 sPositionX;
+	s8 sPositionX;
 	u8 iPositionX;
+	u8 iPositionY;
 	u8 iPoint = 0;
 	s8 cSin;
 	s8 cCos;
 
-	if (!((((VectorObject.Position.x>>7)-iHorizontalOffset) > BitmapAddress[0]) && ((VectorObject.Position.x>>7)<iHorizontalOffset)))
+
+	sPositionX = VectorObject.Position.x>>7;
+	iPositionX=sPositionX-iHorizontalOffset;
+
+	/*
+	PrintString(SCR_2_PLANE,0,0,1,"X:");
+	PrintDecimal(SCR_2_PLANE,0,2,1,sPositionX,3);
+	PrintString(SCR_2_PLANE,0,0,2,"A:");
+	PrintDecimal(SCR_2_PLANE,0,2,2,iPositionX,3);
+	//Clear some space for debug lines
+	PrintString(SCR_2_PLANE,0,0,3,"                      ");
+	PrintString(SCR_2_PLANE,0,0,4,"                      ");
+	PrintString(SCR_2_PLANE,0,0,5,"                      ");
+	PrintString(SCR_2_PLANE,0,0,6,"                      ");
+	PrintString(SCR_2_PLANE,0,0,7,"                      ");
+	PrintString(SCR_2_PLANE,0,0,8,"                      ");
+	*/
+	if (iPositionX >=0 && iPositionX<BitmapAddress[0])
 	{
+
+		//PrintString(SCR_2_PLANE,0,0,4,"PLOTTING");
 
 		cSin = Sin(VectorObject.RotationAngle);
 		cCos = Cos(VectorObject.RotationAngle);
 
 		sPositionX = VectorObject.Position.x>>7;
+		sPositionX -= iHorizontalOffset;
 		iPositionX = sPositionX % 256;
+
+		iPositionY = VectorObject.Position.y>>7;
 
 		iStartX = VectorObject.VectorList[0].x;
 		iStartY = VectorObject.VectorList[0].y;
+
+		//Plot the centre point
+		//SetPixel((u16*)BitmapAddress,iPositionX,iPositionY,3);
 
 		while (iPoint++<VectorObject.Points)
 		{
@@ -46,7 +72,7 @@ void DrawVectorObject(u16 * BitmapAddress, VECTOROBJECT VectorObject, u8 iHorizo
 
 			// translate point back to it's original position:
 			// Modify back from the centre of rotation above, and then add the X & Y co-ordinates
-			iStartX = (iPositionX-iHorizontalOffset)+iTempX;
+			iStartX = iPositionX+iTempX;
 			//if (iStartX<0) iStartX=0;
 			iStartY = (VectorObject.Position.y>>7)+iTempY;
 			//if (iStartY<0) iStartY=0;
@@ -59,9 +85,9 @@ void DrawVectorObject(u16 * BitmapAddress, VECTOROBJECT VectorObject, u8 iHorizo
 			iTempY = ((iEndX * cSin)>>7) + ((iEndY * cCos)>>7);
 
 			// translate point back:
-			iEndX = (iPositionX-iHorizontalOffset)+iTempX;
+			iEndX = iPositionX+iTempX;
 			//if (iEndX<0) iEndX=0;
-			iEndY = (VectorObject.Position.y>>7)+iTempY;
+			iEndY = iPositionY+iTempY;
 			//if (iEndY<0) iEndY=0;
 
 			// Bounds check to ensure that rotated points are still within the bitmap boundary
@@ -83,7 +109,7 @@ void DrawVectorSpriteAbsolute(u16 * BitmapAddress, VECTOROBJECT VectorObject)
 // Only works when HorizontalOffset is between 0 and 72?
 // i.e. half the bitmap width. So, it must have something to do with that...
 // Might be affecting the drawobject above as well...
-void DrawVectorSprite(u16 * BitmapAddress, VECTOROBJECT VectorObject, u8 iHorizontalOffset)
+void DrawVectorSprite(u16 * BitmapAddress, VECTOROBJECT VectorObject, u16 iHorizontalOffset)
 {
 	s16 iStartX;
 	s16 iStartY;

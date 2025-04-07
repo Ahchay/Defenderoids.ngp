@@ -4,7 +4,7 @@
 
 volatile u8 VBCounter;
 
-volatile u8 RandomNumberCounter;
+volatile u16 RandomNumberCounter;
 
 // SFX related variables and registers
 u8 SFXInstalled;
@@ -471,7 +471,6 @@ void SetSpritePosition(u8 SpriteNo, u8 XPos, u8 YPos)
    *(theSprite+3) = YPos;
 }
 
-
 //////////////////////////////////////////////////////////////////////////////
 // SFX Sound Engine integration
 //////////////////////////////////////////////////////////////////////////////
@@ -793,18 +792,22 @@ const unsigned char QuickRandomNumbers[1024]={63, 254, 102, 147, 252, 158, 83, 1
 241, 28, 172, 46, 99, 183, 35, 133, 170, 9, 120, 192, 44, 110, 182, 135, 193, 45, 161, 105, 151, 191, 170, 226, 53,
 70, 31, 182, 2};
 
+// Initialises QRandom counter based on the clock
 void InitialiseQRandom()
 {
-   RandomNumberCounter=VBCounter;
+   TIME tmCur;
+
+   GetTime(&tmCur);
+
+   RandomNumberCounter=tmCur.Second;
 }
 
+// Returns the next random number in the array
 unsigned char QRandom()
 {
-    //Um. RandomNumberCounter is an unsigned char...
-    //which means that this routine will never get beyond the first
-    //255 elements of the random number array?
-    //Oh well. Should be good enough for my uses anyway...
-   return QuickRandomNumbers[RandomNumberCounter++];
+	u8 iRandom;
+	iRandom=QuickRandomNumbers[RandomNumberCounter++];
+	return iRandom;
 }
 
 

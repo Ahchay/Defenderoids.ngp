@@ -19,12 +19,12 @@ typedef struct VectorObject
 	u8 Points;
 	COLOURPOINT VectorList[128];
 	u8 Scale;
-	s8 RotationAngle;
+	u8 RotationAngle;
 	s8 RotationSpeed;
 } VECTOROBJECT;
 
 void DrawVectorObjectAbsolute(u16 * BitmapAddress, VECTOROBJECT VectorObject);
-void DrawVectorObject(u16 * BitmapAddress, VECTOROBJECT VectorObject,u8 iHorizontalOffset);
+void DrawVectorObject(u16 * BitmapAddress, VECTOROBJECT VectorObject,u16 iHorizontalOffset);
 void DrawVectorSpriteAbsolute(u16 * BitmapAddress, VECTOROBJECT VectorObject);
-void DrawVectorSprite(u16 * BitmapAddress, VECTOROBJECT VectorObject,u8 iHorizontalOffset);
+void DrawVectorSprite(u16 * BitmapAddress, VECTOROBJECT VectorObject,u16 iHorizontalOffset);
 bool LineIntersect(POINT l1, POINT l2, POINT b1, POINT b2);

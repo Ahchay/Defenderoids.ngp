@@ -33,6 +33,7 @@ typedef struct Level
 	u8 AsteroidCount;
 } LEVEL;
 
-bool DefenderoidsLogo();
+u8 DefenderoidsLogo();
 void DefenderoidsMain();
+void DefenderoidsTest();
 
