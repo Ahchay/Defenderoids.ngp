@@ -1,4 +1,5 @@
 #include "ngpc.h"
+#include "ngpc.h"
 #include "library.h"
 #include "Defenderoids.h"
 #include "veclib.h"
@@ -74,6 +75,16 @@ SPRITE CreateSprite(u16 x, u16 y, u8 ID, u8 Type, u8 Direction, u8 Frame)
 	SetSprite(sprReturn.SpriteID, sprReturn.BaseTile , 0, (u8)(sprReturn.Position.x>>8), (u8)(sprReturn.Position.y>>8), (u8)(PAL_SPRITE + sprReturn.SpriteType));
 
 	return sprReturn;
+}
+
+POINT ConvertPoint(POINT ptSource, const char * pointType)
+{
+	POINT ptReturn;
+
+	ptReturn=ptSource;
+
+	return ptReturn;
+
 }
 
 // Logo and game select screen

@@ -1,3 +1,6 @@
+#ifndef _VECLIB
+#define _VECLIB
+
 typedef struct Point
 {
 	s16 x;
@@ -28,3 +31,6 @@ void DrawVectorObject(u16 * BitmapAddress, VECTOROBJECT VectorObject,u16 iHorizo
 void DrawVectorSpriteAbsolute(u16 * BitmapAddress, VECTOROBJECT VectorObject);
 void DrawVectorSprite(u16 * BitmapAddress, VECTOROBJECT VectorObject,u16 iHorizontalOffset);
 bool LineIntersect(POINT l1, POINT l2, POINT b1, POINT b2);
+
+#endif
+

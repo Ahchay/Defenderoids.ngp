@@ -1,3 +1,6 @@
+#ifndef _DEFENDEROIDS
+#define _DEFENDEROIDS
+
 #define bgTileBase 256
 #define spTileBase 128
 #define LogoTileBase 256
@@ -36,4 +39,6 @@ typedef struct Level
 u8 DefenderoidsLogo();
 void DefenderoidsMain();
 void DefenderoidsTest();
+
+#endif
 
