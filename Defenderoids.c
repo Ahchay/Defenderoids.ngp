@@ -778,8 +778,6 @@ void DefenderoidsMain()
 
 }
 
-
-
 void DefenderoidsTest()
 {
 	// Define variables
