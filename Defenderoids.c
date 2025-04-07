@@ -91,8 +91,6 @@ Not sure where I'm going with it yet, but it's entertaining enough
 		Game:VectorObject ratio:
 			1:1
 
-
-
 */
 
 
