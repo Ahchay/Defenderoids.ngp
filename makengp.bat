@@ -3,7 +3,7 @@
 for /f %%p in ('cd') do set _currentpath=%%p
 
 echo %_currentpath%
-cd ..\..\..
+cd ..\..
 for /f %%p in ('cd') do set _ngpcpath=%%p
 cd %_currentpath%
 

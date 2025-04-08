@@ -6,7 +6,7 @@
         {
             "label": "NGP Make",
             "type": "shell",
-            "command": "D:\\Development\\NGPC\\Projects\\Defenderoids.NGP\\Defenderoids.ngp\\makengp.bat",
+            "command": "D:\\Development\\NGPC\\Projects\\Defenderoids.NGP\\makengp.bat",
             "problemMatcher": [],
             "group": {
                 "kind": "build",

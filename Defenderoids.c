@@ -721,8 +721,8 @@ void DefenderoidsMain()
 			}
 
 			//Frame counter
-			//PrintString(SCR_1_PLANE, 0, 0, 18, "FPS:");
-			//PrintDecimal(SCR_1_PLANE, 0, 4, 18, 60/(VBCounter-iStartFrame), 2);
+			PrintString(SCR_1_PLANE, 0, 0, 18, "FPS:");
+			PrintDecimal(SCR_1_PLANE, 0, 4, 18, 60/(VBCounter-iStartFrame), 2);
 			PrintString(SCR_2_PLANE, 0, 0, 17, "HZL:");
 			PrintDecimal(SCR_2_PLANE, 0, 4, 17, iHorizontalOffset, 3);
 
