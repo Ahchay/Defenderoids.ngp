@@ -25,11 +25,9 @@ Game Co-ordintate:
     Width: 65535
     Height: 65535
 
-Maximum Game world:
-    Question: Do I just expand this vertically so that the maxium world size is 1024
-                and then just restrict it as an upper bound?
-    W: 1024 = 1024
-    H: 112 = 128
+Game size (pixels):
+    W: 512 (current) = 1024 (max)
+    H: 112 (current) = 1024 (max)
 
 SPR_PLANE Size:
     W: 256

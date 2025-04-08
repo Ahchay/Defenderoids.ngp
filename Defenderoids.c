@@ -7,12 +7,11 @@
 #include "Tiles\Logo.c"
 #include "VectorObjects.h"
 
-
-
 //Helper functions
 
+/////////////////////////////////////////////////////
 // Create a unique asteroid object
-//
+/////////////////////////////////////////////////////
 VECTOROBJECT CreateAsteroid(u16 x, u16 y)
 {
 	VECTOROBJECT vReturn;
@@ -44,6 +43,7 @@ VECTOROBJECT CreateAsteroid(u16 x, u16 y)
 	return vReturn;
 }
 
+/////////////////////////////////////////////////////
 // Sprite creator function
 // Creates an extended sprite type includes:
 // - Position
@@ -51,7 +51,7 @@ VECTOROBJECT CreateAsteroid(u16 x, u16 y)
 // - Type - index into sprite tiles enum (Invader and Lemmanoid)
 // - Direction - index animation direction
 // - Frame - index for animation frame
-
+//
 // Sprite tile can then be returned using
 // 		Type * 16
 // 		+
@@ -60,6 +60,7 @@ VECTOROBJECT CreateAsteroid(u16 x, u16 y)
 // 		Frame
 // or more effeciently:
 // 		Type<<4 + Direction<<2 + Frame
+/////////////////////////////////////////////////////
 
 SPRITE CreateSprite(u16 x, u16 y, u8 ID, u8 Type, u8 Direction, u8 Frame)
 {
@@ -76,7 +77,11 @@ SPRITE CreateSprite(u16 x, u16 y, u8 ID, u8 Type, u8 Direction, u8 Frame)
 
 	return sprReturn;
 }
-
+/////////////////////////////////////////////////////
+// Point conversion function
+//
+// Needed to convert the various co-ordinate types into the base game co-ordinate system
+/////////////////////////////////////////////////////
 POINT ConvertPoint(POINT ptSource, const char * pointType)
 {
 	POINT ptReturn;
@@ -87,7 +92,9 @@ POINT ConvertPoint(POINT ptSource, const char * pointType)
 
 }
 
+/////////////////////////////////////////////////////
 // Logo and game select screen
+/////////////////////////////////////////////////////
 u8 DefenderoidsLogo()
 {
 	bool iGameMode=0;
@@ -167,6 +174,9 @@ u8 DefenderoidsLogo()
 
 }
 
+/////////////////////////////////////////////////////
+// Main game loop
+/////////////////////////////////////////////////////
 void DefenderoidsMain()
 {
 	// Define variables
@@ -417,7 +427,7 @@ void DefenderoidsMain()
 						Shots[iLoopShot].RotationAngle = PlayerOne.RotationAngle;
 						// Give the shots a bit of speed. Should be faster than the ship but in the same direction as the ship is "facing" (rather than moving)
 						Shots[iLoopShot].MovementVector.x = ((s16)Cos(Shots[iLoopShot].RotationAngle+192))<<4;
-						Shots[iLoopShot].MovementVector.y = ((s16)Sin(Shots[iLoopShot].RotationAngle+192))<<4;
+						Shots[iLoopShot].MovementVector.y = ((s16)Sin(Shots[iLoopShot].RotationAngle+192))<<3;
 
 						// We'll use RotationSpeed to control the life of the shot. Kill it when it hits a limit...
 						Shots[iLoopShot].RotationSpeed=0;
@@ -677,7 +687,40 @@ void DefenderoidsMain()
 			// Score and other dressing
 			// Mostly debug information at the moment
 			//////////////////////////////////////////////////////
-			// How many frames has all of this taken...
+			PrintString(SCR_2_PLANE,0,0,0,"PLAYER:(     ,     )");
+			PrintDecimal(SCR_2_PLANE, 0, 8, 0, PlayerOne.Position.x, 5);
+			PrintDecimal(SCR_2_PLANE, 0, 14, 0, PlayerOne.Position.y, 5);
+			PrintString(SCR_2_PLANE,0,0,1,"SHOT 0:(     ,     )");
+			PrintString(SCR_2_PLANE,0,0,2,"SHOT 1:(     ,     )");
+			PrintString(SCR_2_PLANE,0,0,3,"SHOT 2:(     ,     )");
+			PrintString(SCR_2_PLANE,0,0,4,"SHOT 3:(     ,     )");
+			for(iLoopShot=0;iLoopShot<4;iLoopShot++) {
+				if (Shots[iLoopShot].Scale == 1)
+				{
+					PrintDecimal(SCR_2_PLANE, 0, 8, 1+iLoopShot,Shots[iLoopShot].Position.x, 5);
+					PrintDecimal(SCR_2_PLANE, 0, 14, 1+iLoopShot, Shots[iLoopShot].Position.y, 5);
+				}
+			}
+			PrintString(SCR_2_PLANE,0,0,5,"INVADR:(     ,     )");
+			PrintDecimal(SCR_2_PLANE,0,8,5,SpriteList[0].Position.x,5);
+			PrintDecimal(SCR_2_PLANE,0,14,5,SpriteList[0].Position.y,5);
+			PrintString(SCR_2_PLANE,0,0,6,"LEMMNG:(     ,     )");
+			PrintDecimal(SCR_2_PLANE,0,8,6,SpriteList[12].Position.x,5);
+			PrintDecimal(SCR_2_PLANE,0,14,6,SpriteList[12].Position.y,5);
+			PrintString(SCR_2_PLANE,0,0,7,"ASTER0:(     ,     )");
+			PrintString(SCR_2_PLANE,0,0,8,"ASTER1:(     ,     )");
+			PrintString(SCR_2_PLANE,0,0,9,"ASTER2:(     ,     )");
+			PrintString(SCR_2_PLANE,0,0,10,"ASTER3:(     ,     )");
+			PrintString(SCR_2_PLANE,0,0,11,"ASTER4:(     ,     )");
+			PrintString(SCR_2_PLANE,0,0,12,"ASTER5:(     ,     )");
+			PrintString(SCR_2_PLANE,0,0,13,"ASTER6:(     ,     )");
+			for (iLoopAsteroid=0;iLoopAsteroid<DefenderoidsLevels[iCurrentLevel].AsteroidCount;iLoopAsteroid++)
+			{
+				PrintDecimal(SCR_2_PLANE, 0, 8, 7+iLoopAsteroid,Asteroid[iLoopAsteroid].Position.x, 5);
+				PrintDecimal(SCR_2_PLANE, 0, 14, 7+iLoopAsteroid, Asteroid[iLoopAsteroid].Position.y, 5);
+			}
+
+			//Frame counter
 			//PrintString(SCR_1_PLANE, 0, 0, 18, "FPS:");
 			//PrintDecimal(SCR_1_PLANE, 0, 4, 18, 60/(VBCounter-iStartFrame), 2);
 			PrintString(SCR_2_PLANE, 0, 0, 17, "HZL:");
@@ -703,6 +746,10 @@ void DefenderoidsMain()
 
 }
 
+/////////////////////////////////////////////////////
+// Test game loop
+// Used to isolate individual game elements for testing
+/////////////////////////////////////////////////////
 void DefenderoidsTest()
 {
 	// Define variables
