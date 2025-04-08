@@ -14,7 +14,7 @@ SET THOME=%_ngpcpath%\t900\
 PROMPT $P$_NGPC$G
 make
 if ERRORLEVEL 1 GOTO debug
-
+copy *.ngp D:\Development\Ahchay.com\ahchay.com\NGPC\Projects
 for %%g in (*.ngp) do %%g
 
 goto end
