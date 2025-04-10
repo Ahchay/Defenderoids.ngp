@@ -32,7 +32,7 @@ VECTOROBJECT CreateAsteroid(u16 x, u16 y)
 	vReturn.Position.y=y;
 
 	// Set scale, rotation and speed randomly
-	vReturn.Scale=3;
+	vReturn.Scale=5;
 	vReturn.RotationSpeed=QRandom()>>4;
 	vReturn.RotationAngle=QRandom();
 	//Asteroid[iLoopAsteroid].Position.x=((u16)QRandom())<<4;
@@ -73,23 +73,13 @@ SPRITE CreateSprite(u16 x, u16 y, u8 ID, u8 Type, u8 Direction, u8 Frame)
 	sprReturn.BaseTile = spTileBase + ID;
 	sprReturn.Frame = Frame;
 
-	SetSprite(sprReturn.SpriteID, sprReturn.BaseTile , 0, (u8)(sprReturn.Position.x>>8), (u8)(sprReturn.Position.y>>8), (u8)(PAL_SPRITE + sprReturn.SpriteType));
+	// Initialise sprites with the nullsprite - animation frames are applied in the main loop
+	CopyAnimationFrame(Sprites, sprReturn.BaseTile, 1, (u16)((EmptySprite << 4) + (sprReturn.Direction << 2) + sprReturn.Frame));
+
+	//Create the sprite pointer - again, initialised at (0,0) and sprite plane position applied in the main loop
+	SetSprite(sprReturn.SpriteID, sprReturn.BaseTile , 0, 0, 0, (u8)(PAL_SPRITE + sprReturn.SpriteType));
 
 	return sprReturn;
-}
-/////////////////////////////////////////////////////
-// Point conversion function
-//
-// Needed to convert the various co-ordinate types into the base game co-ordinate system
-/////////////////////////////////////////////////////
-POINT ConvertPoint(POINT ptSource, const char * pointType)
-{
-	POINT ptReturn;
-
-	ptReturn=ptSource;
-
-	return ptReturn;
-
 }
 
 /////////////////////////////////////////////////////
@@ -143,8 +133,8 @@ u8 DefenderoidsLogo()
 
 	PrintString(SCR_1_PLANE, 0, 2, 1, "  PRESENTED BY");
 	PrintString(SCR_1_PLANE, 0, 2, 2, "   AHCHAY.COM");
-	PrintString(SCR_1_PLANE, 0, 2, 13, "PRESS A TO START");
-	PrintString(SCR_1_PLANE, 0, 2, 14, "PRESS B TO TEST");
+	PrintString(SCR_1_PLANE, 0, 2, 14, "PRESS A TO START");
+	PrintString(SCR_1_PLANE, 0, 2, 15, "PRESS B TO TEST");
 
 	iGameMode=0;
 
@@ -248,7 +238,7 @@ void DefenderoidsMain()
 								};
 
 	LEVEL DefenderoidsLevels[] = {
-									{"Start me up",12,5,7},
+									{"Start me up",12,5,4},
 									{"Getting Harder",12,12,3}
 								};
 
@@ -269,7 +259,7 @@ void DefenderoidsMain()
 	SetBackgroundColour(RGB(0,0,4));
 
 	SetPalette(SCR_1_PLANE, 0, 0, RGB(15,15,15), RGB(0,0,15), RGB(15,0,0));
-	SetPalette(SCR_2_PLANE, 0, 0, RGB(15,15,15), RGB(0,0,15), RGB(15,0,0));
+	SetPalette(SCR_2_PLANE, 0, 0, RGB(15,15,15), RGB(8,8,8), RGB(4,4,4));
 
 	CreateBitmap((u16*)bmpPlayField, 144, 112);
 	CopyBitmap((u16*)bmpPlayField, bgTileBase);
@@ -293,19 +283,25 @@ void DefenderoidsMain()
 		// Invaders - do I want these to all appear at the start of the level or be phased in somehow?
 		for (iSpriteLoop=0;iSpriteLoop<DefenderoidsLevels[iCurrentLevel].InvaderCount;iSpriteLoop++)
 		{
-			SpriteList[iSpriteLoop] = CreateSprite(((u16)QRandom())<<10,0,iSpriteLoop,Invader,DIR_SOUTH,0);
+			//x, y, ID, Type, Direction, Frame
+			//Invaders always move south on creation
+			//Eventually, we'll spawn these on a timer I guess rather than just dumping them all in at the outset of the level
+			SpriteList[iSpriteLoop] = CreateSprite(((u16)QRandom())<<8,((u16)QRandom())<<4,iSpriteLoop,Invader,DIR_SOUTH,0);
 		}
 
 		// Lemmanoids
 		for (;iSpriteLoop<DefenderoidsLevels[iCurrentLevel].InvaderCount+DefenderoidsLevels[iCurrentLevel].LemmanoidCount;iSpriteLoop++)
 		{
-			SpriteList[iSpriteLoop] = CreateSprite(((u16)QRandom())<<10,(u16)(HeightMap[((u8)(SpriteList[iSpriteLoop].Position.x>>8))+4]+4)<<8,iSpriteLoop,Lemmanoid,1 + ((QRandom()>>7)<<1),0);
+			//x, y, ID, Type, Direction, Frame
+			//Lemmanoids move either west or east (DIR_EAST + [0|2])
+			//Spawn them vertically at the median point of the terrain
+			SpriteList[iSpriteLoop] = CreateSprite(((u16)QRandom())<<8,100<<8,iSpriteLoop,Lemmanoid,DIR_EAST + ((QRandom()>>7)<<1),(QRandom()>>5));
 		}
 
 		// Asteroids
 		for (iLoopAsteroid=0;iLoopAsteroid<DefenderoidsLevels[iCurrentLevel].AsteroidCount;iLoopAsteroid++)
 		{
-			Asteroid[iLoopAsteroid] = CreateAsteroid(((u16)QRandom())<<7,((u16)QRandom())<<7);
+			Asteroid[iLoopAsteroid] = CreateAsteroid(((u16)QRandom())<<7,((u16)QRandom())<<5);
 		}
 
 		// Set up the player
@@ -659,9 +655,6 @@ void DefenderoidsMain()
 					//PrintString(SCR_2_PLANE, 0, 0, iSpriteLoop, "S  :");
 					//PrintDecimal(SCR_2_PLANE, 0, 1, iSpriteLoop, iSpriteLoop, 2);
 					//PrintBinary(SCR_2_PLANE, 0, 4, iSpriteLoop, (SpriteList[iSpriteLoop].SpriteType << 3) + (SpriteList[iSpriteLoop].Direction << 2) + SpriteList[iSpriteLoop].Frame, 16);
-					CopyAnimationFrame(Sprites, SpriteList[iSpriteLoop].BaseTile, 1, (SpriteList[iSpriteLoop].SpriteType << 4) + (SpriteList[iSpriteLoop].Direction << 2) + SpriteList[iSpriteLoop].Frame);
-					SetSpritePosition(SpriteList[iSpriteLoop].SpriteID, (u8)((SpriteList[iSpriteLoop].Position.x>>8)-iHorizontalOffset+4), (u8)(SpriteList[iSpriteLoop].Position.y>>8));
-					if (++SpriteList[iSpriteLoop].Frame>3) SpriteList[iSpriteLoop].Frame=0;
 					switch(SpriteList[iSpriteLoop].Direction)
 					{
 						case DIR_SOUTH:
@@ -680,6 +673,20 @@ void DefenderoidsMain()
 						default:
 							break;
 					}
+
+					SpriteList[iSpriteLoop].Frame++;
+					if (SpriteList[iSpriteLoop].Frame>3) SpriteList[iSpriteLoop].Frame=0;
+
+					//Sprite offset calculated as:
+					// (SpriteList[iSpriteLoop].SpriteType << 4) (*16)
+					// +
+					// (SpriteList[iSpriteLoop].Direction << 2) (*4)
+					// +
+					// SpriteList.[iSpriteLoop].Frame
+					//
+					//However, sprites are overlapping into the next tile offset, so need to take one from the result - not entirely sure why?
+					CopyAnimationFrame(Sprites, SpriteList[iSpriteLoop].BaseTile, 1, (SpriteList[iSpriteLoop].SpriteType << 4) + (SpriteList[iSpriteLoop].Direction << 2) + SpriteList[iSpriteLoop].Frame - 1);
+					SetSpritePosition(SpriteList[iSpriteLoop].SpriteID, (u8)((SpriteList[iSpriteLoop].Position.x>>8)-iHorizontalOffset+4), (u8)(SpriteList[iSpriteLoop].Position.y>>8));
 				}
 			}
 
@@ -702,22 +709,26 @@ void DefenderoidsMain()
 				}
 			}
 			PrintString(SCR_2_PLANE,0,0,5,"INVADR:(     ,     )");
+			PrintString(SCR_2_PLANE,0,0,6,"FRAME:( , , ,   )");
 			PrintDecimal(SCR_2_PLANE,0,8,5,SpriteList[0].Position.x,5);
 			PrintDecimal(SCR_2_PLANE,0,14,5,SpriteList[0].Position.y,5);
-			PrintString(SCR_2_PLANE,0,0,6,"LEMMNG:(     ,     )");
-			PrintDecimal(SCR_2_PLANE,0,8,6,SpriteList[12].Position.x,5);
-			PrintDecimal(SCR_2_PLANE,0,14,6,SpriteList[12].Position.y,5);
-			PrintString(SCR_2_PLANE,0,0,7,"ASTER0:(     ,     )");
-			PrintString(SCR_2_PLANE,0,0,8,"ASTER1:(     ,     )");
-			PrintString(SCR_2_PLANE,0,0,9,"ASTER2:(     ,     )");
-			PrintString(SCR_2_PLANE,0,0,10,"ASTER3:(     ,     )");
-			PrintString(SCR_2_PLANE,0,0,11,"ASTER4:(     ,     )");
-			PrintString(SCR_2_PLANE,0,0,12,"ASTER5:(     ,     )");
-			PrintString(SCR_2_PLANE,0,0,13,"ASTER6:(     ,     )");
+			PrintDecimal(SCR_2_PLANE,0,7,6,SpriteList[0].SpriteType,1);
+			PrintDecimal(SCR_2_PLANE,0,9,6,SpriteList[0].Direction,1);
+			PrintDecimal(SCR_2_PLANE,0,11,6,SpriteList[0].Frame,1);
+			PrintDecimal(SCR_2_PLANE,0,13,6,(SpriteList[0].SpriteType << 4) + (SpriteList[0].Direction << 2) + SpriteList[0].Frame,3);
+			PrintString(SCR_2_PLANE,0,0,7,"LEMMNG:(     ,     )");
+			PrintString(SCR_2_PLANE,0,0,8,"FRAME:( , , ,   )");
+			PrintDecimal(SCR_2_PLANE,0,8,7,SpriteList[12].Position.x,5);
+			PrintDecimal(SCR_2_PLANE,0,14,7,SpriteList[12].Position.y,5);
+			PrintDecimal(SCR_2_PLANE,0,7,8,SpriteList[12].SpriteType,1);
+			PrintDecimal(SCR_2_PLANE,0,9,8,SpriteList[12].Direction,1);
+			PrintDecimal(SCR_2_PLANE,0,11,8,SpriteList[12].Frame,1);
 			for (iLoopAsteroid=0;iLoopAsteroid<DefenderoidsLevels[iCurrentLevel].AsteroidCount;iLoopAsteroid++)
 			{
-				PrintDecimal(SCR_2_PLANE, 0, 8, 7+iLoopAsteroid,Asteroid[iLoopAsteroid].Position.x, 5);
-				PrintDecimal(SCR_2_PLANE, 0, 14, 7+iLoopAsteroid, Asteroid[iLoopAsteroid].Position.y, 5);
+				PrintString(SCR_2_PLANE+iLoopAsteroid,0,0,10+iLoopAsteroid,"ASTER :(     ,     )");
+				PrintDecimal(SCR_2_PLANE+iLoopAsteroid,0,5,10+iLoopAsteroid,iLoopAsteroid,1);
+				PrintDecimal(SCR_2_PLANE, 0, 8, 10+iLoopAsteroid,Asteroid[iLoopAsteroid].Position.x, 5);
+				PrintDecimal(SCR_2_PLANE, 0, 14, 10+iLoopAsteroid, Asteroid[iLoopAsteroid].Position.y, 5);
 			}
 
 			//Frame counter
@@ -729,6 +740,9 @@ void DefenderoidsMain()
 			PrintString(SCR_2_PLANE,0,8,17,"HM:");
 			PrintDecimal(SCR_2_PLANE, 0, 11, 17, sizeof(HeightMap)-1, 3);
 			//PrintDecimal(SCR_2_PLANE, 0, 8, 17, Shots[0].Position.x, 8);
+
+			// Slow it down so I can look at it...
+			//Sleep(60);
 
 		} // Level Loop
 

@@ -1,5 +1,9 @@
+#ifndef _VECTOROBJECTS
+#define _VECTOROBJECTS
+
 // Landscape heightmap
 // Generated in Excel using formula =A1+IF(RAND()<0.5,-1,1) so height increases or decreases by one each time
+// See HeightMap.xlsx
 const u8 HeightMap[] = {
 						100,101,100,101,100,99,98,97,96,97,96,97,98,97,96,97,
 						96,97,96,95,94,95,94,95,94,93,92,93,92,91,92,91,
@@ -65,3 +69,5 @@ const COLOURPOINT Shot[] = {
     	        {0,8,1},
     	        {0,10,2}
 };
+
+#endif

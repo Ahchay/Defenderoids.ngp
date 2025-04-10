@@ -2,6 +2,9 @@
 #include "library.h"
 #include "veclib.h"
 
+#define VECTOR_SCALE (7)
+#define MAX_WIDTH (511)
+
 void DrawVectorObjectAbsolute(u16 * BitmapAddress, VECTOROBJECT VectorObject)
 {
 	DrawVectorObject(BitmapAddress, VectorObject, 0);
@@ -15,50 +18,36 @@ void DrawVectorObject(u16 * BitmapAddress, VECTOROBJECT VectorObject, u16 iHoriz
 	s16 iEndY;
 	s16 iTempX;
 	s16 iTempY;
-	s8 sPositionX;
-	u8 iPositionX;
-	u8 iPositionY;
-	u8 iPoint = 0;
-	s8 cSin;
-	s8 cCos;
+	u16 iPositionX;
+	u16 iPositionY;
+	u16 iPoint = 0;
+	s16 cSin;
+	s16 cCos;
 
+	// Right Shift brings in 1 as the MSB for values > MAX_WIDTH
+	// So, we have to &MAX_WIDTH to remove any superflous high values
+	iPositionX = (VectorObject.Position.x>>VECTOR_SCALE)&MAX_WIDTH;
 
-	sPositionX = VectorObject.Position.x>>7;
-	iPositionX=sPositionX-iHorizontalOffset;
+	if (iPositionX>=iHorizontalOffset) {
+		iPositionX=iPositionX-iHorizontalOffset;
+	} else {
+		iPositionX=MAX_WIDTH-iHorizontalOffset+iPositionX;
+	}
 
-	/*
-	PrintString(SCR_2_PLANE,0,0,1,"X:");
-	PrintDecimal(SCR_2_PLANE,0,2,1,sPositionX,3);
-	PrintString(SCR_2_PLANE,0,0,2,"A:");
-	PrintDecimal(SCR_2_PLANE,0,2,2,iPositionX,3);
-	//Clear some space for debug lines
-	PrintString(SCR_2_PLANE,0,0,3,"                      ");
-	PrintString(SCR_2_PLANE,0,0,4,"                      ");
-	PrintString(SCR_2_PLANE,0,0,5,"                      ");
-	PrintString(SCR_2_PLANE,0,0,6,"                      ");
-	PrintString(SCR_2_PLANE,0,0,7,"                      ");
-	PrintString(SCR_2_PLANE,0,0,8,"                      ");
-	*/
 	if (iPositionX >=0 && iPositionX<BitmapAddress[0])
 	{
-
-		//PrintString(SCR_2_PLANE,0,0,4,"PLOTTING");
 
 		cSin = Sin(VectorObject.RotationAngle);
 		cCos = Cos(VectorObject.RotationAngle);
 
-		sPositionX = VectorObject.Position.x>>7;
-		sPositionX -= iHorizontalOffset;
-		iPositionX = sPositionX % 256;
-
-		iPositionY = VectorObject.Position.y>>7;
+		iPositionY = VectorObject.Position.y>>VECTOR_SCALE;
 
 		iStartX = VectorObject.VectorList[0].x;
 		iStartY = VectorObject.VectorList[0].y;
 
 		//Plot the centre point
 		//SetPixel((u16*)BitmapAddress,iPositionX,iPositionY,3);
-
+		PrintDecimal(SCR_2_PLANE, 0, 14, 13, VectorObject.Points, 5);
 		while (iPoint++<VectorObject.Points)
 		{
 
@@ -67,22 +56,22 @@ void DrawVectorObject(u16 * BitmapAddress, VECTOROBJECT VectorObject, u16 iHoriz
 			iStartY = (iStartY-VectorObject.Origin.y)*VectorObject.Scale;
 
 			// rotate point.
-			iTempX = ((iStartX * cCos)>>7) - ((iStartY * cSin)>>7);
-			iTempY = ((iStartX * cSin)>>7) + ((iStartY * cCos)>>7);
+			iTempX = ((iStartX * cCos)>>VECTOR_SCALE) - ((iStartY * cSin)>>VECTOR_SCALE);
+			iTempY = ((iStartX * cSin)>>VECTOR_SCALE) + ((iStartY * cCos)>>VECTOR_SCALE);
 
 			// translate point back to it's original position:
 			// Modify back from the centre of rotation above, and then add the X & Y co-ordinates
 			iStartX = iPositionX+iTempX;
 			//if (iStartX<0) iStartX=0;
-			iStartY = (VectorObject.Position.y>>7)+iTempY;
+			iStartY = iPositionY+iTempY;
 			//if (iStartY<0) iStartY=0;
 
 			iEndX = (VectorObject.VectorList[iPoint].x-VectorObject.Origin.x)*VectorObject.Scale;
 			iEndY = (VectorObject.VectorList[iPoint].y-VectorObject.Origin.y)*VectorObject.Scale;
 
 			// rotate point
-			iTempX = ((iEndX * cCos)>>7) - ((iEndY * cSin)>>7);
-			iTempY = ((iEndX * cSin)>>7) + ((iEndY * cCos)>>7);
+			iTempX = ((iEndX * cCos)>>VECTOR_SCALE) - ((iEndY * cSin)>>VECTOR_SCALE);
+			iTempY = ((iEndX * cSin)>>VECTOR_SCALE) + ((iEndY * cCos)>>VECTOR_SCALE);
 
 			// translate point back:
 			iEndX = iPositionX+iTempX;
@@ -93,6 +82,7 @@ void DrawVectorObject(u16 * BitmapAddress, VECTOROBJECT VectorObject, u16 iHoriz
 			// Bounds check to ensure that rotated points are still within the bitmap boundary
 			if (iStartX>=0&&iStartY>=0&&iEndX>=0&&iEndY>=0&&iStartX<=BitmapAddress[0]&&iStartY<=BitmapAddress[1]&&iEndX<=BitmapAddress[0]&&iEndY<=BitmapAddress[1])
 			{
+				// Use the colour attrib associated with the end point
 				DrawLine((u16*)BitmapAddress,(u8)(iStartX),(u8)(iStartY),(u8)(iEndX),(u8)(iEndY),VectorObject.VectorList[iPoint].colour);
 			}
 
@@ -140,15 +130,7 @@ void DrawVectorSprite(u16 * BitmapAddress, VECTOROBJECT VectorObject, u16 iHoriz
 			iTempX = ((iStartX * cCos)>>7) - ((iStartY * cSin)>>7);
 			iTempY = ((iStartX * cSin)>>7) + ((iStartY * cCos)>>7);
 
-			// translate point back to it's original position:
-			// x = -32767...32767
-			// iTempX=0
-			// iHorizontalX=72
-			// Only display when Position.x - iHorizontalOffset > 72 and <144
-			// Need to restict "Position.x" to a 256 byte value?
-			// Which needs to wrap around at 0/256
-			// Will MOD() do that?
-			iPositionX = VectorObject.Position.x % 256;
+			iPositionX = VectorObject.Position.x % MAX_WIDTH;
 			iStartX = (iPositionX-iHorizontalOffset)+iTempX;
 			iStartY = VectorObject.Position.y+iTempY;
 
