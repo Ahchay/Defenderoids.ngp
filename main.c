@@ -1,11 +1,14 @@
 #include "ngpc.h"
 #include "carthdr.h" // TODO: edit game name in carthdr.h
 #include "library.h"
+#include "Tiles\Alphabet.c"
 
 void main()
 {
 	InitNGPC();
 	SysSetSystemFont();
+
+	InstallTileSetAt(Alphabet,sizeof(Alphabet),0);
 
 	SetBackgroundColour(RGB(0,0,4));
 
