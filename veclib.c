@@ -47,7 +47,6 @@ void DrawVectorObject(u16 * BitmapAddress, VECTOROBJECT VectorObject, u16 iHoriz
 
 		//Plot the centre point
 		//SetPixel((u16*)BitmapAddress,iPositionX,iPositionY,3);
-		PrintDecimal(SCR_2_PLANE, 0, 14, 13, VectorObject.Points, 5);
 		while (iPoint++<VectorObject.Points)
 		{
 

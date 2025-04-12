@@ -5,7 +5,9 @@
 #include "veclib.h"
 #include "Tiles\Sprites.c"
 #include "Tiles\Logo.c"
+#include "Tiles\Border.c"
 #include "VectorObjects.h"
+
 
 //Helper functions
 
@@ -61,7 +63,6 @@ VECTOROBJECT CreateAsteroid(u16 x, u16 y)
 // or more effeciently:
 // 		Type<<4 + Direction<<2 + Frame
 /////////////////////////////////////////////////////
-
 SPRITE CreateSprite(u16 x, u16 y, u8 ID, u8 Type, u8 Direction, u8 Frame)
 {
 	SPRITE sprReturn;
@@ -80,6 +81,68 @@ SPRITE CreateSprite(u16 x, u16 y, u8 ID, u8 Type, u8 Direction, u8 Frame)
 	SetSprite(sprReturn.SpriteID, sprReturn.BaseTile , 0, 0, 0, (u8)(PAL_SPRITE + sprReturn.SpriteType));
 
 	return sprReturn;
+}
+
+/////////////////////////////////////////////////////
+// Calculate sprite position relative to horizontal offset
+// and whether visible on the screen.
+/////////////////////////////////////////////////////
+DrawSprite(SPRITE sprSprite, u16 iHorizontalOffset)
+{
+	u8 iRelativeX;
+	u8 iRelativeY;
+
+	iRelativeX = (u8)((sprSprite.Position.x>>SPRITE_SCALE)-iHorizontalOffset+4);
+	iRelativeY = (u8)(sprSprite.Position.y>>SPRITE_SCALE);
+
+	CopyAnimationFrame(Sprites, sprSprite.BaseTile, 1, (sprSprite.SpriteType << 4) + (sprSprite.Direction << 2) + sprSprite.Frame - 1);
+	SetSpritePosition(sprSprite.SpriteID, iRelativeX, iRelativeY);
+
+}
+
+/////////////////////////////////////////////////////
+// Print the game border and score sheet etc
+/////////////////////////////////////////////////////
+
+void DrawGameScreen()
+{
+	u8 iLoopX;
+	u8 iLoopY;
+
+	ClearScreen(SCR_1_PLANE);
+	ClearScreen(SCR_2_PLANE);
+
+	// Create the border
+	InstallTileSetAt(Border,sizeof(Border),borderTilebase);
+
+	// Border tiles layout
+	// 0=[Top Left] 1=[Top]     2=[Top Right]
+	// 3=[Left]     4=[Empty]   5=[Right]
+	// 6=[Bottom L] 7=[Bottom]  8=[Bottom R]
+	//
+
+	//Corners
+	PutTile(SCR_1_PLANE,0,0,0,borderTilebase);
+	PutTile(SCR_1_PLANE,0,19,0,borderTilebase+2);
+	PutTile(SCR_1_PLANE,0,0,15,borderTilebase+6);
+	PutTile(SCR_1_PLANE,0,19,15,borderTilebase+8);
+
+	//Top/Bottom edges
+	for(iLoopX=1;iLoopX<=18;iLoopX++){
+		PutTile(SCR_1_PLANE,0,iLoopX,0,borderTilebase+1);
+		PutTile(SCR_1_PLANE,0,iLoopX,15,borderTilebase+7);
+	}
+	//Left/Right edges
+	for(iLoopY=1;iLoopY<15;iLoopY++){
+		PutTile(SCR_1_PLANE,0,0,iLoopY,borderTilebase+3);
+		PutTile(SCR_1_PLANE,0,19,iLoopY,borderTilebase+5);
+	}
+
+	//Other window dressing (debug info and scorecard/lives count etc)
+	PrintString(SCR_1_PLANE, 0, 0, 18, "FPS:");
+	PrintString(SCR_2_PLANE, 0, 0, 17, "HZL:");
+	PrintString(SCR_2_PLANE,0,8,17,"MW:");
+
 }
 
 /////////////////////////////////////////////////////
@@ -104,6 +167,7 @@ u8 DefenderoidsLogo()
 
 	//Install the logo tileset
 	InstallTileSetAt(Logo, sizeof(Logo)/2, LogoTileBase);
+
 	//Clear the screen
 
 	SetBackgroundColour(0);
@@ -251,17 +315,21 @@ void DefenderoidsMain()
 	iCurrentLevel=0;
 	iLives=3;
 
-	// Set up the test sprite
+	// Set up the palettes
 	SetPalette(SPRITE_PLANE, (u8)(PAL_SPRITE + Invader), RGB(0,0,0), RGB(0,15,0), RGB(15,15,0), RGB(15,0,0));
 	SetPalette(SPRITE_PLANE, (u8)(PAL_SPRITE + Lemmanoid), RGB(0,0,0), RGB(15, 11, 12), RGB(0,0,15), RGB(0,15,0));
-
-	// So, create a bitmap...
-	SetBackgroundColour(RGB(0,0,4));
 
 	SetPalette(SCR_1_PLANE, 0, 0, RGB(15,15,15), RGB(0,0,15), RGB(15,0,0));
 	SetPalette(SCR_2_PLANE, 0, 0, RGB(15,15,15), RGB(8,8,8), RGB(4,4,4));
 
-	CreateBitmap((u16*)bmpPlayField, 144, 112);
+	//Create game screen
+
+	DrawGameScreen();
+
+	// So, create a bitmap...
+	SetBackgroundColour(RGB(0,0,4));
+
+	CreateBitmap((u16*)bmpPlayField, BITMAP_WIDTH, BITMAP_HEIGHT);
 	CopyBitmap((u16*)bmpPlayField, bgTileBase);
 
 	iTile=0;
@@ -342,7 +410,7 @@ void DefenderoidsMain()
 			iStartFrame=VBCounter;
 
 			//Reset the bitmap for every frame.
-			CreateBitmap((u16*)bmpPlayField, 144, 112);
+			CreateBitmap((u16*)bmpPlayField, BITMAP_WIDTH, BITMAP_HEIGHT);
 
 			//Check player movement
 
@@ -655,21 +723,29 @@ void DefenderoidsMain()
 					//PrintString(SCR_2_PLANE, 0, 0, iSpriteLoop, "S  :");
 					//PrintDecimal(SCR_2_PLANE, 0, 1, iSpriteLoop, iSpriteLoop, 2);
 					//PrintBinary(SCR_2_PLANE, 0, 4, iSpriteLoop, (SpriteList[iSpriteLoop].SpriteType << 3) + (SpriteList[iSpriteLoop].Direction << 2) + SpriteList[iSpriteLoop].Frame, 16);
+
+					// This is ridiculously simple, but just gives a little bit of variation while I sort out the sprite:screen mapping
 					switch(SpriteList[iSpriteLoop].Direction)
 					{
 						case DIR_SOUTH:
 							SpriteList[iSpriteLoop].Position.y+=64;
+							if (SpriteList[iSpriteLoop].Position.y>(u16)(HeightMap[((u8)(SpriteList[iSpriteLoop].Position.x>>SPRITE_SCALE))+4]+4)<<SPRITE_SCALE){
+								SpriteList[iSpriteLoop].Direction = DIR_NORTH;
+							}
 							break;
 						case DIR_NORTH:
 							SpriteList[iSpriteLoop].Position.y-=64;
+							if (SpriteList[iSpriteLoop].Position.y>(u16)(HeightMap[((u8)(SpriteList[iSpriteLoop].Position.x>>SPRITE_SCALE))+4]+4)<<SPRITE_SCALE){
+								SpriteList[iSpriteLoop].Direction = DIR_SOUTH;
+							}
 							break;
 						case DIR_WEST:
 							SpriteList[iSpriteLoop].Position.x-=128;
-							SpriteList[iSpriteLoop].Position.y = (u16)(HeightMap[((u8)(SpriteList[iSpriteLoop].Position.x>>8))+4]+4)<<8;
+							SpriteList[iSpriteLoop].Position.y = (u16)(HeightMap[((u8)(SpriteList[iSpriteLoop].Position.x>>SPRITE_SCALE))+4]+4)<<SPRITE_SCALE;
 							break;
 						case DIR_EAST:
 							SpriteList[iSpriteLoop].Position.x+=128;
-							SpriteList[iSpriteLoop].Position.y = (u16)(HeightMap[((u8)(SpriteList[iSpriteLoop].Position.x>>8))+4]+4)<<8;
+							SpriteList[iSpriteLoop].Position.y = (u16)(HeightMap[((u8)(SpriteList[iSpriteLoop].Position.x>>SPRITE_SCALE))+4]+4)<<SPRITE_SCALE;
 						default:
 							break;
 					}
@@ -685,8 +761,7 @@ void DefenderoidsMain()
 					// SpriteList.[iSpriteLoop].Frame
 					//
 					//However, sprites are overlapping into the next tile offset, so need to take one from the result - not entirely sure why?
-					CopyAnimationFrame(Sprites, SpriteList[iSpriteLoop].BaseTile, 1, (SpriteList[iSpriteLoop].SpriteType << 4) + (SpriteList[iSpriteLoop].Direction << 2) + SpriteList[iSpriteLoop].Frame - 1);
-					SetSpritePosition(SpriteList[iSpriteLoop].SpriteID, (u8)((SpriteList[iSpriteLoop].Position.x>>8)-iHorizontalOffset+4), (u8)(SpriteList[iSpriteLoop].Position.y>>8));
+					DrawSprite(SpriteList[iSpriteLoop],iHorizontalOffset);
 				}
 			}
 
@@ -694,6 +769,7 @@ void DefenderoidsMain()
 			// Score and other dressing
 			// Mostly debug information at the moment
 			//////////////////////////////////////////////////////
+			/*
 			PrintString(SCR_2_PLANE,0,0,0,"PLAYER:(     ,     )");
 			PrintDecimal(SCR_2_PLANE, 0, 8, 0, PlayerOne.Position.x, 5);
 			PrintDecimal(SCR_2_PLANE, 0, 14, 0, PlayerOne.Position.y, 5);
@@ -730,14 +806,11 @@ void DefenderoidsMain()
 				PrintDecimal(SCR_2_PLANE, 0, 8, 10+iLoopAsteroid,Asteroid[iLoopAsteroid].Position.x, 5);
 				PrintDecimal(SCR_2_PLANE, 0, 14, 10+iLoopAsteroid, Asteroid[iLoopAsteroid].Position.y, 5);
 			}
+			*/
 
 			//Frame counter
-			PrintString(SCR_1_PLANE, 0, 0, 18, "FPS:");
 			PrintDecimal(SCR_1_PLANE, 0, 4, 18, 60/(VBCounter-iStartFrame), 2);
-			PrintString(SCR_2_PLANE, 0, 0, 17, "HZL:");
 			PrintDecimal(SCR_2_PLANE, 0, 4, 17, iHorizontalOffset, 3);
-
-			PrintString(SCR_2_PLANE,0,8,17,"HM:");
 			PrintDecimal(SCR_2_PLANE, 0, 11, 17, sizeof(HeightMap)-1, 3);
 			//PrintDecimal(SCR_2_PLANE, 0, 8, 17, Shots[0].Position.x, 8);
 
@@ -827,7 +900,7 @@ void DefenderoidsTest()
 	SetPalette(SCR_1_PLANE, 0, 0, RGB(15,15,15), RGB(0,0,15), RGB(15,0,0));
 	SetPalette(SCR_2_PLANE, 0, 0, RGB(15,15,15), RGB(0,0,15), RGB(15,0,0));
 
-	CreateBitmap((u16*)bmpPlayField, 144, 112);
+	CreateBitmap((u16*)bmpPlayField, BITMAP_WIDTH, BITMAP_HEIGHT);
 	CopyBitmap((u16*)bmpPlayField, bgTileBase);
 
 	iTile=0;
@@ -927,7 +1000,7 @@ void DefenderoidsTest()
 			iStartFrame=VBCounter;
 
 			//Reset the bitmap for every frame.
-			CreateBitmap((u16*)bmpPlayField, 144, 112);
+			CreateBitmap((u16*)bmpPlayField, BITMAP_WIDTH, BITMAP_HEIGHT);
 
 			//Check player movement
 

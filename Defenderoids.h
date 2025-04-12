@@ -2,10 +2,17 @@
 #define _DEFENDEROIDS
 
 #define bgTileBase 256
-#define spTileBase 128
+#define spTileBase 137
+#define borderTilebase 128
 #define LogoTileBase 256
 
 #define PAL_SPRITE 0
+
+//Global consts
+
+const u8 SPRITE_SCALE=7;
+const u8 BITMAP_WIDTH=144;
+const u8 BITMAP_HEIGHT=112;
 
 typedef struct SpritePoint
 {
@@ -37,6 +44,7 @@ typedef struct Level
 } LEVEL;
 
 u8 DefenderoidsLogo();
+void DrawGameScreen();
 void DefenderoidsMain();
 void DefenderoidsTest();
 

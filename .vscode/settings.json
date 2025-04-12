@@ -1,5 +1,6 @@
 {
     "files.associations": {
-        "ngpc.h": "c"
+        "ngpc.h": "c",
+        "defenderoids.h": "c"
     }
 }
