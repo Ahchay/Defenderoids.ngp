@@ -3,7 +3,7 @@
 #include "veclib.h"
 
 #define VECTOR_SCALE (7)
-#define MAX_WIDTH (511)
+#define VECTOR_MAX_WIDTH (511)
 
 void DrawVectorObjectAbsolute(u16 * BitmapAddress, VECTOROBJECT VectorObject)
 {
@@ -26,12 +26,12 @@ void DrawVectorObject(u16 * BitmapAddress, VECTOROBJECT VectorObject, u16 iHoriz
 
 	// Right Shift brings in 1 as the MSB for values > MAX_WIDTH
 	// So, we have to &MAX_WIDTH to remove any superflous high values
-	iPositionX = (VectorObject.Position.x>>VECTOR_SCALE)&MAX_WIDTH;
+	iPositionX = (VectorObject.Position.x>>VECTOR_SCALE)&VECTOR_MAX_WIDTH;
 
 	if (iPositionX>=iHorizontalOffset) {
 		iPositionX=iPositionX-iHorizontalOffset;
 	} else {
-		iPositionX=MAX_WIDTH-iHorizontalOffset+iPositionX;
+		iPositionX=VECTOR_MAX_WIDTH-iHorizontalOffset+iPositionX;
 	}
 
 	if (iPositionX >=0 && iPositionX<BitmapAddress[0])
@@ -129,7 +129,7 @@ void DrawVectorSprite(u16 * BitmapAddress, VECTOROBJECT VectorObject, u16 iHoriz
 			iTempX = ((iStartX * cCos)>>7) - ((iStartY * cSin)>>7);
 			iTempY = ((iStartX * cSin)>>7) + ((iStartY * cCos)>>7);
 
-			iPositionX = VectorObject.Position.x % MAX_WIDTH;
+			iPositionX = VectorObject.Position.x % VECTOR_MAX_WIDTH;
 			iStartX = (iPositionX-iHorizontalOffset)+iTempX;
 			iStartY = VectorObject.Position.y+iTempY;
 

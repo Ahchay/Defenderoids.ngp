@@ -8,6 +8,7 @@
 #include "Tiles\Border.c"
 #include "VectorObjects.h"
 
+#define SPRITE_MAX_WIDTH (512)
 
 //Helper functions
 
@@ -89,14 +90,33 @@ SPRITE CreateSprite(u16 x, u16 y, u8 ID, u8 Type, u8 Direction, u8 Frame)
 /////////////////////////////////////////////////////
 DrawSprite(SPRITE sprSprite, u16 iHorizontalOffset)
 {
-	u8 iRelativeX;
+	u16 iRelativeX;
 	u8 iRelativeY;
 
-	iRelativeX = (u8)((sprSprite.Position.x>>SPRITE_SCALE)-iHorizontalOffset+4);
-	iRelativeY = (u8)(sprSprite.Position.y>>SPRITE_SCALE);
+	///////////////////////////////////////////////////////////
+	// Even though the sprite plane is a (u8) (256 pixels)
+	// we still need to calculate the relative position as (u16)
+	// as the game world is 512 pixels.
+	///////////////////////////////////////////////////////////
+	iRelativeX = (sprSprite.Position.x>>SPRITE_SCALE);
 
-	CopyAnimationFrame(Sprites, sprSprite.BaseTile, 1, (sprSprite.SpriteType << 4) + (sprSprite.Direction << 2) + sprSprite.Frame - 1);
-	SetSpritePosition(sprSprite.SpriteID, iRelativeX, iRelativeY);
+	if (iRelativeX>=iHorizontalOffset) {
+		iRelativeX=iRelativeX-iHorizontalOffset;
+	} else {
+		iRelativeX=SPRITE_MAX_WIDTH-iHorizontalOffset+iRelativeX;
+	}
+	iRelativeY = (u8)(sprSprite.Position.y>>SPRITE_SCALE)+8;
+
+	if(iRelativeX>144||iRelativeY>112||iRelativeX<8||iRelativeY<8) {
+		CopyAnimationFrame(Sprites, sprSprite.BaseTile, 1, EmptySprite-1);
+	}
+	else {
+		CopyAnimationFrame(Sprites, sprSprite.BaseTile, 1, (sprSprite.SpriteType << 4) + (sprSprite.Direction << 2) + sprSprite.Frame -1);
+	}
+
+	// Cast the relativeX position to (u8) once the bounds checking has been completed
+	// The "duplicate" sprite that gets created won't show on screen as the sprite tile will be set to the empty tile
+	SetSpritePosition(sprSprite.SpriteID, (u8)iRelativeX, iRelativeY);
 
 }
 
@@ -302,7 +322,7 @@ void DefenderoidsMain()
 								};
 
 	LEVEL DefenderoidsLevels[] = {
-									{"Start me up",12,5,4},
+									{"Start me up",1,1,4},
 									{"Getting Harder",12,12,3}
 								};
 
@@ -741,11 +761,11 @@ void DefenderoidsMain()
 							break;
 						case DIR_WEST:
 							SpriteList[iSpriteLoop].Position.x-=128;
-							SpriteList[iSpriteLoop].Position.y = (u16)(HeightMap[((u8)(SpriteList[iSpriteLoop].Position.x>>SPRITE_SCALE))+4]+4)<<SPRITE_SCALE;
+							SpriteList[iSpriteLoop].Position.y = (u16)(HeightMap[((u8)(SpriteList[iSpriteLoop].Position.x>>SPRITE_SCALE))+4]-4)<<SPRITE_SCALE;
 							break;
 						case DIR_EAST:
 							SpriteList[iSpriteLoop].Position.x+=128;
-							SpriteList[iSpriteLoop].Position.y = (u16)(HeightMap[((u8)(SpriteList[iSpriteLoop].Position.x>>SPRITE_SCALE))+4]+4)<<SPRITE_SCALE;
+							SpriteList[iSpriteLoop].Position.y = (u16)(HeightMap[((u8)(SpriteList[iSpriteLoop].Position.x>>SPRITE_SCALE))+4]-4)<<SPRITE_SCALE;
 						default:
 							break;
 					}
@@ -807,6 +827,10 @@ void DefenderoidsMain()
 				PrintDecimal(SCR_2_PLANE, 0, 14, 10+iLoopAsteroid, Asteroid[iLoopAsteroid].Position.y, 5);
 			}
 			*/
+
+			PrintString(SCR_2_PLANE,0,0,5,"LEMMNG:(     ,     )");
+			PrintDecimal(SCR_2_PLANE,0,8,5,SpriteList[1].Position.x>>SPRITE_SCALE,5);
+			PrintDecimal(SCR_2_PLANE,0,14,5,SpriteList[1].Position.y>>SPRITE_SCALE,5);
 
 			//Frame counter
 			PrintDecimal(SCR_1_PLANE, 0, 4, 18, 60/(VBCounter-iStartFrame), 2);
