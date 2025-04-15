@@ -59,15 +59,14 @@ const COLOURPOINT PlayerSprite[] = {
 						};
 
 // The shot template
+
+#define SHOT_POINTS (3)
+
 const COLOURPOINT Shot[] = {
-    	        {0,0,3},
+    	        {0,0,0},
     	        {0,2,3},
-    	        {0,4,1},
     	        {0,5,1},
-    	        {0,6,1},
-    	        {0,7,1},
-    	        {0,8,1},
-    	        {0,10,2}
+    	        {0,7,2}
 };
 
 #endif

@@ -121,6 +121,36 @@ DrawSprite(SPRITE sprSprite, u16 iHorizontalOffset)
 }
 
 /////////////////////////////////////////////////////
+// Create an explosion object
+////////////////////////////////////////////////////
+VECTOROBJECT CreateExplosion(SPRITEPOINT spPosition, u8 iDirection)
+{
+	VECTOROBJECT voReturn;
+	u8 iPointLoop;
+
+	voReturn.Scale = 1;
+	// Copy the Explosion object from the template
+	voReturn.Points = 16;
+	iPointLoop=0;
+	for(iPointLoop=0;iPointLoop<voReturn.Points;iPointLoop++)
+	{
+		voReturn.VectorList[iPointLoop].x = 4;
+		voReturn.VectorList[iPointLoop].y = 4;
+		voReturn.VectorList[iPointLoop].colour = QRandom()>>6;
+	}
+	voReturn.Origin.x = 0;
+	voReturn.Origin.y = 0;
+	voReturn.Position.x = spPosition.x + 4;
+	voReturn.Position.y = spPosition.y + 4;
+	voReturn.RotationAngle = iDirection;
+
+	// We'll use RotationSpeed to control the life of the Explosion. Kill it when it hits a limit...
+	voReturn.RotationSpeed=0;
+
+	return voReturn;
+}
+
+/////////////////////////////////////////////////////
 // Print the game border and score sheet etc
 /////////////////////////////////////////////////////
 
@@ -322,7 +352,7 @@ void DefenderoidsMain()
 								};
 
 	LEVEL DefenderoidsLevels[] = {
-									{"Start me up",1,1,4},
+									{"Start me up",4,12,4},
 									{"Getting Harder",12,12,3}
 								};
 
@@ -486,7 +516,7 @@ void DefenderoidsMain()
 				// MovementVector will be based on tr whe current ship vector with a multiplier to give the velocity. Hopefully one that never out-runs the ship.
 				// Set the shot flag so that we don't get continuous fire. Got to make the player work for it...
 				// Find the first "empty" shot - scale will be set to zero if it's not valid.
-				for (iLoopShot=0;iLoopShot<4;iLoopShot++)
+				for (iLoopShot=0;iLoopShot<3;iLoopShot++)
 				{
 					if (Shots[iLoopShot].Scale == 0)
 					{
@@ -497,21 +527,21 @@ void DefenderoidsMain()
 						iShotSide=0;
 						if(bShotType) iShotSide=8;
 
-						Shots[iLoopShot].Points = sizeof(Shot);
+						Shots[iLoopShot].Points = SHOT_POINTS;
 						for(iLoopX=0;iLoopX<=Shots[iLoopShot].Points;iLoopX++)
 						{
-							Shots[iLoopShot].VectorList[iLoopX].x = iShotSide;
+							Shots[iLoopShot].VectorList[iLoopX].x = Shot[iLoopX].x+iShotSide;
 							Shots[iLoopShot].VectorList[iLoopX].y = Shot[iLoopX].y;
 							Shots[iLoopShot].VectorList[iLoopX].colour = Shot[iLoopX].colour;
 						}
 						Shots[iLoopShot].Origin.x = 3;
 						Shots[iLoopShot].Origin.y = 0;
-						Shots[iLoopShot].Position.x = PlayerOne.Position.x+iHorizontalOffset;
-						Shots[iLoopShot].Position.y = PlayerOne.Position.y;
+						Shots[iLoopShot].Position.x = (PlayerOne.Position.x<<7)+(iHorizontalOffset<<7);
+						Shots[iLoopShot].Position.y = (PlayerOne.Position.y<<7);
 						Shots[iLoopShot].RotationAngle = PlayerOne.RotationAngle;
 						// Give the shots a bit of speed. Should be faster than the ship but in the same direction as the ship is "facing" (rather than moving)
 						Shots[iLoopShot].MovementVector.x = ((s16)Cos(Shots[iLoopShot].RotationAngle+192))<<4;
-						Shots[iLoopShot].MovementVector.y = ((s16)Sin(Shots[iLoopShot].RotationAngle+192))<<3;
+						Shots[iLoopShot].MovementVector.y = ((s16)Sin(Shots[iLoopShot].RotationAngle+192))<<4;
 
 						// We'll use RotationSpeed to control the life of the shot. Kill it when it hits a limit...
 						Shots[iLoopShot].RotationSpeed=0;
@@ -549,13 +579,13 @@ void DefenderoidsMain()
 			//////////////////////////////////////////////////////
 			// Shots
 			//////////////////////////////////////////////////////
-			for (iLoopShot=0;iLoopShot<4;iLoopShot++)
+			for (iLoopShot=0;iLoopShot<3;iLoopShot++)
 			{
 				if (Shots[iLoopShot].Scale == 1)
 				{
 					// Destroy the shot when it leaves the playfield.
 					Shots[iLoopShot].RotationSpeed++;
-					if (Shots[iLoopShot].RotationSpeed == 15 |Shots[iLoopShot].Position.y < 0 | Shots[iLoopShot].Position.y > bmpPlayField[1])
+					if (Shots[iLoopShot].RotationSpeed == 6 |Shots[iLoopShot].Position.y>>7 < 0 | Shots[iLoopShot].Position.y>>7 > bmpPlayField[1])
 					{
 						Shots[iLoopShot].Scale = 0;
 					}
@@ -578,11 +608,11 @@ void DefenderoidsMain()
 								// so this will still go centre to centre
 								pStartShot.x = Shots[iLoopShot].Position.x; // - Shots[iLoopShot].Origin.x;
 								pStartShot.y = Shots[iLoopShot].Position.y; // - Shots[iLoopShot].Origin.y;
-								pEndShot.x = pStartShot.x + (Shots[iLoopShot].MovementVector.x >> 7);
-								pEndShot.y = pStartShot.y + (Shots[iLoopShot].MovementVector.y >> 7);
+								pEndShot.x = pStartShot.x + (Shots[iLoopShot].MovementVector.x);
+								pEndShot.y = pStartShot.y + (Shots[iLoopShot].MovementVector.y);
 								// Offset the sprite to the centre of the box
-								pEndSprite.x = (SpriteList[iSpriteLoop].Position.x >>7);
-								pEndSprite.y = (SpriteList[iSpriteLoop].Position.y >>7);
+								pEndSprite.x = (SpriteList[iSpriteLoop].Position.x);
+								pEndSprite.y = (SpriteList[iSpriteLoop].Position.y);
 								pStartSprite.x = pStartSprite.x - 8;
 								pStartSprite.y = pStartSprite.y - 8;
 
@@ -598,25 +628,8 @@ void DefenderoidsMain()
 									{
 										if (Explosions[iLoopExplosion].Scale == 0)
 										{
-											Explosions[iLoopExplosion].Scale = 1;
-											// Copy the Explosion object from the template
-											Explosions[iLoopExplosion].Points = 16;
-											iLoopX=0;
-											while (iLoopX<Explosions[iLoopExplosion].Points)
-											{
-												Explosions[iLoopExplosion].VectorList[iLoopX].x = 4;
-												Explosions[iLoopExplosion].VectorList[iLoopX].y = 4;
-												Explosions[iLoopExplosion].VectorList[iLoopX].colour = QRandom()>>6;
-												iLoopX++;
-											}
-											Explosions[iLoopExplosion].Origin.x = 0;
-											Explosions[iLoopExplosion].Origin.y = 0;
-											Explosions[iLoopExplosion].Position.x = pStartSprite.x + 4;
-											Explosions[iLoopExplosion].Position.y = pStartSprite.y + 4;
-											Explosions[iLoopExplosion].RotationAngle = Shots[iLoopShot].RotationAngle+128;
+											Explosions[iLoopExplosion]=CreateExplosion(SpriteList[iSpriteLoop].Position, Shots[iLoopShot].RotationAngle);
 
-											// We'll use RotationSpeed to control the life of the Explosion. Kill it when it hits a limit...
-											Explosions[iLoopExplosion].RotationSpeed=0;
 
 											iLoopExplosion = 9;
 										}
@@ -627,13 +640,13 @@ void DefenderoidsMain()
 						}
 						if (Shots[iLoopShot].Scale == 1)
 						{
-							Shots[iLoopShot].Position.x += Shots[iLoopShot].MovementVector.x >> 7;
-							Shots[iLoopShot].Position.y += Shots[iLoopShot].MovementVector.y >> 7;
+							Shots[iLoopShot].Position.x += Shots[iLoopShot].MovementVector.x;
+							Shots[iLoopShot].Position.y += Shots[iLoopShot].MovementVector.y;
 						}
 					}
 					if (Shots[iLoopShot].Scale == 1)
 					{
-						DrawVectorSprite((u16*)bmpPlayField, Shots[iLoopShot], iHorizontalOffset);
+						DrawVectorObject((u16*)bmpPlayField, Shots[iLoopShot], iHorizontalOffset);
 					}
 				}
 			}
@@ -828,9 +841,7 @@ void DefenderoidsMain()
 			}
 			*/
 
-			PrintString(SCR_2_PLANE,0,0,5,"LEMMNG:(     ,     )");
-			PrintDecimal(SCR_2_PLANE,0,8,5,SpriteList[1].Position.x>>SPRITE_SCALE,5);
-			PrintDecimal(SCR_2_PLANE,0,14,5,SpriteList[1].Position.y>>SPRITE_SCALE,5);
+			//Debug info
 
 			//Frame counter
 			PrintDecimal(SCR_1_PLANE, 0, 4, 18, 60/(VBCounter-iStartFrame), 2);

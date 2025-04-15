@@ -2,6 +2,7 @@
     "files.associations": {
         "ngpc.h": "c",
         "defenderoids.h": "c",
-        "veclib.h": "c"
+        "veclib.h": "c",
+        "vectorobjects.h": "c"
     }
 }
