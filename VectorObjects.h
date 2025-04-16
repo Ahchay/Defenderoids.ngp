@@ -69,4 +69,10 @@ const COLOURPOINT Shot[] = {
     	        {0,7,2}
 };
 
+const LEVEL DefenderoidsLevels[] = {
+	{"Start me up",4,12,4},
+	{"Getting Harder",12,12,3}
+};
+
+
 #endif

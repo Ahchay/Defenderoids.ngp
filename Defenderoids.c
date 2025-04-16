@@ -151,6 +151,36 @@ VECTOROBJECT CreateExplosion(SPRITEPOINT spPosition, u8 iDirection)
 }
 
 /////////////////////////////////////////////////////
+// CreatePlayer()
+// Sets up the player object
+/////////////////////////////////////////////////////
+VECTOROBJECT CreatePlayer()
+{
+	VECTOROBJECT PlayerOne;
+	u8 iPointLoop;
+	PlayerOne.Position.x = 72; // Fixed to the centre of the bitmap
+	PlayerOne.Position.y = 66;
+	PlayerOne.MovementVector.x = 0; // Use 256 to set up an initial drift...;
+	PlayerOne.MovementVector.y = 0;
+	PlayerOne.Scale = 1;
+	PlayerOne.Origin.x = 3;
+	PlayerOne.Origin.y = 8;
+	PlayerOne.Points = 50;
+	PlayerOne.RotationAngle = 64;
+	PlayerOne.RotationSpeed = 0;
+	iPointLoop=0;
+	while (iPointLoop<PlayerOne.Points)
+	{
+		PlayerOne.VectorList[iPointLoop].x = PlayerSprite[iPointLoop].x;
+		PlayerOne.VectorList[iPointLoop].y = PlayerSprite[iPointLoop].y;
+		PlayerOne.VectorList[iPointLoop].colour = PlayerSprite[iPointLoop].colour;
+		iPointLoop++;
+	}
+
+	return PlayerOne;
+}
+
+/////////////////////////////////////////////////////
 // Print the game border and score sheet etc
 /////////////////////////////////////////////////////
 
@@ -351,11 +381,6 @@ void DefenderoidsMain()
 								{{1,1},{0,0},{0,0},1,{{0,0,0},{0,0,0},{0,0,0},{0,0,0},{0,0,0},{0,0,0},{0,0,0},{0,0,0},{0,0,0},{0,0,0},{0,0,0},{0,0,0},{0,0,0},{0,0,0},{0,0,0},{0,0,0}},0,0,0}
 								};
 
-	LEVEL DefenderoidsLevels[] = {
-									{"Start me up",4,12,4},
-									{"Getting Harder",12,12,3}
-								};
-
 	SPRITE SpriteList[16];
 
 	VECTOROBJECT PlayerOne;
@@ -423,24 +448,8 @@ void DefenderoidsMain()
 		}
 
 		// Set up the player
-		PlayerOne.Position.x = 72; // Fixed to the centre of the bitmap
-		PlayerOne.Position.y = 66;
-		PlayerOne.MovementVector.x = 0; // Use 256 to set up an initial drift...;
-		PlayerOne.MovementVector.y = 0;
-		PlayerOne.Scale = 1;
-		PlayerOne.Origin.x = 3;
-		PlayerOne.Origin.y = 8;
-		PlayerOne.Points = 50;
-		PlayerOne.RotationAngle = 64;
-		PlayerOne.RotationSpeed = 0;
-		iLoopX=0;
-		while (iLoopX<PlayerOne.Points)
-		{
-			PlayerOne.VectorList[iLoopX].x = PlayerSprite[iLoopX].x;
-			PlayerOne.VectorList[iLoopX].y = PlayerSprite[iLoopX].y;
-			PlayerOne.VectorList[iLoopX].colour = PlayerSprite[iLoopX].colour;
-			iLoopX++;
-		}
+		PlayerOne=CreatePlayer();
+
 
 		// Set up the horizontal offset.
 		iHorizontalOffset=255;
