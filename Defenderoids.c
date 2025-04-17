@@ -260,7 +260,6 @@ void DrawGameScreen()
 	//Other window dressing (debug info and scorecard/lives count etc)
 	PrintString(SCR_1_PLANE, 0, 0, 18, "FPS:");
 	PrintString(SCR_2_PLANE, 0, 0, 17, "HZL:");
-	PrintString(SCR_2_PLANE,0,8,17,"MW:");
 
 }
 
@@ -355,6 +354,7 @@ void DefenderoidsMain()
 	// Define variables
 	u8 iLoopX;
 	u8 iLoopY;
+	u8 iPointLoop;
 	u16 iTile;
 	u8 iMainLoop;
 	u16 bmpPlayField[2032];
@@ -439,9 +439,6 @@ void DefenderoidsMain()
 
 	InitialiseQRandom();
 
-	iCurrentLevel=0;
-	iLives=3;
-
 	// Set up the palettes
 	SetPalette(SPRITE_PLANE, (u8)(PAL_SPRITE + Invader), RGB(0,0,0), RGB(0,15,0), RGB(15,15,0), RGB(15,0,0));
 	SetPalette(SPRITE_PLANE, (u8)(PAL_SPRITE + Lemmanoid), RGB(0,0,0), RGB(15, 11, 12), RGB(0,0,15), RGB(0,15,0));
@@ -449,11 +446,13 @@ void DefenderoidsMain()
 	SetPalette(SCR_1_PLANE, 0, 0, RGB(15,15,15), RGB(0,0,15), RGB(15,0,0));
 	SetPalette(SCR_2_PLANE, 0, 0, RGB(15,15,15), RGB(8,8,8), RGB(4,4,4));
 
+	////////////////////////////////////////////////////////////
 	//Create game screen
+	////////////////////////////////////////////////////////////
 
 	DrawGameScreen();
 
-	// So, create a bitmap...
+	//Create a bitmap...
 	SetBackgroundColour(RGB(0,0,4));
 
 	CreateBitmap((u16*)bmpPlayField, BITMAP_WIDTH, BITMAP_HEIGHT);
@@ -471,10 +470,19 @@ void DefenderoidsMain()
 		}
 	}
 
+	/////////////////////////////////////////////////////////
 	// Main lives/game loop
+	/////////////////////////////////////////////////////////
+
+	iCurrentLevel=0;
+	iLives=3;
+
 	while ((!(JOYPAD & J_OPTION)) && iLives>0)
 	{
-		// Create the level
+		////////////////////////////////////////////////////////////
+		// Level setup
+		////////////////////////////////////////////////////////////
+
 		// Invaders - do I want these to all appear at the start of the level or be phased in somehow?
 		for (iSpriteLoop=0;iSpriteLoop<DefenderoidsLevels[iCurrentLevel].InvaderCount;iSpriteLoop++)
 		{
@@ -502,8 +510,7 @@ void DefenderoidsMain()
 		// Set up the player
 		PlayerOne=CreatePlayer();
 
-
-		// Set up the horizontal offset.
+		// Set the horizontal offset.
 		iHorizontalOffset=255;
 
 		iLoopX=0;
@@ -631,7 +638,8 @@ void DefenderoidsMain()
 					{
 
 						// Calculate any collisions...
-						for (iSpriteLoop=0;iSpriteLoop<(DefenderoidsLevels[iCurrentLevel].InvaderCount);iSpriteLoop++)
+						// VERY slow (and doesn't actually work) - leaving it for reference, but we need to sort this out
+						for (iSpriteLoop=128;iSpriteLoop<(DefenderoidsLevels[iCurrentLevel].InvaderCount);iSpriteLoop++)
 						{
 							// If any sprite exists along the bullet's movement vector, then it's dead.
 							// Shots and sprites are in different scales, so need to be translated to match
@@ -667,7 +675,6 @@ void DefenderoidsMain()
 										if (Explosions[iLoopExplosion].Scale == 0)
 										{
 											Explosions[iLoopExplosion]=CreateExplosion(SpriteList[iSpriteLoop].Position, Shots[iLoopShot].RotationAngle);
-
 
 											iLoopExplosion = 9;
 										}
@@ -738,8 +745,6 @@ void DefenderoidsMain()
 			// Player
 			//////////////////////////////////////////////////////
 
-			//PrintDecimal(SCR_2_PLANE, 0, 0, 0, PlayerOne.Position.y, 16);
-
 			//Update the horizontal offset (ship remains centred horizontally)
 			iHorizontalOffset += PlayerOne.MovementVector.x>>7;
 			//Bounds check - needs to wrap at sizeof(HeightMap)-1
@@ -750,7 +755,6 @@ void DefenderoidsMain()
 					iHorizontalOffset=0;
 				}
 			}
-
 
 			//Keep player inside the playfield...
 			//Reduce vertical velocity to zero as they approach either top/bottom edge- need to decide whether to apply a bounce or just stop at the top/bottom of the screen
@@ -781,7 +785,6 @@ void DefenderoidsMain()
 			//////////////////////////////////////////////////////
 			// Copy the bitmap object into tile memory
 			//////////////////////////////////////////////////////
-
 			CopyBitmap((u16*)bmpPlayField, bgTileBase);
 
 			//////////////////////////////////////////////////////
@@ -791,11 +794,9 @@ void DefenderoidsMain()
 			{
 				if (!(SpriteList[iSpriteLoop].SpriteType == EmptySprite))
 				{
-					//PrintString(SCR_2_PLANE, 0, 0, iSpriteLoop, "S  :");
-					//PrintDecimal(SCR_2_PLANE, 0, 1, iSpriteLoop, iSpriteLoop, 2);
-					//PrintBinary(SCR_2_PLANE, 0, 4, iSpriteLoop, (SpriteList[iSpriteLoop].SpriteType << 3) + (SpriteList[iSpriteLoop].Direction << 2) + SpriteList[iSpriteLoop].Frame, 16);
-
-					// This is ridiculously simple, but just gives a little bit of variation while I sort out the sprite:screen mapping
+					// This is ridiculously simple
+					// Invaders bob up and down
+					// Lemmanoids lope along the mountain left and right
 					switch(SpriteList[iSpriteLoop].Direction)
 					{
 						case DIR_SOUTH:
@@ -824,14 +825,6 @@ void DefenderoidsMain()
 					SpriteList[iSpriteLoop].Frame++;
 					if (SpriteList[iSpriteLoop].Frame>3) SpriteList[iSpriteLoop].Frame=0;
 
-					//Sprite offset calculated as:
-					// (SpriteList[iSpriteLoop].SpriteType << 4) (*16)
-					// +
-					// (SpriteList[iSpriteLoop].Direction << 2) (*4)
-					// +
-					// SpriteList.[iSpriteLoop].Frame
-					//
-					//However, sprites are overlapping into the next tile offset, so need to take one from the result - not entirely sure why?
 					DrawSprite(SpriteList[iSpriteLoop],iHorizontalOffset);
 				}
 			}
@@ -883,10 +876,9 @@ void DefenderoidsMain()
 
 			//Frame counter
 			PrintDecimal(SCR_1_PLANE, 0, 4, 18, 60/(VBCounter-iStartFrame), 2);
+			//Current Horizontal Offset
 			PrintDecimal(SCR_2_PLANE, 0, 4, 17, iHorizontalOffset, 3);
-			PrintDecimal(SCR_2_PLANE, 0, 11, 17, sizeof(HeightMap)-1, 3);
-			//PrintDecimal(SCR_2_PLANE, 0, 8, 17, Shots[0].Position.x, 8);
-
+			
 			// Slow it down so I can look at it...
 			//Sleep(60);
 
@@ -897,7 +889,7 @@ void DefenderoidsMain()
 		{
 			SetSprite(iSpriteLoop, 0, 0, 0, 0, PAL_SPRITE);
 		}
-
+		iPointLoop
 	} // Lives Loop
 
 	//////////////////////////////////////////////////////
@@ -915,6 +907,7 @@ void DefenderoidsTest()
 	// Define variables
 	u8 iLoopX;
 	u8 iLoopY;
+	u8 iPointLoop;
 	u16 iTile;
 	u8 iMainLoop;
 	u16 bmpPlayField[2032];
@@ -1012,13 +1005,13 @@ void DefenderoidsTest()
 		PlayerOne.Points = 50;
 		PlayerOne.RotationAngle = 0;
 		PlayerOne.RotationSpeed = 0;
-		iLoopX=0;
-		while (iLoopX<PlayerOne.Points)
+		iPointLoop=0;
+		while (iPointLoop<PlayerOne.Points)
 		{
-			PlayerOne.VectorList[iLoopX].x = PlayerSprite[iLoopX].x;
-			PlayerOne.VectorList[iLoopX].y = PlayerSprite[iLoopX].y;
-			PlayerOne.VectorList[iLoopX].colour = PlayerSprite[iLoopX].colour;
-			iLoopX++;
+			PlayerOne.VectorList[iPointLoop].x = PlayerSprite[iPointLoop].x;
+			PlayerOne.VectorList[iPointLoop].y = PlayerSprite[iPointLoop].y;
+			PlayerOne.VectorList[iPointLoop].colour = PlayerSprite[iPointLoop].colour;
+			iPointLoop++;
 		}
 
 		//////////////////////////////////////////////////////////////
