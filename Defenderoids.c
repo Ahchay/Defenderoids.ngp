@@ -181,6 +181,45 @@ VECTOROBJECT CreatePlayer()
 }
 
 /////////////////////////////////////////////////////
+// CreateShot()
+/////////////////////////////////////////////////////
+VECTOROBJECT CreateShot(u16 iHorizontalOffset,VECTOROBJECT PlayerOne, bool bShotType)
+{
+	VECTOROBJECT vecShot;
+	u8 iPointLoop;
+	u8 iShotSide;
+
+	vecShot.Scale = 1;
+
+	// Alternate shots between left and right sides
+	iShotSide=0;
+	if(bShotType) iShotSide=8;
+
+	// Copy the shot object from the template
+	vecShot.Points = SHOT_POINTS;
+	for(iPointLoop=0;iPointLoop<=vecShot.Points;iPointLoop++)
+	{
+		vecShot.VectorList[iPointLoop].x = Shot[iPointLoop].x+iShotSide;
+		vecShot.VectorList[iPointLoop].y = Shot[iPointLoop].y;
+		vecShot.VectorList[iPointLoop].colour = Shot[iPointLoop].colour;
+	}
+	vecShot.Origin.x = 3;
+	vecShot.Origin.y = 0;
+	vecShot.Position.x = (PlayerOne.Position.x<<7)+(iHorizontalOffset<<7);
+	vecShot.Position.y = (PlayerOne.Position.y<<7);
+	vecShot.RotationAngle = PlayerOne.RotationAngle;
+	// Give the shots a bit of speed. Should be faster than the ship but in the same direction as the ship is "facing" (rather than moving)
+	vecShot.MovementVector.x = ((s16)Cos(vecShot.RotationAngle+192))<<4;
+	vecShot.MovementVector.y = ((s16)Sin(vecShot.RotationAngle+192))<<4;
+
+	// We'll use RotationSpeed to control the life of the shot. Kill it when it hits a limit...
+	vecShot.RotationSpeed=0;
+
+	return vecShot;
+
+}
+
+/////////////////////////////////////////////////////
 // Print the game border and score sheet etc
 /////////////////////////////////////////////////////
 
@@ -345,8 +384,21 @@ void DefenderoidsMain()
 	u8 iLoopExplosionPoint;
 	u8 iEngineNoise;
 	bool bShotType;
-	u8 iShotSide;
 	bool bShoot;
+
+	/////////////////////////////////////////////////////////
+	// Template vector/sprite arrays
+	/////////////////////////////////////////////////////////
+
+	// Vector objects
+	//	- Origin;
+	//	- Position;
+	//	- MovementVector;
+	//	- Points;
+	//	- VectorList[64];
+	//	- Scale;
+	//	- RotationAngle;
+	//	- RotationSpeed;
 
 	VECTOROBJECT Asteroid[] = {
 									{{6,6},{2000,8192},0,0,0,0,0,0},
@@ -529,32 +581,9 @@ void DefenderoidsMain()
 				{
 					if (Shots[iLoopShot].Scale == 0)
 					{
-						Shots[iLoopShot].Scale = 1;
-						// Copy the shot object from the template
-
 						bShotType=!bShotType;
-						iShotSide=0;
-						if(bShotType) iShotSide=8;
-
-						Shots[iLoopShot].Points = SHOT_POINTS;
-						for(iLoopX=0;iLoopX<=Shots[iLoopShot].Points;iLoopX++)
-						{
-							Shots[iLoopShot].VectorList[iLoopX].x = Shot[iLoopX].x+iShotSide;
-							Shots[iLoopShot].VectorList[iLoopX].y = Shot[iLoopX].y;
-							Shots[iLoopShot].VectorList[iLoopX].colour = Shot[iLoopX].colour;
-						}
-						Shots[iLoopShot].Origin.x = 3;
-						Shots[iLoopShot].Origin.y = 0;
-						Shots[iLoopShot].Position.x = (PlayerOne.Position.x<<7)+(iHorizontalOffset<<7);
-						Shots[iLoopShot].Position.y = (PlayerOne.Position.y<<7);
-						Shots[iLoopShot].RotationAngle = PlayerOne.RotationAngle;
-						// Give the shots a bit of speed. Should be faster than the ship but in the same direction as the ship is "facing" (rather than moving)
-						Shots[iLoopShot].MovementVector.x = ((s16)Cos(Shots[iLoopShot].RotationAngle+192))<<4;
-						Shots[iLoopShot].MovementVector.y = ((s16)Sin(Shots[iLoopShot].RotationAngle+192))<<4;
-
-						// We'll use RotationSpeed to control the life of the shot. Kill it when it hits a limit...
-						Shots[iLoopShot].RotationSpeed=0;
-
+						Shots[iLoopShot]=CreateShot(iHorizontalOffset,PlayerOne,bShotType);
+						
 						//Terminate the loop so that only one shot is created
 						iLoopShot = 5;
 					}

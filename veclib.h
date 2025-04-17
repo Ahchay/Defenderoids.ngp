@@ -20,7 +20,7 @@ typedef struct VectorObject
 	POINT Position;
 	POINT MovementVector;
 	u8 Points;
-	COLOURPOINT VectorList[128];
+	COLOURPOINT VectorList[64];
 	u8 Scale;
 	u8 RotationAngle;
 	s8 RotationSpeed;

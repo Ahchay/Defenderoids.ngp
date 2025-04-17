@@ -69,14 +69,16 @@ Ratios/Conversions:
     Game:World ratio:
     Sprite:World ratio:
         W = 65535:1024 = >>6
-        H = 65535:128 = >>9 (or possibly >>6 as above, but limit to 112 pixels (or 896 units)
+        H = 65535:128 = >>6
 
     Sprite:Sprite Plane ratio:
-        X: 65535:256 = >>8
-        Y: 65535:256 = >>8
+        X: 65535:256 = >>7
+        Y: 65535:256 = >>7
+
+    Vector:Screen ratio:
+        W = 65535:1024 = >>6
+        H = 65535:128 = >>6
 
     Player/Shot:World (VectorSprite) ratio:
+        W/H = 1:1
 
-
-    Game:VectorObject ratio:
-        1:1
