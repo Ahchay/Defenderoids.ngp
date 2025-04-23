@@ -286,6 +286,8 @@ u8 DefenderoidsLogo()
 	u8 iSourceLetter;
 	u8 iSourcePoint;
 	u8 iSpriteLoop;
+	u8 iPalette;
+	u8 iStar;
 
 	// Wait for the "A" button to be released
 	while (JOYPAD & J_A);
@@ -301,6 +303,7 @@ u8 DefenderoidsLogo()
 	ClearScreen(SCR_2_PLANE);
 
 	SetPalette(SCR_1_PLANE, 0, 0, RGB(15,0,0), RGB(15,15,0), RGB(15,15,15));
+	SetPalette(SCR_1_PLANE, 1, 0, RGB(0,0,0), RGB(0,0,0), RGB(0,0,0));
 	SetPalette(SCR_2_PLANE, 0, 0, RGB(15,15,15), RGB(11,11,11), RGB(7,7,7));
 
 	//Also, clear the sprites....
@@ -314,9 +317,13 @@ u8 DefenderoidsLogo()
 	//Paint the logo.
 	for (iLoopX=0;iLoopX<=19;iLoopX++)
 	{
+		iPalette=1
 		for (iLoopY=0;iLoopY<=9;iLoopY++)
 		{
-			PutTile(SCR_1_PLANE, 0, iLoopX, iLoopY+4, LogoTileBase +(iLoopY*20)+iLoopX);
+			//Top 2 and bottom 2 lines of the logo are the star field
+			if (iLoopY>=2) {iPalette=0};
+			if (iLoopY>=8) {iPalette=1};
+			PutTile(SCR_1_PLANE, iPalette, iLoopX, iLoopY+4, LogoTileBase +(iLoopY*20)+iLoopX);
 		}
 	}
 
@@ -329,7 +336,28 @@ u8 DefenderoidsLogo()
 
 	while (iGameMode==0)
 	{
+		// Just a quick palette shift for the starfield
+		// Select a star to cycle (0 - no stars, 1-3 palette colours)
+		iStar=QRandom()>>6;
+		// Set the selected star to a random colour
+		// This might be a bit blinkenlichten but let's see what it looks like
+		switch (iStar)
+		{
+			case 0:
+				SetPalette(SCR_1_PLANE, 1, 0, RGB(0,0,0), RGB(0,0,0), RGB(0,0,0));
+				break;
+			case 1:
+				SetPalette(SCR_1_PLANE, 1, 0, QRandom(), RGB(0,0,0), RGB(0,0,0));
+				break;
+			case 2:
+				SetPalette(SCR_1_PLANE, 1, 0, RGB(0,0,0), QRandom(), RGB(0,0,0));
+				break;
+			case 3:
+				SetPalette(SCR_1_PLANE, 1, 0, RGB(0,0,0), RGB(0,0,0), QRandom());
+				break;
+		}
 
+		
 		// Start the game if the player pushes either button
 		if (JOYPAD & J_A)
 		{
