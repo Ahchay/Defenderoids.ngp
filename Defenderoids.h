@@ -1,15 +1,20 @@
 #ifndef _DEFENDEROIDS
 #define _DEFENDEROIDS
 
+// Tile constants
 #define bgTileBase 256
 #define spTileBase 137
 #define borderTilebase 128
 #define LogoTileBase 256
 
+// Palette constants
 #define PAL_SPRITE 0
+#define palInvader 0
+#define palLemmanoid 1
+#define palCity 2
+#define palPictsel 3
 
 //Global consts
-
 const u8 SPRITE_SCALE=7;
 const u8 BITMAP_WIDTH=144;
 const u8 BITMAP_HEIGHT=112;
@@ -20,6 +25,12 @@ typedef struct SpritePoint
 	u16 y;
 } SPRITEPOINT;
 
+//Direction is affected by sprite type
+//Lemmanoids will be left/right - possibly up/down if they are floaters or being kidnapped?
+//Invaders are TBD
+//Cities will use it as the "age/build completion"
+//Pictcells will have no direction attrib
+//
 typedef struct Sprite
 {
 	SPRITEPOINT Position;
@@ -27,9 +38,10 @@ typedef struct Sprite
 	u16 SpriteType;
 	u16 BaseTile;
 	u16 Frame;
-	u16 Direction; // 1 North 2 East 3 South 4 West
+	u16 Direction;
 } SPRITE;
 
+// Direction constants
 #define DIR_NORTH 0
 #define DIR_EAST 0
 #define DIR_SOUTH 0
@@ -43,6 +55,7 @@ typedef struct Level
 	u8 AsteroidCount;
 } LEVEL;
 
+// Function templates
 u8 DefenderoidsLogo();
 void DrawGameScreen();
 void DefenderoidsMain();

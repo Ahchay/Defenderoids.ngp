@@ -76,7 +76,7 @@ SPRITE CreateSprite(u16 x, u16 y, u8 ID, u8 Type, u8 Direction, u8 Frame)
 	sprReturn.Frame = Frame;
 
 	// Initialise sprites with the nullsprite - animation frames are applied in the main loop
-	CopyAnimationFrame(Sprites, sprReturn.BaseTile, 1, (u16)((EmptySprite << 4) + (sprReturn.Direction << 2) + sprReturn.Frame));
+	CopyAnimationFrame(Sprites, sprReturn.BaseTile, 1, sprMisc);
 
 	//Create the sprite pointer - again, initialised at (0,0) and sprite plane position applied in the main loop
 	SetSprite(sprReturn.SpriteID, sprReturn.BaseTile , 0, 0, 0, (u8)(PAL_SPRITE + sprReturn.SpriteType));
@@ -108,7 +108,7 @@ DrawSprite(SPRITE sprSprite, u16 iHorizontalOffset)
 	iRelativeY = (u8)(sprSprite.Position.y>>SPRITE_SCALE)+8;
 
 	if(iRelativeX>144||iRelativeY>112||iRelativeX<8||iRelativeY<8) {
-		CopyAnimationFrame(Sprites, sprSprite.BaseTile, 1, EmptySprite-1);
+		CopyAnimationFrame(Sprites, sprSprite.BaseTile, 1, sprMisc-1);
 	}
 	else {
 		//Sprite Tile selection will differ depending on SpriteType
@@ -447,8 +447,8 @@ void DefenderoidsMain()
 	InitialiseQRandom();
 
 	// Set up the palettes
-	SetPalette(SPRITE_PLANE, (u8)(PAL_SPRITE + Invader), RGB(0,0,0), RGB(0,15,0), RGB(15,15,0), RGB(15,0,0));
-	SetPalette(SPRITE_PLANE, (u8)(PAL_SPRITE + Lemmanoid), RGB(0,0,0), RGB(15, 11, 12), RGB(0,0,15), RGB(0,15,0));
+	SetPalette(SPRITE_PLANE, (u8)(PAL_SPRITE + palInvader), RGB(0,0,0), RGB(0,15,0), RGB(15,15,0), RGB(15,0,0));
+	SetPalette(SPRITE_PLANE, (u8)(PAL_SPRITE + palLemmanoid), RGB(0,0,0), RGB(15, 11, 12), RGB(0,0,15), RGB(0,15,0));
 
 	SetPalette(SCR_1_PLANE, 0, 0, RGB(15,15,15), RGB(0,0,15), RGB(15,0,0));
 	SetPalette(SCR_2_PLANE, 0, 0, RGB(15,15,15), RGB(8,8,8), RGB(4,4,4));
@@ -496,7 +496,7 @@ void DefenderoidsMain()
 			//x, y, ID, Type, Direction, Frame
 			//Invaders always move south on creation
 			//Eventually, we'll spawn these on a timer I guess rather than just dumping them all in at the outset of the level
-			SpriteList[iSpriteLoop] = CreateSprite(((u16)QRandom())<<8,((u16)QRandom())<<4,iSpriteLoop,Invader,DIR_SOUTH,0);
+			SpriteList[iSpriteLoop] = CreateSprite(((u16)QRandom())<<8,((u16)QRandom())<<4,iSpriteLoop,sprInvader,DIR_SOUTH,0);
 		}
 
 		// Lemmanoids
@@ -505,7 +505,7 @@ void DefenderoidsMain()
 			//x, y, ID, Type, Direction, Frame
 			//Lemmanoids move either west or east (DIR_EAST + [0|2])
 			//Spawn them vertically at the median point of the terrain
-			SpriteList[iSpriteLoop] = CreateSprite(((u16)QRandom())<<8,100<<8,iSpriteLoop,Lemmanoid,DIR_EAST + ((QRandom()>>7)<<1),(QRandom()>>5));
+			SpriteList[iSpriteLoop] = CreateSprite(((u16)QRandom())<<8,100<<8,iSpriteLoop,sprLemmanoid,DIR_EAST + ((QRandom()>>7)<<1),(QRandom()>>5));
 		}
 
 		// Asteroids
@@ -650,7 +650,7 @@ void DefenderoidsMain()
 						{
 							// If any sprite exists along the bullet's movement vector, then it's dead.
 							// Shots and sprites are in different scales, so need to be translated to match
-							if (SpriteList[iSpriteLoop].SpriteType == Invader)
+							if (SpriteList[iSpriteLoop].SpriteType == sprInvader)
 							{
 								POINT pStartShot;
 								POINT pEndShot;
@@ -671,7 +671,7 @@ void DefenderoidsMain()
 
 								if (LineIntersect(Shots[iLoopShot].Position, pEndShot, pStartSprite, pEndSprite) == 1)
 								{
-									SpriteList[iSpriteLoop].SpriteType = EmptySprite;
+									SpriteList[iSpriteLoop].SpriteType = sprMisc;
 									SetSprite(SpriteList[iSpriteLoop].SpriteID, 0, 0, 0, 0, PAL_SPRITE);
 									Shots[iLoopShot].Scale = 0;
 									iSpriteLoop = DefenderoidsLevels[iCurrentLevel].InvaderCount + 1;
@@ -799,7 +799,7 @@ void DefenderoidsMain()
 			//////////////////////////////////////////////////////
 			for (iSpriteLoop=0;iSpriteLoop<(DefenderoidsLevels[iCurrentLevel].InvaderCount+DefenderoidsLevels[iCurrentLevel].LemmanoidCount);iSpriteLoop++)
 			{
-				if (!(SpriteList[iSpriteLoop].SpriteType == EmptySprite))
+				if (!(SpriteList[iSpriteLoop].SpriteType == sprMisc))
 				{
 					// This is ridiculously simple
 					// Invaders bob up and down
@@ -963,8 +963,8 @@ void DefenderoidsTest()
 	iLives=3;
 
 	// Set up the test sprite
-	SetPalette(SPRITE_PLANE, (u8)(PAL_SPRITE + Invader), RGB(0,0,0), RGB(0,15,0), RGB(15,15,0), RGB(15,0,0));
-	SetPalette(SPRITE_PLANE, (u8)(PAL_SPRITE + Lemmanoid), RGB(0,0,0), RGB(15, 11, 12), RGB(0,0,15), RGB(0,15,0));
+	SetPalette(SPRITE_PLANE, (u8)(PAL_SPRITE + palInvader), RGB(0,0,0), RGB(0,15,0), RGB(15,15,0), RGB(15,0,0));
+	SetPalette(SPRITE_PLANE, (u8)(PAL_SPRITE + palLemmanoid), RGB(0,0,0), RGB(15, 11, 12), RGB(0,0,15), RGB(0,15,0));
 
 	// So, create a bitmap...
 	SetBackgroundColour(RGB(0,0,4));
