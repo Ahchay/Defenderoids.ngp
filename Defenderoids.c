@@ -66,6 +66,8 @@ VECTOROBJECT CreateAsteroid(u16 x, u16 y)
 /////////////////////////////////////////////////////
 SPRITE CreateSprite(u16 x, u16 y, u8 ID, u8 Type, u8 Direction, u8 Frame)
 {
+	u8 iPalette;
+
 	SPRITE sprReturn;
 	sprReturn.Position.x = x;
 	sprReturn.Position.y = y;
@@ -75,11 +77,31 @@ SPRITE CreateSprite(u16 x, u16 y, u8 ID, u8 Type, u8 Direction, u8 Frame)
 	sprReturn.BaseTile = spTileBase + ID;
 	sprReturn.Frame = Frame;
 
+	// map the sprites to their selected Palette
+	switch (sprReturn.SpriteType)
+	{
+		case sprInvader:
+			iPalette=(u8)(PAL_INVADER);
+			break;
+		case sprLemmanoid:
+			iPalette=(u8)(PAL_LEMMANOID);
+			break;
+		case sprCity:
+			iPalette=(u8)(PAL_CITY);
+			break;
+		case sprPictcell:
+			iPalette=(u8)(PAL_PICTSEL);
+			break;
+		default:
+			iPalette=(u8)(PAL_SPRITE);
+			break;
+	}
+
 	// Initialise sprites with the nullsprite - animation frames are applied in the main loop
 	CopyAnimationFrame(Sprites, sprReturn.BaseTile, 1, sprMisc);
 
 	//Create the sprite pointer - again, initialised at (0,0) and sprite plane position applied in the main loop
-	SetSprite(sprReturn.SpriteID, sprReturn.BaseTile , 0, 0, 0, (u8)(PAL_SPRITE + sprReturn.SpriteType));
+	SetSprite(sprReturn.SpriteID, sprReturn.BaseTile , 0, 0, 0, iPalette);
 
 	return sprReturn;
 }
@@ -118,7 +140,19 @@ DrawSprite(SPRITE sprSprite, u16 iHorizontalOffset)
 		//Spacie -- sprSpacie + Type + 4 frames
 		//Pictcell -- sprPictCell + 4 frames
 		//City -- sprCity + blockid + age
-		CopyAnimationFrame(Sprites, sprSprite.BaseTile, 1, (sprSprite.SpriteType) + (sprSprite.Direction) + sprSprite.Frame -1);
+		switch (sprSprite.SpriteType)
+		{
+			case sprInvader:
+				CopyAnimationFrame(Sprites, sprSprite.BaseTile, 1, (sprSprite.SpriteType) + sprSprite.Frame -1);
+				break;
+			case sprLemmanoid:
+				CopyAnimationFrame(Sprites, sprSprite.BaseTile, 1, (sprSprite.SpriteType) + (sprSprite.Direction) + sprSprite.Frame -1);
+				break;
+			default:
+				CopyAnimationFrame(Sprites, sprSprite.BaseTile, 1, (sprSprite.SpriteType));
+				break;
+		}
+
 	}
 
 	// Cast the relativeX position to (u8) once the bounds checking has been completed
@@ -288,6 +322,7 @@ u8 DefenderoidsLogo()
 	u8 iSpriteLoop;
 	u8 iPalette;
 	u8 iStar;
+	u16 iStarColour;
 
 	// Wait for the "A" button to be released
 	while (JOYPAD & J_A);
@@ -317,12 +352,12 @@ u8 DefenderoidsLogo()
 	//Paint the logo.
 	for (iLoopX=0;iLoopX<=19;iLoopX++)
 	{
-		iPalette=1
+		iPalette=1;
 		for (iLoopY=0;iLoopY<=9;iLoopY++)
 		{
 			//Top 2 and bottom 2 lines of the logo are the star field
-			if (iLoopY>=2) {iPalette=0};
-			if (iLoopY>=8) {iPalette=1};
+			if (iLoopY>=2) {iPalette=0;}
+			if (iLoopY>=8) {iPalette=1;}
 			PutTile(SCR_1_PLANE, iPalette, iLoopX, iLoopY+4, LogoTileBase +(iLoopY*20)+iLoopX);
 		}
 	}
@@ -334,30 +369,36 @@ u8 DefenderoidsLogo()
 
 	iGameMode=0;
 
+	iStarColour=0;
+
 	while (iGameMode==0)
 	{
 		// Just a quick palette shift for the starfield
 		// Select a star to cycle (0 - no stars, 1-3 palette colours)
-		iStar=QRandom()>>6;
+		if(iStarColour==0)
+		{
+			iStar=(QRandom()>>6)+1;
+			iStarColour=RGB(15,15,15);
+		}
 		// Set the selected star to a random colour
 		// This might be a bit blinkenlichten but let's see what it looks like
 		switch (iStar)
 		{
 			case 0:
-				SetPalette(SCR_1_PLANE, 1, 0, RGB(0,0,0), RGB(0,0,0), RGB(0,0,0));
+				SetPalette(SCR_1_PLANE, 1, 0, 0, 0, 0);
 				break;
 			case 1:
-				SetPalette(SCR_1_PLANE, 1, 0, QRandom(), RGB(0,0,0), RGB(0,0,0));
+				SetPalette(SCR_1_PLANE, 1, 0, iStarColour, 0, 0);
 				break;
 			case 2:
-				SetPalette(SCR_1_PLANE, 1, 0, RGB(0,0,0), QRandom(), RGB(0,0,0));
+				SetPalette(SCR_1_PLANE, 1, 0, 0, iStarColour, 0);
 				break;
 			case 3:
-				SetPalette(SCR_1_PLANE, 1, 0, RGB(0,0,0), RGB(0,0,0), QRandom());
+				SetPalette(SCR_1_PLANE, 1, 0, 0, 0, iStarColour);
 				break;
 		}
+		iStarColour--;
 
-		
 		// Start the game if the player pushes either button
 		if (JOYPAD & J_A)
 		{
@@ -475,8 +516,8 @@ void DefenderoidsMain()
 	InitialiseQRandom();
 
 	// Set up the palettes
-	SetPalette(SPRITE_PLANE, (u8)(PAL_SPRITE + palInvader), RGB(0,0,0), RGB(0,15,0), RGB(15,15,0), RGB(15,0,0));
-	SetPalette(SPRITE_PLANE, (u8)(PAL_SPRITE + palLemmanoid), RGB(0,0,0), RGB(15, 11, 12), RGB(0,0,15), RGB(0,15,0));
+	SetPalette(SPRITE_PLANE, (u8)(PAL_INVADER), RGB(0,0,0), RGB(0,15,0), RGB(15,15,0), RGB(15,0,0));
+	SetPalette(SPRITE_PLANE, (u8)(PAL_LEMMANOID), RGB(0,0,0), RGB(15, 11, 12), RGB(0,0,15), RGB(0,15,0));
 
 	SetPalette(SCR_1_PLANE, 0, 0, RGB(15,15,15), RGB(0,0,15), RGB(15,0,0));
 	SetPalette(SCR_2_PLANE, 0, 0, RGB(15,15,15), RGB(8,8,8), RGB(4,4,4));
@@ -673,7 +714,7 @@ void DefenderoidsMain()
 					{
 
 						// Calculate any collisions...
-						// VERY slow (and doesn't actually work) - leaving it for reference, but we need to sort this out
+						// VERY slow (and doesn't actually work) - leaving it for reference, but I need to sort this out
 						for (iSpriteLoop=128;iSpriteLoop<(DefenderoidsLevels[iCurrentLevel].InvaderCount);iSpriteLoop++)
 						{
 							// If any sprite exists along the bullet's movement vector, then it's dead.
@@ -991,8 +1032,8 @@ void DefenderoidsTest()
 	iLives=3;
 
 	// Set up the test sprite
-	SetPalette(SPRITE_PLANE, (u8)(PAL_SPRITE + palInvader), RGB(0,0,0), RGB(0,15,0), RGB(15,15,0), RGB(15,0,0));
-	SetPalette(SPRITE_PLANE, (u8)(PAL_SPRITE + palLemmanoid), RGB(0,0,0), RGB(15, 11, 12), RGB(0,0,15), RGB(0,15,0));
+	SetPalette(SPRITE_PLANE, (u8)(PAL_INVADER), RGB(0,0,0), RGB(0,15,0), RGB(15,15,0), RGB(15,0,0));
+	SetPalette(SPRITE_PLANE, (u8)(PAL_LEMMANOID), RGB(0,0,0), RGB(15, 11, 12), RGB(0,0,15), RGB(0,15,0));
 
 	// So, create a bitmap...
 	SetBackgroundColour(RGB(0,0,4));

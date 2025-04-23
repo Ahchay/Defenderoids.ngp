@@ -9,10 +9,10 @@
 
 // Palette constants
 #define PAL_SPRITE 0
-#define palInvader 0
-#define palLemmanoid 1
-#define palCity 2
-#define palPictsel 3
+#define PAL_INVADER 0
+#define PAL_LEMMANOID 1
+#define PAL_CITY 2
+#define PAL_PICTSEL 3
 
 //Global consts
 const u8 SPRITE_SCALE=7;
@@ -42,9 +42,9 @@ typedef struct Sprite
 } SPRITE;
 
 // Direction constants
-#define DIR_NORTH 0
 #define DIR_EAST 0
-#define DIR_SOUTH 0
+#define DIR_NORTH 1
+#define DIR_SOUTH 2
 #define DIR_WEST 4
 
 typedef struct Level
