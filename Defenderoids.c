@@ -889,7 +889,6 @@ void DefenderoidsMain()
 		{
 			SetSprite(iSpriteLoop, 0, 0, 0, 0, PAL_SPRITE);
 		}
-		iPointLoop
 	} // Lives Loop
 
 	//////////////////////////////////////////////////////
