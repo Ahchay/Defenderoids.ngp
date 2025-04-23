@@ -111,7 +111,14 @@ DrawSprite(SPRITE sprSprite, u16 iHorizontalOffset)
 		CopyAnimationFrame(Sprites, sprSprite.BaseTile, 1, EmptySprite-1);
 	}
 	else {
-		CopyAnimationFrame(Sprites, sprSprite.BaseTile, 1, (sprSprite.SpriteType << 4) + (sprSprite.Direction << 2) + sprSprite.Frame -1);
+		//Sprite Tile selection will differ depending on SpriteType
+		//Sprite Misc -- sprMisc + type (Empty, Umbrella, Builders Hat, Hod, etc)
+		//Invader -- sprInvader + 4 frames
+		//Lemmanoid -- sprLemmanoid + Direction + 4 frames
+		//Spacie -- sprSpacie + Type + 4 frames
+		//Pictcell -- sprPictCell + 4 frames
+		//City -- sprCity + blockid + age
+		CopyAnimationFrame(Sprites, sprSprite.BaseTile, 1, (sprSprite.SpriteType) + (sprSprite.Direction) + sprSprite.Frame -1);
 	}
 
 	// Cast the relativeX position to (u8) once the bounds checking has been completed

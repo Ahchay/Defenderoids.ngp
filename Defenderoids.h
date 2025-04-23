@@ -31,9 +31,9 @@ typedef struct Sprite
 } SPRITE;
 
 #define DIR_NORTH 0
-#define DIR_EAST 1
-#define DIR_SOUTH 2
-#define DIR_WEST 3
+#define DIR_EAST 0
+#define DIR_SOUTH 0
+#define DIR_WEST 4
 
 typedef struct Level
 {
