@@ -439,23 +439,61 @@ void PrintString(u8 Plane, u8 Palette, u8 XPos, u8 YPos, const char * theString)
 //////////////////////////////////////////////////////////////////////////////
 void SetSprite(u8 SpriteNo, u16 TileNo, u8 Chain, u8 XPos, u8 YPos, u8 PaletteNo)
 {
-   u16 SprCtrlReg;
-   u8 * theSprite = SPRITE_RAM;
-   u8 * theSpriteCol = SPRITE_COLOUR;
+	u16 SprCtrlReg;
+	u8 * theSprite = SPRITE_RAM;
+	u8 * theSpriteCol = SPRITE_COLOUR;
 
-   theSprite += (SpriteNo * 4);
-   theSpriteCol += SpriteNo;
+	/*
 
-   SprCtrlReg = 24; // topmost priority
-   if (Chain)
-      SprCtrlReg += 6; // v and h chaining
+		Sprites are in four bytes starting at SPRITE_RAM (0x8800)
+		+0	C.C = Character Tile Number (lower 8 bits of 9)
+		+1	Bit 7 - H.F = Horizontal Flip (0=normal,1=flipped)
+			Bit 6 - V.F = Vertical Flip   (0=normal,1=flipped
+			Bit 5 - P.C = Palette Code (Valid for K1GE upper palette compatible mode ie BW hardware)
+			Bit 4 - PR.C = Priority Code MSB  (00=Hide,01=Furthest,10=Middle,11=Front)
+			Bit 3 - PR.C = Priority Code LSB
+			Bit 2 - H.ch = H Position Chain (0 = Normal, 1 = Offset coordinates) (Value defined becomes the offset value with respect to the previous character.)
+			Bit 1 - V.ch = V Position Chain (0 = Normal, 1 = Offset coordinates) (Value defined becomes the offset value with respect to the previous character.)
+			Bit 0 - C.C = Character Tile Number (Upper 1 bit of 9)
+		+2	H.P = Horizontal Position
+		+3	V.P = Vertical Position
+	
+		Sprite palette memory starts at SPRITE_COLOUR (0x8c00)
+		
+	*/
 
-   *(theSprite)   = TileNo;
-   *(theSprite+1) = SprCtrlReg+(TileNo>>8);
-   *(theSprite+2) = XPos;
-   *(theSprite+3) = YPos;
+	theSprite += (SpriteNo * 4);
+	theSpriteCol += SpriteNo;
 
-   *theSpriteCol = PaletteNo;
+	SprCtrlReg = 24; // topmost priority (16 + 8)
+	if (Chain)
+		SprCtrlReg += 6; // v and h chaining (4 + 2)
+
+	*(theSprite)   = TileNo;
+	*(theSprite+1) = SprCtrlReg+(TileNo>>8);
+	*(theSprite+2) = XPos;
+	*(theSprite+3) = YPos;
+
+	*theSpriteCol = PaletteNo;
+}
+
+void FlipSprite(u8 SpriteNo, bool HorizontalFlip, bool VerticalFlip)
+{
+	u16 SprCtrlReg;
+	u8 * theSprite = SPRITE_RAM;
+
+	theSprite += (SpriteNo * 4);
+
+	// First remove any existing flip attributes
+	SprCtrlReg&=63;
+	// Apply flips if required
+	if (VerticalFlip)
+		SprCtrlReg +=64;
+	if (HorizontalFlip)
+		SprCtrlReg +=128;
+
+	*(theSprite+1) = SprCtrlReg;
+
 }
 
 
