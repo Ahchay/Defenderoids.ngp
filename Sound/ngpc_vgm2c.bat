@@ -1,0 +1,1 @@
+for %%x IN (*.vgm) do python ngpc_vgm2c.py %%x 1

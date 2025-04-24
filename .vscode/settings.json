@@ -3,6 +3,7 @@
         "ngpc.h": "c",
         "defenderoids.h": "c",
         "veclib.h": "c",
-        "vectorobjects.h": "c"
+        "vectorobjects.h": "c",
+        "library.h": "c"
     }
 }

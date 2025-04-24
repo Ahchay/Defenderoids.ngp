@@ -7,6 +7,12 @@
 #include "Tiles\Logo.c"
 #include "Tiles\Border.c"
 #include "VectorObjects.h"
+#include "vgmplayer.h"
+#include "Sound\noise.c"
+#include "Sound\shoot.c"
+#include "Sound\bgm1.c"
+
+
 
 #define SPRITE_MAX_WIDTH (512)
 
@@ -404,6 +410,7 @@ u8 DefenderoidsLogo()
 		if (JOYPAD & J_A)
 		{
 			iGameMode=1;
+			//VGM_PlaySFX((u8*)noise,1);
 		}
 		if (JOYPAD & J_B) {
 			iGameMode=2;
@@ -527,6 +534,8 @@ void DefenderoidsMain()
 	iCurrentLevel=0;
 	iLives=3;
 
+	VGM_PlayBGM_Loop((u8*)bgm1, bgm1_loop_point);
+
 	while ((!(JOYPAD & J_OPTION)) && iLives>0)
 	{
 		////////////////////////////////////////////////////////////
@@ -638,6 +647,10 @@ void DefenderoidsMain()
 				{
 					if (Shots[iLoopShot].Scale == 0)
 					{
+
+						
+						VGM_PlaySFX((u8*)shoot,1);
+
 						bShotType=!bShotType;
 						Shots[iLoopShot]=CreateShot(iHorizontalOffset,PlayerOne,bShotType);
 						
@@ -940,6 +953,8 @@ void DefenderoidsMain()
 			SetSprite(iSpriteLoop, 0, 0, 0, 0, PAL_SPRITE);
 		}
 	} // Lives Loop
+
+	VGM_StopBGM();
 
 	//////////////////////////////////////////////////////
 	// Game Over information etc

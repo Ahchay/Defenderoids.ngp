@@ -2,6 +2,7 @@
 NAME = DEFENDEROIDS
 OBJS = 	main.rel \
 	library.rel \
+	vgmplayer.rel \
 	veclib.rel \
 	Defenderoids.rel
 	
