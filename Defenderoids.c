@@ -136,6 +136,7 @@ DrawSprite(SPRITE sprSprite, u16 iHorizontalOffset)
 	iRelativeY = (u8)(sprSprite.Position.y>>SPRITE_SCALE)+8;
 
 	if(iRelativeX>144||iRelativeY>112||iRelativeX<8||iRelativeY<8) {
+		//Replace tile with the empty sprite if it's outside the visible area
 		CopyAnimationFrame(Sprites, sprSprite.BaseTile, 1, sprMisc-1);
 	}
 	else {
@@ -153,7 +154,11 @@ DrawSprite(SPRITE sprSprite, u16 iHorizontalOffset)
 				CopyAnimationFrame(Sprites, sprSprite.BaseTile, 1, (sprSprite.SpriteType) + sprSprite.Frame -1);
 				break;
 			case sprLemmanoid:
-				CopyAnimationFrame(Sprites, sprSprite.BaseTile, 1, (sprSprite.SpriteType) + (sprSprite.Direction) + sprSprite.Frame);
+				// Flipped sprites behave weirdly - are their x/y positions also flipped?
+				//if(sprSprite.Direction==DIR_WEST) {
+				//	FlipSprite(sprSprite.SpriteID,1,0);
+				//}
+				CopyAnimationFrame(Sprites, sprSprite.BaseTile, 1, (sprSprite.SpriteType) + (sprSprite.Direction) + sprSprite.Frame -1);
 				break;
 			default:
 				CopyAnimationFrame(Sprites, sprSprite.BaseTile, 1, (sprSprite.SpriteType));
@@ -499,6 +504,16 @@ void DefenderoidsMain()
 	// Set up the palettes
 	SetPalette(SPRITE_PLANE, (u8)(PAL_INVADER), RGB(0,0,0), RGB(0,15,0), RGB(15,15,0), RGB(15,0,0));
 	SetPalette(SPRITE_PLANE, (u8)(PAL_LEMMANOID), RGB(0,0,0), RGB(15, 11, 12), RGB(0,0,15), RGB(0,15,0));
+	// Lemmanoid palettes for debugging if I need to distinguish between individuals
+	// SpriteID:
+	// 	4 = White
+	//	5 = Red
+	//	6 = Green
+	//	7 = Blue			
+	//SetPalette(SPRITE_PLANE, (u8)(PAL_LEMMANOID), RGB(0,0,0), RGB(15, 15, 15), RGB(15,15,15), RGB(15,15,15));
+	//SetPalette(SPRITE_PLANE, (u8)(PAL_LEMMANOID+1), RGB(0,0,0), RGB(15, 0, 0), RGB(15, 0, 0), RGB(15, 0, 0));
+	//SetPalette(SPRITE_PLANE, (u8)(PAL_LEMMANOID+2), RGB(0,0,0), RGB(0, 15, 0), RGB(0, 15, 0), RGB(0, 15, 0));
+	//SetPalette(SPRITE_PLANE, (u8)(PAL_LEMMANOID+3), RGB(0,0,0), RGB(0, 0, 15), RGB(0,0,15), RGB(0,0,15));
 
 	SetPalette(SCR_1_PLANE, 0, 0, RGB(15,15,15), RGB(0,0,15), RGB(15,0,0));
 	SetPalette(SCR_2_PLANE, 0, 0, RGB(15,15,15), RGB(8,8,8), RGB(4,4,4));
@@ -936,7 +951,7 @@ void DefenderoidsMain()
 			*/
 
 			//Debug info
-
+			
 			//Frame counter
 			PrintDecimal(SCR_1_PLANE, 0, 4, 18, 60/(VBCounter-iStartFrame), 2);
 			//Current Horizontal Offset
@@ -968,276 +983,5 @@ void DefenderoidsMain()
 /////////////////////////////////////////////////////
 void DefenderoidsTest()
 {
-	// Define variables
-	u8 iLoopX;
-	u8 iLoopY;
-	u8 iPointLoop;
-	u16 iTile;
-	u8 iMainLoop;
-	u16 bmpPlayField[2032];
-	u16 iStartFrame;
-	u8 iLoopAsteroid;
-	u8 iLoopShot;
-	u8 iSpriteLoop;
-	u8 iHorizontalOffset;
-	u8 iCurrentLevel;
-	u8 iLives;
-	u8 iMode;
-	bool bShotType;
-	u8 iShotSide;
 
-	VECTOROBJECT Shots[] = {
-								{{1,1},{0,0},{0,0},3,{{0,0,0},{0,0,0},{0,0,0}},0,0,0},
-								{{1,1},{0,0},{0,0},3,{{0,0,0},{0,0,0},{0,0,0}},0,0,0},
-								{{1,1},{0,0},{0,0},3,{{0,0,0},{0,0,0},{0,0,0}},0,0,0},
-								{{1,1},{0,0},{0,0},3,{{0,0,0},{0,0,0},{0,0,0}},0,0,0},
-							};
-
-	VECTOROBJECT Asteroid[] = {
-									{{6,6},{2000,8192},0,0,0,0,0,0},
-									{{6,6},{5000,10096},0,0,0,0,0,0},
-									{{6,6},{8000,10192},0,0,0,0,0,0},
-									{{6,6},{11000,40098},0,0,0,0,0,0},
-									{{6,6},{14000,2048},0,0,0,0,0,0},
-									{{6,6},{19000,2048},0,0,0,0,0,0},
-									{{6,6},{25000,2048},0,0,0,0,0,0},
-									{{6,6},{30000,7634},0,0,0,0,0,0},
-									{{6,6},{23000,7763},0,0,0,0,0,0},
-									{{6,6},{31000,2048},0,0,0,0,0,0},
-									{{6,6},{12000,10048},0,0,0,0,0,0},
-									{{6,6},{8000,2048},0,0,0,0,0,0}
-								};
-
-	LEVEL DefenderoidsLevels[] = {
-									{"Asteroids Testing",0,0,1},
-									{"Getting Harder",12,12,3}
-								};
-
-	VECTOROBJECT PlayerOne;
-
-	SPRITE SpriteList[16];
-
-	iCurrentLevel=0;
-	iLives=3;
-
-	// Set up the test sprite
-	SetPalette(SPRITE_PLANE, (u8)(PAL_INVADER), RGB(0,0,0), RGB(0,15,0), RGB(15,15,0), RGB(15,0,0));
-	SetPalette(SPRITE_PLANE, (u8)(PAL_LEMMANOID), RGB(0,0,0), RGB(15, 11, 12), RGB(0,0,15), RGB(0,15,0));
-
-	// So, create a bitmap...
-	SetBackgroundColour(RGB(0,0,4));
-
-	SetPalette(SCR_1_PLANE, 0, 0, RGB(15,15,15), RGB(0,0,15), RGB(15,0,0));
-	SetPalette(SCR_2_PLANE, 0, 0, RGB(15,15,15), RGB(0,0,15), RGB(15,0,0));
-
-	CreateBitmap((u16*)bmpPlayField, BITMAP_WIDTH, BITMAP_HEIGHT);
-	CopyBitmap((u16*)bmpPlayField, bgTileBase);
-
-	iTile=0;
-	//Copy the bitmap to SCR_1_PLANE
-	// Watch the order...
-	for (iLoopY=0;iLoopY<14;iLoopY++)
-	{
-		for (iLoopX=0;iLoopX<18;iLoopX++)
-		{
-			PutTile(SCR_1_PLANE, 0, 1 + iLoopX, 1 + iLoopY, bgTileBase+iTile);
-			iTile++;
-		}
-	}
-
-	InitialiseQRandom();
-
-	//Mode:
-	//0 = Asteroids
-	//1 = Shots
-	iMode=1;
-
-	// Main lives/game loop
-	while ((!(JOYPAD & J_OPTION)) && iLives>0)
-	{
-		// Create the level
-		//////////////////////////////////////////////////////////////
-		// Set up the player (just as a focus point really)
-		//////////////////////////////////////////////////////////////
-		PlayerOne.Position.x = 72;
-		PlayerOne.Position.y = 66;
-		PlayerOne.MovementVector.x = 0; // Use 256 to set up an initial drift...;
-		PlayerOne.MovementVector.y = 0;
-		PlayerOne.Scale = 1;
-		PlayerOne.Origin.x = 3;
-		PlayerOne.Origin.y = 8;
-		PlayerOne.Points = 50;
-		PlayerOne.RotationAngle = 0;
-		PlayerOne.RotationSpeed = 0;
-		iPointLoop=0;
-		while (iPointLoop<PlayerOne.Points)
-		{
-			PlayerOne.VectorList[iPointLoop].x = PlayerSprite[iPointLoop].x;
-			PlayerOne.VectorList[iPointLoop].y = PlayerSprite[iPointLoop].y;
-			PlayerOne.VectorList[iPointLoop].colour = PlayerSprite[iPointLoop].colour;
-			iPointLoop++;
-		}
-
-		//////////////////////////////////////////////////////////////
-		// Create test asteroid objects
-		//////////////////////////////////////////////////////////////
-		for (iLoopAsteroid=0;iLoopAsteroid<DefenderoidsLevels[iCurrentLevel].AsteroidCount;iLoopAsteroid++)
-		{
-			//Create an asteroid every 64 pixels...
-			//Asteroid[iLoopAsteroid] = CreateAsteroid(((u16)iLoopAsteroid)<<12,(1024+((u16)iLoopAsteroid))<<10);
-			//Create a single asteroid
-			Asteroid[iLoopAsteroid] = CreateAsteroid(12384,12384);
-		}
-
-
-		//////////////////////////////////////////////////////////////
-		// Create test shot object
-		//////////////////////////////////////////////////////////////
-		iLoopShot=0;
-		Shots[iLoopShot].Scale = 1;
-		// Copy the shot object from the template
-
-		bShotType=!bShotType;
-		iShotSide=0;
-		if(bShotType) iShotSide=8;
-
-		Shots[iLoopShot].Points = sizeof(Shot);
-		for(iLoopX=0;iLoopX<=Shots[iLoopShot].Points;iLoopX++)
-		{
-			Shots[iLoopShot].VectorList[iLoopX].x = iShotSide;
-			Shots[iLoopShot].VectorList[iLoopX].y = Shot[iLoopX].y;
-			Shots[iLoopShot].VectorList[iLoopX].colour = Shot[iLoopX].colour;
-		}
-		Shots[iLoopShot].Origin.x = 3;
-		Shots[iLoopShot].Origin.y = 0;
-		Shots[iLoopShot].Position.x = PlayerOne.Position.x+iHorizontalOffset;
-		Shots[iLoopShot].Position.y = PlayerOne.Position.y;
-		Shots[iLoopShot].RotationAngle = PlayerOne.RotationAngle;
-		// Give the shots a bit of speed. Should be faster than the ship but in the same direction as the ship is "facing" (rather than moving)
-		Shots[iLoopShot].MovementVector.x = ((s16)Cos(Shots[iLoopShot].RotationAngle+192))<<4;
-		Shots[iLoopShot].MovementVector.y = ((s16)Sin(Shots[iLoopShot].RotationAngle+192))<<4;
-
-		// We'll use RotationSpeed to control the life of the shot. Kill it when it hits a limit...
-		Shots[iLoopShot].RotationSpeed=0;
-
-		// Set up the horizontal offset.
-		iHorizontalOffset=0;
-
-		// Main level loop
-		while ((!(JOYPAD & J_OPTION)) && iLives>0)
-		{
-
-			iStartFrame=VBCounter;
-
-			//Reset the bitmap for every frame.
-			CreateBitmap((u16*)bmpPlayField, BITMAP_WIDTH, BITMAP_HEIGHT);
-
-			//Check player movement
-
-			// Asteroids testing - just scroll left/right
-			if (iMode==0){
-				if (JOYPAD & J_LEFT) iHorizontalOffset--;
-				if (JOYPAD & J_RIGHT) iHorizontalOffset++;
-			}
-
-			// Shot testing - move the test shot along it's vector with the up/down
-			// rotate the player with left/right
-			// fire new shot with A
-			if (iMode==1){
-
-
-
-				if (JOYPAD & J_UP) {
-					for (iLoopShot=0;iLoopShot<4;iLoopShot++)
-					{
-						Shots[iLoopShot].Position.x += Shots[iLoopShot].MovementVector.x >> 7;
-						Shots[iLoopShot].Position.y += Shots[iLoopShot].MovementVector.y >> 7;
-					}
-				}
-				if (JOYPAD & J_DOWN) {
-					for (iLoopShot=0;iLoopShot<4;iLoopShot++)
-					{
-						Shots[iLoopShot].Position.x -= Shots[iLoopShot].MovementVector.x >> 7;
-						Shots[iLoopShot].Position.y -= Shots[iLoopShot].MovementVector.y >> 7;
-					}
-				}
-
-			}
-
-
-			// Draw the test objects
-			// Draw some markers
-			DrawLine((u16*)bmpPlayField,0,0,10,0,2);
-			DrawLine((u16*)bmpPlayField,0,7,10,7,2);
-			DrawLine((u16*)bmpPlayField,0,15,10,15,2);
-			DrawLine((u16*)bmpPlayField,0,23,10,23,2);
-			DrawLine((u16*)bmpPlayField,0,31,10,31,2);
-			DrawLine((u16*)bmpPlayField,0,39,10,39,2);
-			DrawLine((u16*)bmpPlayField,0,47,10,47,2);
-			DrawLine((u16*)bmpPlayField,0,55,10,55,2);
-			DrawLine((u16*)bmpPlayField,0,63,10,63,2);
-			DrawLine((u16*)bmpPlayField,0,71,10,71,2);
-			DrawLine((u16*)bmpPlayField,0,79,10,79,2);
-			DrawLine((u16*)bmpPlayField,0,87,10,87,2);
-			DrawLine((u16*)bmpPlayField,0,95,10,95,2);
-			DrawLine((u16*)bmpPlayField,0,103,10,103,2);
-			DrawLine((u16*)bmpPlayField,0,111,10,111,2);
-
-			DrawLine((u16*)bmpPlayField,iHorizontalOffset,0,iHorizontalOffset,112,2);
-
-			// Draw the test asteroid objects
-			if (iMode==0)
-			{
-				PrintString(SCR_2_PLANE, 0, 0, 0, "ASTEROIDS:");
-				PrintDecimal(SCR_2_PLANE, 0, 11, 0, DefenderoidsLevels[iCurrentLevel].AsteroidCount ,2);
-				for (iLoopAsteroid=0;iLoopAsteroid<DefenderoidsLevels[iCurrentLevel].AsteroidCount;iLoopAsteroid++)
-				{
-					// Draw asteroids at fixed points
-					DrawVectorObject((u16*)bmpPlayField,Asteroid[iLoopAsteroid],iHorizontalOffset);
-				}
-			}
-
-			//////////////////////////////////////////////////////
-			// Draw shot objects
-			/////////////////////////////////////////////////////
-			if (iMode==1)
-			{
-				PrintString(SCR_2_PLANE, 0, 0, 0, "SHOTS:");
-				for (iLoopShot=0;iLoopShot<4;iLoopShot++)
-				{
-					PrintDecimal(SCR_2_PLANE,0,0,1+iLoopShot,iLoopShot,1);
-					PrintString(SCR_2_PLANE,0,1,1+iLoopShot,":(   ,   )");
-					if (Shots[iLoopShot].Scale == 1)
-					{
-						PrintDecimal(SCR_2_PLANE,0,3,1+iLoopShot,Shots[iLoopShot].Position.x,3);
-						PrintDecimal(SCR_2_PLANE,0,7,1+iLoopShot,Shots[iLoopShot].Position.y,3);
-						DrawVectorSprite((u16*)bmpPlayField, Shots[iLoopShot], iHorizontalOffset);
-					}
-					else{
-						PrintString(SCR_2_PLANE,0,3,1+iLoopShot,"---");
-						PrintString(SCR_2_PLANE,0,7,1+iLoopShot,"---");
-					}
-				}
-			}
-
-			//Player Object
-			DrawVectorSpriteAbsolute((u16*)bmpPlayField, PlayerOne);
-
-			// Then copy the bitmap back into tile memory...
-			CopyBitmap((u16*)bmpPlayField, bgTileBase);
-
-			// Print debug information
-			PrintString(SCR_2_PLANE, 0, 0, 18, "FPS:");
-			PrintDecimal(SCR_2_PLANE, 0, 4, 18, 60/(VBCounter-iStartFrame), 2);
-			PrintString(SCR_2_PLANE, 0, 0, 17, "HZL:");
-			PrintDecimal(SCR_2_PLANE, 0, 4, 17, iHorizontalOffset, 3);
-			PrintString(SCR_2_PLANE, 0, 8, 17, "X/Y:");
-			PrintDecimal(SCR_2_PLANE, 0, 12, 17, PlayerOne.Position.x, 3);
-			PrintString(SCR_2_PLANE, 0, 15, 17, "/:");
-			PrintDecimal(SCR_2_PLANE, 0, 16, 17, PlayerOne.Position.y, 3);
-			//PrintDecimal(SCR_2_PLANE, 0, 8, 17, Shots[0].Position.x, 8);
-
-		} // Level Loop
-
-	} // Lives Loop
 }

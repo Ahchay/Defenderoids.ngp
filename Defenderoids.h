@@ -43,9 +43,9 @@ typedef struct Sprite
 
 // Direction constants
 #define DIR_EAST 0
-#define DIR_NORTH 11
-#define DIR_SOUTH 7
 #define DIR_WEST 3
+#define DIR_SOUTH 7
+#define DIR_NORTH 11
 
 typedef struct Level
 {

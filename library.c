@@ -477,6 +477,14 @@ void SetSprite(u8 SpriteNo, u16 TileNo, u8 Chain, u8 XPos, u8 YPos, u8 PaletteNo
 	*theSpriteCol = PaletteNo;
 }
 
+//////////////////////////////////////////////////////////////////////////////
+// FlipSprite
+// Applies horizontal and vertical flip to a sprite
+// Inputs:
+//		SpriteNo - 0-63 the sprite to flip
+//      HorizontalFlip - Apply horizontal flip
+//      VerticalFlip - Apply vertical flip
+//////////////////////////////////////////////////////////////////////////////
 void FlipSprite(u8 SpriteNo, bool HorizontalFlip, bool VerticalFlip)
 {
 	u16 SprCtrlReg;
@@ -487,10 +495,10 @@ void FlipSprite(u8 SpriteNo, bool HorizontalFlip, bool VerticalFlip)
 	// First remove any existing flip attributes
 	SprCtrlReg&=63;
 	// Apply flips if required
-	if (VerticalFlip)
-		SprCtrlReg +=64;
-	if (HorizontalFlip)
-		SprCtrlReg +=128;
+	if (VerticalFlip==1)
+		SprCtrlReg|=64;
+	if (HorizontalFlip==1)
+		SprCtrlReg|=128;
 
 	*(theSprite+1) = SprCtrlReg;
 
@@ -1861,12 +1869,12 @@ void DrawLineHorizontal(u16 * BitmapAddress, u16 x1, u16 x2, u16 y, u16 Colour)
 // Helper function to streamline copying animation frames between a buffer and the tile memory
 
 // copies a new animation frame into tile memory.
-void CopyAnimationFrame(const u16 SpriteTiles[][8], u16 TileNumber, u16 TileCount, u16 AnimNumber)
+void CopyAnimationFrame(const u16 AnimTiles[][8], u16 TileNumber, u16 TileCount, u16 AnimNumber)
 {
 	u8 i;
 	u16 * TileRam = TILE_RAM;
 	//Our input parameter. NOT a global constant
-	u16 * theAnim = (u16 *) SpriteTiles;
+	u16 * theAnim = (u16 *) AnimTiles;
 	theAnim += (TileCount * 8);
 
 	TileRam += (TileNumber * 8);
