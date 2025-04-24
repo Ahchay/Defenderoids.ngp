@@ -22,8 +22,6 @@ Player is constrained vertically within a single screen Height
 
 Our Lemmanoids will bob along the mountain tops until they reach the city.
 
-Note: this may make life too easy so need some mechanism for the player to influence their behaviour to "go home"
-
 Invaders will warp in and try to catch the Lemmanoids. Shoot them and the Lemmonoid will whip out their umbrella and float gracefully back to earth
 
 Shoot asteroids to split them up into smaller and smaller parts until they are destroyed completely.

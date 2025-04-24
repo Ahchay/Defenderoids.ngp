@@ -35,12 +35,12 @@ VECTOROBJECT CreateAsteroid(u16 x, u16 y)
 	vReturn.Position.y=y;
 
 	// Set scale, rotation and speed randomly
-	vReturn.Scale=5;
+	vReturn.Scale=4;
 	vReturn.RotationSpeed=QRandom()>>4;
 	vReturn.RotationAngle=QRandom();
 	//Asteroid[iLoopAsteroid].Position.x=((u16)QRandom())<<4;
 	//Asteroid[iLoopAsteroid].Position.y=((u16)QRandom())<<4;
-	vReturn.MovementVector.x=QRandom()>>1;
+	vReturn.MovementVector.x=QRandom();
 	vReturn.MovementVector.y=QRandom()>>2;
 
 	return vReturn;
@@ -143,10 +143,11 @@ DrawSprite(SPRITE sprSprite, u16 iHorizontalOffset)
 		switch (sprSprite.SpriteType)
 		{
 			case sprInvader:
+			case sprPictcell:
 				CopyAnimationFrame(Sprites, sprSprite.BaseTile, 1, (sprSprite.SpriteType) + sprSprite.Frame -1);
 				break;
 			case sprLemmanoid:
-				CopyAnimationFrame(Sprites, sprSprite.BaseTile, 1, (sprSprite.SpriteType) + (sprSprite.Direction) + sprSprite.Frame -1);
+				CopyAnimationFrame(Sprites, sprSprite.BaseTile, 1, (sprSprite.SpriteType) + (sprSprite.Direction) + sprSprite.Frame);
 				break;
 			default:
 				CopyAnimationFrame(Sprites, sprSprite.BaseTile, 1, (sprSprite.SpriteType));
@@ -476,38 +477,11 @@ void DefenderoidsMain()
 	//	- RotationAngle;
 	//	- RotationSpeed;
 
-	VECTOROBJECT Asteroid[] = {
-									{{6,6},{2000,8192},0,0,0,0,0,0},
-									{{6,6},{5000,10096},0,0,0,0,0,0},
-									{{6,6},{8000,10192},0,0,0,0,0,0},
-									{{6,6},{11000,40098},0,0,0,0,0,0},
-									{{6,6},{14000,2048},0,0,0,0,0,0},
-									{{6,6},{19000,2048},0,0,0,0,0,0},
-									{{6,6},{25000,2048},0,0,0,0,0,0},
-									{{6,6},{30000,7634},0,0,0,0,0,0},
-									{{6,6},{23000,7763},0,0,0,0,0,0},
-									{{6,6},{31000,2048},0,0,0,0,0,0},
-									{{6,6},{12000,10048},0,0,0,0,0,0},
-									{{6,6},{8000,2048},0,0,0,0,0,0}
-								};
+	VECTOROBJECT Asteroid[12];
 
-	VECTOROBJECT Shots[] = {
-								{{1,1},{0,0},{0,0},3,{{0,0,0},{0,0,0},{0,0,0}},0,0,0},
-								{{1,1},{0,0},{0,0},3,{{0,0,0},{0,0,0},{0,0,0}},0,0,0},
-								{{1,1},{0,0},{0,0},3,{{0,0,0},{0,0,0},{0,0,0}},0,0,0},
-								{{1,1},{0,0},{0,0},3,{{0,0,0},{0,0,0},{0,0,0}},0,0,0},
-							};
+	VECTOROBJECT Shots[4];
 
-	VECTOROBJECT Explosions[] = {
-								{{1,1},{0,0},{0,0},1,{{0,0,0},{0,0,0},{0,0,0},{0,0,0},{0,0,0},{0,0,0},{0,0,0},{0,0,0},{0,0,0},{0,0,0},{0,0,0},{0,0,0},{0,0,0},{0,0,0},{0,0,0},{0,0,0}},0,0,0},
-								{{1,1},{0,0},{0,0},1,{{0,0,0},{0,0,0},{0,0,0},{0,0,0},{0,0,0},{0,0,0},{0,0,0},{0,0,0},{0,0,0},{0,0,0},{0,0,0},{0,0,0},{0,0,0},{0,0,0},{0,0,0},{0,0,0}},0,0,0},
-								{{1,1},{0,0},{0,0},1,{{0,0,0},{0,0,0},{0,0,0},{0,0,0},{0,0,0},{0,0,0},{0,0,0},{0,0,0},{0,0,0},{0,0,0},{0,0,0},{0,0,0},{0,0,0},{0,0,0},{0,0,0},{0,0,0}},0,0,0},
-								{{1,1},{0,0},{0,0},1,{{0,0,0},{0,0,0},{0,0,0},{0,0,0},{0,0,0},{0,0,0},{0,0,0},{0,0,0},{0,0,0},{0,0,0},{0,0,0},{0,0,0},{0,0,0},{0,0,0},{0,0,0},{0,0,0}},0,0,0},
-								{{1,1},{0,0},{0,0},1,{{0,0,0},{0,0,0},{0,0,0},{0,0,0},{0,0,0},{0,0,0},{0,0,0},{0,0,0},{0,0,0},{0,0,0},{0,0,0},{0,0,0},{0,0,0},{0,0,0},{0,0,0},{0,0,0}},0,0,0},
-								{{1,1},{0,0},{0,0},1,{{0,0,0},{0,0,0},{0,0,0},{0,0,0},{0,0,0},{0,0,0},{0,0,0},{0,0,0},{0,0,0},{0,0,0},{0,0,0},{0,0,0},{0,0,0},{0,0,0},{0,0,0},{0,0,0}},0,0,0},
-								{{1,1},{0,0},{0,0},1,{{0,0,0},{0,0,0},{0,0,0},{0,0,0},{0,0,0},{0,0,0},{0,0,0},{0,0,0},{0,0,0},{0,0,0},{0,0,0},{0,0,0},{0,0,0},{0,0,0},{0,0,0},{0,0,0}},0,0,0},
-								{{1,1},{0,0},{0,0},1,{{0,0,0},{0,0,0},{0,0,0},{0,0,0},{0,0,0},{0,0,0},{0,0,0},{0,0,0},{0,0,0},{0,0,0},{0,0,0},{0,0,0},{0,0,0},{0,0,0},{0,0,0},{0,0,0}},0,0,0}
-								};
+	VECTOROBJECT Explosions[8];
 
 	SPRITE SpriteList[16];
 
@@ -572,15 +546,15 @@ void DefenderoidsMain()
 		for (;iSpriteLoop<DefenderoidsLevels[iCurrentLevel].InvaderCount+DefenderoidsLevels[iCurrentLevel].LemmanoidCount;iSpriteLoop++)
 		{
 			//x, y, ID, Type, Direction, Frame
-			//Lemmanoids move either west or east (DIR_EAST + [0|2])
+			//Lemmanoids move either west or east (DIR_EAST + [0|1]*DIR_WEST)
 			//Spawn them vertically at the median point of the terrain
-			SpriteList[iSpriteLoop] = CreateSprite(((u16)QRandom())<<8,100<<8,iSpriteLoop,sprLemmanoid,DIR_EAST + ((QRandom()>>7)<<1),(QRandom()>>5));
+			SpriteList[iSpriteLoop] = CreateSprite(((u16)QRandom())<<8,100<<8,iSpriteLoop,sprLemmanoid,DIR_EAST + ((QRandom()>>7)*DIR_WEST),(QRandom()>>5));
 		}
 
 		// Asteroids
 		for (iLoopAsteroid=0;iLoopAsteroid<DefenderoidsLevels[iCurrentLevel].AsteroidCount;iLoopAsteroid++)
 		{
-			Asteroid[iLoopAsteroid] = CreateAsteroid(((u16)QRandom())<<7,((u16)QRandom())<<5);
+			Asteroid[iLoopAsteroid] = CreateAsteroid(((u16)QRandom())<<8,((u16)QRandom())<<5);
 		}
 
 		// Set up the player
