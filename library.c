@@ -1,5 +1,6 @@
 #include "ngpc.h"
 #include "library.h"
+#include "vgmplayer.h"
 
 
 volatile u8 VBCounter;
@@ -8,6 +9,7 @@ volatile u16 RandomNumberCounter;
 
 // SFX related variables and registers
 u8 SFXInstalled;
+
 #define SFXPulse       (*(u8 *)0x7010)
 #define SFXPlayBuffer  (*(u8 *)0x7011)
 #define SFXLoadPreset  (*(volatile u8 *)0x7012)
@@ -45,7 +47,10 @@ void __interrupt VBInterrupt(void)
    VBCounter++;
 
    if (SFXInstalled)
-	  SFXPulse = 1;
+	SFXPulse = 1;
+
+   if (VGM_IsInstalled())
+   	VGM_SendData();
 
    // TODO: add any other VBI code here.
 }
@@ -69,7 +74,7 @@ void InitNGPC(void)
 
    // User hasn't called InstallSoundDriver yet
    SFXInstalled = 0;
-
+   
    // install user interrupt vectors
    SWI3_INT = DummyFunction;
    SWI4_INT = DummyFunction;

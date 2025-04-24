@@ -8,6 +8,8 @@
 #include "library.h"
 #include "vgmplayer.h"
 
+u8 VGMInstalled;
+
 const unsigned char vgmdriver[] =
 {
 	0xF3,0xED,0x56,0xC3,0x06,0x00,0x3A,0x00,0x80,0xFE,0x00,0xCA,0x06,0x00,0xC3,0x98,
@@ -419,6 +421,9 @@ void VGM_ResumeBGM(){
 	play_bgm=1;
 }
 
+u8 VGM_IsInstalled(){
+	return VGMInstalled;
+}
 
 //Call this first to install the sound driver
 void VGM_InstallSoundDriver(void){
@@ -442,9 +447,13 @@ void VGM_InstallSoundDriver(void){
    //play_wav=0;
    //wav_phase=0;
    //wav_readpos=0;
+
+   VGMInstalled=1;
    
    // restart z80
    SOUNDCPU_CTRL = 0x5555;
+
+   VGMInstalled = 1;
 }
 
 

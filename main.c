@@ -4,23 +4,12 @@
 #include "Tiles\Alphabet.c"
 #include "vgmplayer.h"
 
-void __interrupt myVBL()
-{
-    WATCHDOG = WATCHDOG_CLEAR;
-    if (USR_SHUTDOWN) { SysShutdown(); while (1); }
-    VGM_SendData();
-}
-
 void main()
 {
 	InitNGPC();
 	SysSetSystemFont();
 
 	VGM_InstallSoundDriver();
-
-	__asm("di");
-	VBL_INT = myVBL;
-	__asm("ei");
 
 	InstallTileSetAt(Alphabet,sizeof(Alphabet),0);
 

@@ -31,6 +31,8 @@ void VGM_ResumeBGM();
 
 void VGM_InstallSoundDriver(void);
 
+u8 VGM_IsInstalled();
+
 void VGM_RestoreSoundDriver(void);
 
 #endif
