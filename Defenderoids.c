@@ -177,17 +177,21 @@ bool CheckCollision(POINT object1, SPRITEPOINT object2)
 {
 	bool bReturn;
 	u16 iHorizontalDistance;
+	u16 iWrapDistance;
 	u16 iVerticalDistance;
 	const u16 iCollisionDistance=1024;
+	const u16 iWrapPoint=65535;
 	bReturn=0;
 
 	if (object1.x>=object2.x)
 	{
 		iHorizontalDistance=object1.x-object2.x;
+		iWrapDistance=(iWrapPoint-object1.x)+object2.x;
 	}
 	else
 	{
 		iHorizontalDistance=object2.x-object1.x;
+		iWrapDistance=(iWrapPoint-object2.x)+object1.x;
 	}
 	if (object1.y>=object2.y)
 	{
@@ -198,7 +202,7 @@ bool CheckCollision(POINT object1, SPRITEPOINT object2)
 		iVerticalDistance=object2.y-object1.y;
 	}
 
-	if (iHorizontalDistance<=iCollisionDistance&&iVerticalDistance<=iCollisionDistance)
+	if ((iHorizontalDistance<=iCollisionDistance||iWrapDistance<=iCollisionDistance)&&iVerticalDistance<=iCollisionDistance)
 	{
 		bReturn=1;
 	}
