@@ -204,6 +204,8 @@ bool CheckCollision(POINT object1, SPRITEPOINT object2)
 
 	if ((iHorizontalDistance<=iCollisionDistance||iWrapDistance<=iCollisionDistance)&&iVerticalDistance<=iCollisionDistance)
 	{
+		// Our objects are within 1024 units (8 pixels give or take)
+		// Can now do finer detail checks if needed
 		bReturn=1;
 	}
 
@@ -909,27 +911,39 @@ void DefenderoidsMain()
 					// This is ridiculously simple
 					// Invaders bob up and down
 					// Lemmanoids lope along the mountain left and right
-					switch(SpriteList[iSpriteLoop].Direction)
+					switch(SpriteList[iSpriteLoop].SpriteType)
 					{
-						case DIR_SOUTH:
-							SpriteList[iSpriteLoop].Position.y+=64;
-							if (SpriteList[iSpriteLoop].Position.y>(u16)(HeightMap[((u8)(SpriteList[iSpriteLoop].Position.x>>SPRITE_SCALE))+4]+4)<<SPRITE_SCALE){
-								SpriteList[iSpriteLoop].Direction = DIR_NORTH;
+						case sprInvader:
+							switch(SpriteList[iSpriteLoop].Direction)
+							{
+								case DIR_SOUTH:
+									SpriteList[iSpriteLoop].Position.y+=64;
+									if (SpriteList[iSpriteLoop].Position.y>(u16)(HeightMap[((u8)(SpriteList[iSpriteLoop].Position.x>>SPRITE_SCALE))+4]+4)<<SPRITE_SCALE){
+										SpriteList[iSpriteLoop].Direction = DIR_NORTH;
+									}
+									break;
+								case DIR_NORTH:
+									SpriteList[iSpriteLoop].Position.y-=64;
+									if (SpriteList[iSpriteLoop].Position.y>(u16)(HeightMap[((u8)(SpriteList[iSpriteLoop].Position.x>>SPRITE_SCALE))+4]+4)<<SPRITE_SCALE){
+										SpriteList[iSpriteLoop].Direction = DIR_SOUTH;
+									}
+									break;
 							}
 							break;
-						case DIR_NORTH:
-							SpriteList[iSpriteLoop].Position.y-=64;
-							if (SpriteList[iSpriteLoop].Position.y>(u16)(HeightMap[((u8)(SpriteList[iSpriteLoop].Position.x>>SPRITE_SCALE))+4]+4)<<SPRITE_SCALE){
-								SpriteList[iSpriteLoop].Direction = DIR_SOUTH;
+						case sprLemmanoid:
+							switch(SpriteList[iSpriteLoop].Direction)
+							{
+							case DIR_WEST:
+									SpriteList[iSpriteLoop].Position.x-=128;
+									SpriteList[iSpriteLoop].Position.y = (u16)(HeightMap[((u8)(SpriteList[iSpriteLoop].Position.x>>SPRITE_SCALE))+4]-4)<<SPRITE_SCALE;
+									break;
+								case DIR_EAST:
+									SpriteList[iSpriteLoop].Position.x+=128;
+									SpriteList[iSpriteLoop].Position.y = (u16)(HeightMap[((u8)(SpriteList[iSpriteLoop].Position.x>>SPRITE_SCALE))+4]-4)<<SPRITE_SCALE;
+								default:
+									break;
 							}
 							break;
-						case DIR_WEST:
-							SpriteList[iSpriteLoop].Position.x-=128;
-							SpriteList[iSpriteLoop].Position.y = (u16)(HeightMap[((u8)(SpriteList[iSpriteLoop].Position.x>>SPRITE_SCALE))+4]-4)<<SPRITE_SCALE;
-							break;
-						case DIR_EAST:
-							SpriteList[iSpriteLoop].Position.x+=128;
-							SpriteList[iSpriteLoop].Position.y = (u16)(HeightMap[((u8)(SpriteList[iSpriteLoop].Position.x>>SPRITE_SCALE))+4]-4)<<SPRITE_SCALE;
 						default:
 							break;
 					}
