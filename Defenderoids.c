@@ -603,7 +603,7 @@ void DefenderoidsMain()
 		{
 			//x, y, ID, Type, Direction, Frame
 			//Invaders always move south on creation
-			//Eventually, we'll spawn these on a timer I guess rather than just dumping them all in at the outset of the level
+			//Eventually, we'll spawn these on a timer rather than just dumping them all in at the outset of the level
 			SpriteList[iSpriteLoop] = CreateSprite(((u16)QRandom())<<8,((u16)QRandom())<<4,iSpriteLoop,sprInvader,DIR_SOUTH,0);
 		}
 
@@ -762,7 +762,6 @@ void DefenderoidsMain()
 
 							In fact, is a simple x/y check enough?
 
-
 						*/
 
 						for (iSpriteLoop=0;iSpriteLoop<(DefenderoidsLevels[iCurrentLevel].InvaderCount);iSpriteLoop++)
@@ -794,6 +793,10 @@ void DefenderoidsMain()
 
 						}
 
+						// Check for Asteroid collision as well
+						// On collision: destroy asteroid and create some smaller ones...
+						// When smallest asteroid is destroyed, create a Pictcell sprite
+
 						if (Shots[iLoopShot].Scale == 1)
 						{
 							Shots[iLoopShot].Position.x += Shots[iLoopShot].MovementVector.x;
@@ -816,12 +819,12 @@ void DefenderoidsMain()
 				{
 					if (Explosions[iLoopExplosion].Scale != 0)
 					{
+						Explosions[iLoopExplosion].Scale+=(Explosions[iLoopExplosion].RotationSpeed>>2);
 						for (iLoopExplosionPoint=0;iLoopExplosionPoint<Explosions[iLoopExplosion].Points;iLoopExplosionPoint++)
 						{
 							// Why not just a few QRandom() calls within the rotation speed area?
 							// Looks ace. Need to figure out the rotation angle to get the direction right is all
 							// Maybe increase the scale for later frames?
-							Explosions[iLoopExplosion].Scale+=(Explosions[iLoopExplosion].RotationSpeed>>4);
 							Explosions[iLoopExplosion].VectorList[iLoopExplosionPoint].x +=(QRandom()>>(8-Explosions[iLoopExplosion].RotationSpeed));
 							Explosions[iLoopExplosion].VectorList[iLoopExplosionPoint].y +=(QRandom()>>(8-Explosions[iLoopExplosion].RotationSpeed));
 						}

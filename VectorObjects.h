@@ -40,6 +40,7 @@ const u8 HeightMap[] = {
 					};
 
 // The Galaga ship - Gyaraga apparently (https://galaga.fandom.com/wiki/Gyaraga)
+// Object has 50 points
 const COLOURPOINT PlayerSprite[] = {
 							                           {4,0,1}, {5,0,1},
 							                           {4,1,2}, {5,1,2},
