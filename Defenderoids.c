@@ -352,8 +352,39 @@ void DrawGameScreen()
 	}
 
 	//Other window dressing (debug info and scorecard/lives count etc)
+	PrintString(SCR_1_PLANE, 0, 0, 16, "ENERGY:");
 	PrintString(SCR_1_PLANE, 0, 0, 18, "FPS:");
-	PrintString(SCR_2_PLANE, 0, 0, 17, "HZL:");
+
+}
+
+void DrawGameOverScreen()
+{
+	u8 iLoopX;
+	u8 iLoopY;
+
+	//Corners
+	PutTile(SCR_1_PLANE,0,2,7,borderTilebase);
+	PutTile(SCR_1_PLANE,0,17,7,borderTilebase+2);
+	PutTile(SCR_1_PLANE,0,2,11,borderTilebase+6);
+	PutTile(SCR_1_PLANE,0,17,11,borderTilebase+8);
+
+	//Top/Bottom edges
+	for(iLoopX=3;iLoopX<=16;iLoopX++){
+		PutTile(SCR_1_PLANE,0,iLoopX,7,borderTilebase+1);
+		PutTile(SCR_1_PLANE,0,iLoopX,11,borderTilebase+7);
+	}
+	//Left/Right edges
+	for(iLoopY=8;iLoopY<=10;iLoopY++){
+		PutTile(SCR_1_PLANE,0,2,iLoopY,borderTilebase+3);
+		PutTile(SCR_1_PLANE,0,17,iLoopY,borderTilebase+5);
+	}
+
+	//Other window dressing (debug info and scorecard/lives count etc)
+	PrintString(SCR_1_PLANE, 0, 3, 8, "  GAME OVER");
+	PrintString(SCR_1_PLANE, 0, 3, 9, "The Lemmanoids");
+	PrintString(SCR_1_PLANE, 0, 3, 10, "  are doomed");
+
+	Sleep(120);
 
 }
 
@@ -511,6 +542,9 @@ void DefenderoidsMain()
 	u8 iEngineNoise;
 	bool bShotType;
 	bool bShoot;
+	u8 iEnergyGauge;
+	u8 iEnergyLoop;
+	u8 iGaugePalette;
 
 	/////////////////////////////////////////////////////////
 	// Template vector/sprite arrays
@@ -554,6 +588,7 @@ void DefenderoidsMain()
 
 	SetPalette(SCR_1_PLANE, 0, 0, RGB(15,15,15), RGB(0,0,15), RGB(15,0,0));
 	SetPalette(SCR_2_PLANE, 0, 0, RGB(15,15,15), RGB(8,8,8), RGB(4,4,4));
+	SetPalette(SCR_2_PLANE, 1, 0, RGB(15,0,0), RGB(8,8,8), RGB(4,4,4));
 
 	////////////////////////////////////////////////////////////
 	//Create game screen
@@ -588,7 +623,9 @@ void DefenderoidsMain()
 
 	VGM_PlayBGM_Loop((u8*)bgm1, bgm1_loop_point);
 
-	while ((!(JOYPAD & J_OPTION)) && iLives>0)
+	iEnergyGauge=96;
+
+	while ((!(JOYPAD & J_OPTION)) && iEnergyGauge>0)
 	{
 		////////////////////////////////////////////////////////////
 		// Level setup
@@ -633,7 +670,7 @@ void DefenderoidsMain()
 		bShoot=(JOYPAD & J_A);
 
 		// Main level loop
-		while ((!(JOYPAD & J_OPTION)) && iLives>0 && DefenderoidsLevels[iCurrentLevel].InvaderCount>0)
+		while ((!(JOYPAD & J_OPTION)) && iEnergyGauge>0 && DefenderoidsLevels[iCurrentLevel].InvaderCount>0)
 		{
 
 			iStartFrame=VBCounter;
@@ -958,6 +995,17 @@ void DefenderoidsMain()
 			// Score and other dressing
 			// Mostly debug information at the moment
 			//////////////////////////////////////////////////////
+
+			// Energy gauge
+			iGaugePalette=1;
+			for(iEnergyLoop=1;iEnergyLoop<=(iEnergyGauge>>3);iEnergyLoop++)
+			{
+				PutTile(SCR_2_PLANE, iGaugePalette, 6+iEnergyLoop, 16, 8);
+				if(iEnergyLoop==3) iGaugePalette=0;
+			}
+			PutTile(SCR_2_PLANE,iGaugePalette,6+iEnergyLoop,16,(iEnergyGauge%8));
+			iEnergyGauge--;
+
 			/*
 			PrintString(SCR_2_PLANE,0,0,0,"PLAYER:(     ,     )");
 			PrintDecimal(SCR_2_PLANE, 0, 8, 0, PlayerOne.Position.x, 5);
@@ -1002,7 +1050,7 @@ void DefenderoidsMain()
 			//Frame counter
 			PrintDecimal(SCR_1_PLANE, 0, 4, 18, 60/(VBCounter-iStartFrame), 2);
 			//Current Horizontal Offset
-			PrintDecimal(SCR_2_PLANE, 0, 4, 17, iHorizontalOffset, 3);
+			//PrintDecimal(SCR_2_PLANE, 0, 4, 17, iHorizontalOffset, 3);
 			
 			// Slow it down so I can look at it...
 			//Sleep(60);
@@ -1017,6 +1065,8 @@ void DefenderoidsMain()
 	} // Lives Loop
 
 	VGM_StopBGM();
+
+	DrawGameOverScreen();
 
 	//////////////////////////////////////////////////////
 	// Game Over information etc

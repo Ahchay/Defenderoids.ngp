@@ -12,6 +12,17 @@
                 "kind": "build",
                 "isDefault": true
             }
+        },
+        {
+            "label": "Clean",
+            "type": "shell",
+            "command": "erase *.rel",
+            "problemMatcher": [],
+            "group": {
+                "kind": "build",
+                "isDefault": false
+            }
         }
+
     ]
 }
