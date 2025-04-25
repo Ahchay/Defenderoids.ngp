@@ -173,6 +173,39 @@ DrawSprite(SPRITE sprSprite, u16 iHorizontalOffset)
 
 }
 
+bool CheckCollision(POINT object1, SPRITEPOINT object2)
+{
+	bool bReturn;
+	u16 iHorizontalDistance;
+	u16 iVerticalDistance;
+	const u16 iCollisionDistance=1024;
+	bReturn=0;
+
+	if (object1.x>=object2.x)
+	{
+		iHorizontalDistance=object1.x-object2.x;
+	}
+	else
+	{
+		iHorizontalDistance=object2.x-object1.x;
+	}
+	if (object1.y>=object2.y)
+	{
+		iVerticalDistance=object1.y-object2.y;
+	}
+	else
+	{
+		iVerticalDistance=object2.y-object1.y;
+	}
+
+	if (iHorizontalDistance<=iCollisionDistance&&iVerticalDistance<=iCollisionDistance)
+	{
+		bReturn=1;
+	}
+
+	return bReturn;
+}
+
 /////////////////////////////////////////////////////
 // Create an explosion object
 ////////////////////////////////////////////////////
@@ -187,15 +220,17 @@ VECTOROBJECT CreateExplosion(SPRITEPOINT spPosition, u8 iDirection)
 	iPointLoop=0;
 	for(iPointLoop=0;iPointLoop<voReturn.Points;iPointLoop++)
 	{
-		voReturn.VectorList[iPointLoop].x = 4;
-		voReturn.VectorList[iPointLoop].y = 4;
+		voReturn.VectorList[iPointLoop].x = 0;
+		voReturn.VectorList[iPointLoop].y = 0;
 		voReturn.VectorList[iPointLoop].colour = QRandom()>>6;
 	}
 	voReturn.Origin.x = 0;
 	voReturn.Origin.y = 0;
-	voReturn.Position.x = spPosition.x + 4;
-	voReturn.Position.y = spPosition.y + 4;
-	voReturn.RotationAngle = iDirection;
+	voReturn.MovementVector.x = 0;
+	voReturn.MovementVector.y = 0;
+	voReturn.Position.x = spPosition.x>>SPRITE_SCALE;
+	voReturn.Position.y = spPosition.y>>SPRITE_SCALE;
+	voReturn.RotationAngle = iDirection+128;
 
 	// We'll use RotationSpeed to control the life of the Explosion. Kill it when it hits a limit...
 	voReturn.RotationSpeed=0;
@@ -649,7 +684,6 @@ void DefenderoidsMain()
 				{
 					PlayerOne.MovementVector.y += (Sin(PlayerOne.RotationAngle+192));
 				}
-
 			}
 			if (JOYPAD & J_A && bShoot)
 			{
@@ -662,7 +696,6 @@ void DefenderoidsMain()
 				{
 					if (Shots[iLoopShot].Scale == 0)
 					{
-
 						
 						VGM_PlaySFX((u8*)shoot,1);
 
@@ -715,38 +748,23 @@ void DefenderoidsMain()
 					else
 					{
 
-						// Calculate any collisions...
-						// VERY slow (and doesn't actually work) - leaving it for reference, but I need to sort this out
-						for (iSpriteLoop=128;iSpriteLoop<(DefenderoidsLevels[iCurrentLevel].InvaderCount);iSpriteLoop++)
+						/*
+							Okay, so collision detection part deux
+
+							Check the X Position against other visible objects, no need to go further if this differs by 
+							a significant amount
+
+							In fact, is a simple x/y check enough?
+
+
+						*/
+
+						for (iSpriteLoop=0;iSpriteLoop<(DefenderoidsLevels[iCurrentLevel].InvaderCount);iSpriteLoop++)
 						{
-							// If any sprite exists along the bullet's movement vector, then it's dead.
-							// Shots and sprites are in different scales, so need to be translated to match
 							if (SpriteList[iSpriteLoop].SpriteType == sprInvader)
 							{
-								POINT pStartShot;
-								POINT pEndShot;
-								POINT pStartSprite;
-								POINT pEndSprite;
-								// Offset the shot by the line origin. Hang on, that won't work without applying the rotation...
-								// So the position is about as much as we can hope for. The Origin "should" be in the centre of the object anyway,
-								// so this will still go centre to centre
-								pStartShot.x = Shots[iLoopShot].Position.x; // - Shots[iLoopShot].Origin.x;
-								pStartShot.y = Shots[iLoopShot].Position.y; // - Shots[iLoopShot].Origin.y;
-								pEndShot.x = pStartShot.x + (Shots[iLoopShot].MovementVector.x);
-								pEndShot.y = pStartShot.y + (Shots[iLoopShot].MovementVector.y);
-								// Offset the sprite to the centre of the box
-								pEndSprite.x = (SpriteList[iSpriteLoop].Position.x);
-								pEndSprite.y = (SpriteList[iSpriteLoop].Position.y);
-								pStartSprite.x = pStartSprite.x - 8;
-								pStartSprite.y = pStartSprite.y - 8;
-
-								if (LineIntersect(Shots[iLoopShot].Position, pEndShot, pStartSprite, pEndSprite) == 1)
+								if (CheckCollision(Shots[iLoopShot].Position,SpriteList[iSpriteLoop].Position))
 								{
-									SpriteList[iSpriteLoop].SpriteType = sprMisc;
-									SetSprite(SpriteList[iSpriteLoop].SpriteID, 0, 0, 0, 0, PAL_SPRITE);
-									Shots[iLoopShot].Scale = 0;
-									iSpriteLoop = DefenderoidsLevels[iCurrentLevel].InvaderCount + 1;
-
 									// Add an explosion
 									for (iLoopExplosion=0;iLoopExplosion<8;iLoopExplosion++)
 									{
@@ -754,13 +772,22 @@ void DefenderoidsMain()
 										{
 											Explosions[iLoopExplosion]=CreateExplosion(SpriteList[iSpriteLoop].Position, Shots[iLoopShot].RotationAngle);
 
+											VGM_PlaySFX((u8*)noise,1);
+
 											iLoopExplosion = 9;
 										}
-									}
+									} 
+									SpriteList[iSpriteLoop].SpriteType = sprMisc;
+									SetSprite(SpriteList[iSpriteLoop].SpriteID, 0, 0, 0, 0, PAL_SPRITE);
+									Shots[iLoopShot].Scale = 0;
+									iSpriteLoop = DefenderoidsLevels[iCurrentLevel].InvaderCount + 1;
+
 
 								}
 							}
+
 						}
+
 						if (Shots[iLoopShot].Scale == 1)
 						{
 							Shots[iLoopShot].Position.x += Shots[iLoopShot].MovementVector.x;
@@ -781,12 +808,6 @@ void DefenderoidsMain()
 			{
 				if (Explosions[iLoopExplosion].Scale != 0)
 				{
-					// Destroy the Explosion after a few frames
-					Explosions[iLoopExplosion].RotationSpeed++;
-					if (Explosions[iLoopExplosion].RotationSpeed == 7)
-					{
-						Explosions[iLoopExplosion].Scale = 0;
-					}
 					if (Explosions[iLoopExplosion].Scale != 0)
 					{
 						for (iLoopExplosionPoint=0;iLoopExplosionPoint<Explosions[iLoopExplosion].Points;iLoopExplosionPoint++)
@@ -794,10 +815,19 @@ void DefenderoidsMain()
 							// Why not just a few QRandom() calls within the rotation speed area?
 							// Looks ace. Need to figure out the rotation angle to get the direction right is all
 							// Maybe increase the scale for later frames?
-							Explosions[iLoopExplosion].VectorList[iLoopExplosionPoint].x = (QRandom()>>(8-Explosions[iLoopExplosion].RotationSpeed));
-							Explosions[iLoopExplosion].VectorList[iLoopExplosionPoint].y = (QRandom()>>(8-Explosions[iLoopExplosion].RotationSpeed));
+							Explosions[iLoopExplosion].Scale+=(Explosions[iLoopExplosion].RotationSpeed>>4);
+							Explosions[iLoopExplosion].VectorList[iLoopExplosionPoint].x +=(QRandom()>>(8-Explosions[iLoopExplosion].RotationSpeed));
+							Explosions[iLoopExplosion].VectorList[iLoopExplosionPoint].y +=(QRandom()>>(8-Explosions[iLoopExplosion].RotationSpeed));
 						}
+
 						DrawVectorSprite((u16*)bmpPlayField, Explosions[iLoopExplosion], iHorizontalOffset);
+
+						// Destroy the Explosion after a few frames
+						Explosions[iLoopExplosion].RotationSpeed++;
+						if (Explosions[iLoopExplosion].RotationSpeed == 7)
+						{
+							Explosions[iLoopExplosion].Scale = 0;
+						}
 					}
 				}
 			}
@@ -951,7 +981,7 @@ void DefenderoidsMain()
 			*/
 
 			//Debug info
-			
+
 			//Frame counter
 			PrintDecimal(SCR_1_PLANE, 0, 4, 18, 60/(VBCounter-iStartFrame), 2);
 			//Current Horizontal Offset
