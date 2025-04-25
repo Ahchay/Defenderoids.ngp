@@ -27,9 +27,6 @@ void main()
 			case 1:
 				DefenderoidsMain();
 				break;
-			case 2:
-				DefenderoidsTest();
-				break;
 			default:
 				break;
 		}

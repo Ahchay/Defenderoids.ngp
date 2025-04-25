@@ -59,7 +59,6 @@ typedef struct Level
 u8 DefenderoidsLogo();
 void DrawGameScreen();
 void DefenderoidsMain();
-void DefenderoidsTest();
 
 #endif
 

@@ -418,7 +418,6 @@ u8 DefenderoidsLogo()
 	PrintString(SCR_1_PLANE, 0, 2, 1, "  PRESENTED BY");
 	PrintString(SCR_1_PLANE, 0, 2, 2, "   AHCHAY.COM");
 	PrintString(SCR_1_PLANE, 0, 2, 14, "PRESS A TO START");
-	PrintString(SCR_1_PLANE, 0, 2, 15, "PRESS B TO TEST");
 
 	iGameMode=0;
 
@@ -457,9 +456,6 @@ u8 DefenderoidsLogo()
 		{
 			iGameMode=1;
 			//VGM_PlaySFX((u8*)noise,1);
-		}
-		if (JOYPAD & J_B) {
-			iGameMode=2;
 		}
 	}
 
@@ -819,12 +815,12 @@ void DefenderoidsMain()
 				{
 					if (Explosions[iLoopExplosion].Scale != 0)
 					{
+						//Increase the scale for later frames
 						Explosions[iLoopExplosion].Scale+=(Explosions[iLoopExplosion].RotationSpeed>>2);
 						for (iLoopExplosionPoint=0;iLoopExplosionPoint<Explosions[iLoopExplosion].Points;iLoopExplosionPoint++)
 						{
 							// Why not just a few QRandom() calls within the rotation speed area?
 							// Looks ace. Need to figure out the rotation angle to get the direction right is all
-							// Maybe increase the scale for later frames?
 							Explosions[iLoopExplosion].VectorList[iLoopExplosionPoint].x +=(QRandom()>>(8-Explosions[iLoopExplosion].RotationSpeed));
 							Explosions[iLoopExplosion].VectorList[iLoopExplosionPoint].y +=(QRandom()>>(8-Explosions[iLoopExplosion].RotationSpeed));
 						}
@@ -1025,14 +1021,5 @@ void DefenderoidsMain()
 	//////////////////////////////////////////////////////
 	// Game Over information etc
 	//////////////////////////////////////////////////////
-
-}
-
-/////////////////////////////////////////////////////
-// Test game loop
-// Used to isolate individual game elements for testing
-/////////////////////////////////////////////////////
-void DefenderoidsTest()
-{
 
 }
