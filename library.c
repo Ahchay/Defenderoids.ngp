@@ -443,25 +443,6 @@ void SetSprite(u8 SpriteNo, u16 TileNo, u8 Chain, u8 XPos, u8 YPos, u8 PaletteNo
 	u8 * theSprite = SPRITE_RAM;
 	u8 * theSpriteCol = SPRITE_COLOUR;
 
-	/*
-
-		Sprites are in four bytes starting at SPRITE_RAM (0x8800)
-		+0	C.C = Character Tile Number (lower 8 bits of 9)
-		+1	Bit 7 - H.F = Horizontal Flip (0=normal,1=flipped)
-			Bit 6 - V.F = Vertical Flip   (0=normal,1=flipped
-			Bit 5 - P.C = Palette Code (Valid for K1GE upper palette compatible mode ie BW hardware)
-			Bit 4 - PR.C = Priority Code MSB  (00=Hide,01=Furthest,10=Middle,11=Front)
-			Bit 3 - PR.C = Priority Code LSB
-			Bit 2 - H.ch = H Position Chain (0 = Normal, 1 = Offset coordinates) (Value defined becomes the offset value with respect to the previous character.)
-			Bit 1 - V.ch = V Position Chain (0 = Normal, 1 = Offset coordinates) (Value defined becomes the offset value with respect to the previous character.)
-			Bit 0 - C.C = Character Tile Number (Upper 1 bit of 9)
-		+2	H.P = Horizontal Position
-		+3	V.P = Vertical Position
-	
-		Sprite palette memory starts at SPRITE_COLOUR (0x8c00)
-		
-	*/
-
 	theSprite += (SpriteNo * 4);
 	theSpriteCol += SpriteNo;
 
@@ -478,14 +459,34 @@ void SetSprite(u8 SpriteNo, u16 TileNo, u8 Chain, u8 XPos, u8 YPos, u8 PaletteNo
 }
 
 //////////////////////////////////////////////////////////////////////////////
-// FlipSprite
-// Applies horizontal and vertical flip to a sprite
+// SetSpriteOptions
+// Applies sprite parameters to the 2nd bit
 // Inputs:
 //		SpriteNo - 0-63 the sprite to flip
 //      HorizontalFlip - Apply horizontal flip
 //      VerticalFlip - Apply vertical flip
+// Possible extensions:
+//		Priority
+//		Horizontal/Vertical Chain
+//		Palette Code
+//
+//		Sprites are in four bytes starting at SPRITE_RAM (0x8800)
+//		+0	C.C = Character Tile Number (lower 8 bits of 9)
+//		+1	Bit 7 - H.F = Horizontal Flip (0=normal,1=flipped)
+//			Bit 6 - V.F = Vertical Flip   (0=normal,1=flipped
+//			Bit 5 - P.C = Palette Code (Valid for K1GE upper palette compatible mode ie BW hardware)
+//			Bit 4 - PR.C = Priority Code MSB  (00=Hide,01=Furthest,10=Middle,11=Front)
+//			Bit 3 - PR.C = Priority Code LSB
+//			Bit 2 - H.ch = H Position Chain (0 = Normal, 1 = Offset coordinates) (Value defined becomes the offset value with respect to the previous character.)
+//			Bit 1 - V.ch = V Position Chain (0 = Normal, 1 = Offset coordinates) (Value defined becomes the offset value with respect to the previous character.)
+//			Bit 0 - C.C = Character Tile Number (Upper 1 bit of 9)
+//		+2	H.P = Horizontal Position
+//		+3	V.P = Vertical Position
+//	
+//		Sprite palette memory starts at SPRITE_COLOUR (0x8c00)
+//		
 //////////////////////////////////////////////////////////////////////////////
-void FlipSprite(u8 SpriteNo, bool HorizontalFlip, bool VerticalFlip)
+void SetSpriteOptions(u8 SpriteNo, bool HorizontalFlip, bool VerticalFlip)
 {
 	u16 SprCtrlReg;
 	u8 * theSprite = SPRITE_RAM;

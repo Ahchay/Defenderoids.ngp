@@ -11,13 +11,13 @@
 #include "Sound\noise.c"
 #include "Sound\shoot.c"
 #include "Sound\bgm1.c"
+#include "Sound\zap.c"
 
 
 
 #define SPRITE_MAX_WIDTH (512)
 
 //Helper functions
-
 /////////////////////////////////////////////////////
 // Create a unique asteroid object
 /////////////////////////////////////////////////////
@@ -736,7 +736,7 @@ void DefenderoidsMain()
 					if (Shots[iLoopShot].Scale == 0)
 					{
 						
-						VGM_PlaySFX((u8*)shoot,1);
+						VGM_PlaySFX((u8*)zap,1);
 
 						bShotType=!bShotType;
 						Shots[iLoopShot]=CreateShot(iHorizontalOffset,PlayerOne,bShotType);
@@ -810,7 +810,8 @@ void DefenderoidsMain()
 										{
 											Explosions[iLoopExplosion]=CreateExplosion(SpriteList[iSpriteLoop].Position, Shots[iLoopShot].RotationAngle);
 
-											VGM_PlaySFX((u8*)noise,1);
+											// Need a better 'splode noise
+											//VGM_PlaySFX((u8*)noise,1);
 
 											iLoopExplosion = 9;
 										}
@@ -1004,8 +1005,14 @@ void DefenderoidsMain()
 				if(iEnergyLoop==3) iGaugePalette=0;
 			}
 			PutTile(SCR_2_PLANE,iGaugePalette,6+iEnergyLoop,16,(iEnergyGauge%8));
-			iEnergyGauge--;
-
+			//iEnergyGauge--;
+			//Need to add some spaces after the last tile just in case energy has reduced by more than 8 units
+			//Also, remember to put bounds checking in when reducing the Energy level so that it doesn't wrap
+			for(iEnergyLoop++;iEnergyLoop<=12;iEnergyLoop++)
+			{
+				PutTile(SCR_2_PLANE, iGaugePalette, 6+iEnergyLoop, 16, 0);
+			}
+			
 			/*
 			PrintString(SCR_2_PLANE,0,0,0,"PLAYER:(     ,     )");
 			PrintDecimal(SCR_2_PLANE, 0, 8, 0, PlayerOne.Position.x, 5);
