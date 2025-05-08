@@ -13,7 +13,18 @@
 #include "Sound\bgm1.c"
 #include "Sound\zap.c"
 
-
+/*************************************************
+ * TODO List
+ * 
+ * Asteroid collision/breakdown
+ * Add city (cities?)
+ * Collect resources
+ * Lemmanoid kidnapping/rescue
+ * Different enemy types
+ * Level success/failure modes
+ * Bring the Qix back?
+ * 
+ ************************************************/
 
 #define SPRITE_MAX_WIDTH (512)
 
