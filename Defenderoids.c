@@ -17,9 +17,17 @@
  * TODO List
  * 
  * Asteroid collision/breakdown
+ * 	Asteroid collision - Done
+ *  Asteroid split into smaller - Done
+ *  Asteroid drop pictcell - Done
  * Rejig Asteroid creation to get more variety
- * Add city (cities?)
+ * 	Done
+ * Add city
  * Collect resources
+ * 	Pictcell base movement - Done
+ * 	Lemmanoids pickup
+ * 	Ship pickup
+ * 	Add to city
  * Lemmanoid kidnapping/rescue
  * Different enemy types
  * Level success/failure modes
@@ -90,6 +98,7 @@ VECTOROBJECT CreateAsteroid(s16 x, s16 y, u8 Scale)
 
 /////////////////////////////////////////////////////
 // Sprite creator function
+//
 // Creates an extended sprite type includes:
 // - Position
 // - ID
@@ -105,6 +114,7 @@ VECTOROBJECT CreateAsteroid(s16 x, s16 y, u8 Scale)
 // 		Frame
 // or more effeciently:
 // 		Type<<4 + Direction<<2 + Frame
+//
 /////////////////////////////////////////////////////
 SPRITE CreateSprite(u16 x, u16 y, u8 ID, u8 Type, u8 Direction, u8 Frame)
 {
@@ -139,10 +149,11 @@ SPRITE CreateSprite(u16 x, u16 y, u8 ID, u8 Type, u8 Direction, u8 Frame)
 			break;
 	}
 
-	// Initialise sprites with the nullsprite - animation frames are applied in the main loop
-	CopyAnimationFrame(Sprites, sprReturn.BaseTile, 1, sprMisc);
+	// Sprites are created with a Null sprite tile and an empty NGPC sprite object
+	// The sprite animation and object properties are both maintained in the main
+	// sprite animation loop which checks to see if the sprite is visible etc
 
-	//Create the sprite pointer - again, initialised at (0,0) and sprite plane position applied in the main loop
+	CopyAnimationFrame(Sprites, sprReturn.BaseTile, 1, sprMisc);
 	SetSprite(sprReturn.SpriteID, sprReturn.BaseTile , 0, 0, 0, iPalette);
 
 	return sprReturn;
@@ -186,6 +197,8 @@ DrawSprite(SPRITE sprSprite, u16 iHorizontalOffset)
 		switch (sprSprite.SpriteType)
 		{
 			case sprInvader:
+				CopyAnimationFrame(Sprites, sprSprite.BaseTile, 1, (sprSprite.SpriteType) + sprSprite.Frame -1);
+				break;
 			case sprPictcell:
 				CopyAnimationFrame(Sprites, sprSprite.BaseTile, 1, (sprSprite.SpriteType) + sprSprite.Frame -1);
 				break;
@@ -428,7 +441,6 @@ void DrawGameScreen()
 
 	//Other window dressing (debug info and scorecard/lives count etc)
 	PrintString(SCR_1_PLANE, 0, 0, 16, "ENERGY:");
-	PrintString(SCR_1_PLANE, 0, 0, 18, "FPS:");
 
 }
 
@@ -642,15 +654,17 @@ void DefenderoidsMain()
 
 	VECTOROBJECT Explosions[8];
 
-	SPRITE SpriteList[16];
+	SPRITE SpriteList[MAX_SPRITE+1];
 
 	VECTOROBJECT PlayerOne;
 
 	InitialiseQRandom();
 
 	// Set up the palettes
+	SetPalette(SPRITE_PLANE, (u8)(PAL_SPRITE), RGB(0,0,0), RGB(15,15,15), RGB(11,11,11), RGB(5,5,5));
 	SetPalette(SPRITE_PLANE, (u8)(PAL_INVADER), RGB(0,0,0), RGB(0,15,0), RGB(15,15,0), RGB(15,0,0));
 	SetPalette(SPRITE_PLANE, (u8)(PAL_LEMMANOID), RGB(0,0,0), RGB(15, 11, 12), RGB(0,0,15), RGB(0,15,0));
+	SetPalette(SPRITE_PLANE, (u8)(PAL_PICTSEL), RGB(0,0,0), RGB(0, 12, 12), RGB(15,0,0), RGB(0,0,15));
 	// Lemmanoid palettes for debugging if I need to distinguish between individuals
 	// SpriteID:
 	// 	4 = White
@@ -924,13 +938,31 @@ void DefenderoidsMain()
 										//Then spawn new ones (up to the MAX_ASTEROID limit)
 										if(lvCurrent.AsteroidCount<MAX_ASTEROID)
 										{
+											Asteroid[lvCurrent.AsteroidCount]=CreateAsteroid(Asteroid[iLoopAsteroid].Position.x,Asteroid[iLoopAsteroid].Position.y,Asteroid[iLoopAsteroid].Scale);
 											lvCurrent.AsteroidCount++;
-											Asteroid[lvCurrent.AsteroidCount]=CreateAsteroid(Asteroid[iLoopAsteroid].Position.x,Asteroid[iLoopAsteroid].Position.y,Asteroid[iLoopAsteroid].Scale-1);
 										}
 									}
 									else
 									{
-										//Destroy asteroid and drop a Pictcell
+										//Smallest size asteroid destroyed
+										//First create a Pictcell
+										for(iSpriteLoop=0;iSpriteLoop<=MAX_SPRITE;iSpriteLoop++)
+										{
+											//Search for the first "empty" sprite
+											if (SpriteList[iSpriteLoop].SpriteType==sprMisc)
+											{
+												PrintString(SCR_2_PLANE,0,0,17,"Creating Pictcell");
+												PrintDecimal(SCR_2_PLANE,0,0,18,iSpriteLoop,4);
+												SpriteList[iSpriteLoop]=CreateSprite(Asteroid[iLoopAsteroid].Position.x,Asteroid[iLoopAsteroid].Position.y,iSpriteLoop,sprPictcell,DIR_SOUTH,0);
+												iSpriteLoop=MAX_SPRITE+1;
+											}
+										}
+										//Then shuffle asteroids up to fill the gap and reduce lvCurrent.AsteroidCount
+										while (iLoopAsteroid<lvCurrent.AsteroidCount)
+										{
+											Asteroid[iLoopAsteroid]=Asteroid[++iLoopAsteroid];
+										}
+										lvCurrent.AsteroidCount--;
 									}
 									iLoopAsteroid=MAX_ASTEROID;
 								}
@@ -1047,7 +1079,7 @@ void DefenderoidsMain()
 			//////////////////////////////////////////////////////
 			// Display Sprite objects
 			//////////////////////////////////////////////////////
-			for (iSpriteLoop=0;iSpriteLoop<(lvCurrent.InvaderCount+lvCurrent.LemmanoidCount);iSpriteLoop++)
+			for (iSpriteLoop=0;iSpriteLoop<MAX_SPRITE;iSpriteLoop++)
 			{
 				if (!(SpriteList[iSpriteLoop].SpriteType == sprMisc))
 				{
@@ -1083,6 +1115,20 @@ void DefenderoidsMain()
 								case DIR_EAST:
 									SpriteList[iSpriteLoop].Position.x+=128;
 									SpriteList[iSpriteLoop].Position.y = (u16)(HeightMap[((u8)(SpriteList[iSpriteLoop].Position.x>>SPRITE_SCALE))+4]-4)<<SPRITE_SCALE;
+								default:
+									break;
+							}
+							break;
+						case sprPictcell:
+							switch(SpriteList[iSpriteLoop].Direction)
+							{
+							case DIR_SOUTH:
+									SpriteList[iSpriteLoop].Position.y+=64;
+									if (SpriteList[iSpriteLoop].Position.y>((u16)(HeightMap[((u8)(SpriteList[iSpriteLoop].Position.x>>SPRITE_SCALE))+4]+4)<<SPRITE_SCALE)-1024)
+									{
+										SpriteList[iSpriteLoop].Direction = 0;
+									}
+									break;
 								default:
 									break;
 							}
@@ -1159,12 +1205,8 @@ void DefenderoidsMain()
 			*/
 
 			//Debug info
-			PrintString(SCR_2_PLANE, 0, 0, 17, "Asteroids:  /");
-			PrintDecimal(SCR_2_PLANE, 0, 10,17,lvCurrent.AsteroidCount,2);
-			PrintDecimal(SCR_2_PLANE, 0, 13,17,MAX_ASTEROID,2);
-
 			//Frame counter
-			PrintDecimal(SCR_1_PLANE, 0, 4, 18, 60/(VBCounter-iStartFrame), 2);
+			//PrintDecimal(SCR_1_PLANE, 0, 4, 18, 60/(VBCounter-iStartFrame), 2);
 			//Current Horizontal Offset
 			//PrintDecimal(SCR_2_PLANE, 0, 4, 17, iHorizontalOffset, 3);
 			

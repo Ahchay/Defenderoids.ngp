@@ -9,10 +9,10 @@
 
 // Palette constants
 #define PAL_SPRITE 0
-#define PAL_INVADER 0
-#define PAL_LEMMANOID 1
-#define PAL_CITY 2
-#define PAL_PICTSEL 3
+#define PAL_INVADER 1
+#define PAL_LEMMANOID 2
+#define PAL_CITY 3
+#define PAL_PICTSEL 4
 
 //Global consts
 const u8 SPRITE_SCALE=7;
@@ -22,6 +22,7 @@ const u8 BITMAP_HEIGHT=112;
 //Game constants
 #define SPRITE_MAX_WIDTH (512)
 #define MAX_ASTEROID (18)
+#define MAX_SPRITE (63)
 
 
 typedef struct SpritePoint
