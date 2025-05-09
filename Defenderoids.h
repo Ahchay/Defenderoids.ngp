@@ -19,6 +19,11 @@ const u8 SPRITE_SCALE=7;
 const u8 BITMAP_WIDTH=144;
 const u8 BITMAP_HEIGHT=112;
 
+//Game constants
+#define SPRITE_MAX_WIDTH (512)
+#define MAX_ASTEROID (12)
+
+
 typedef struct SpritePoint
 {
 	u16 x;

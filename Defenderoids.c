@@ -17,6 +17,7 @@
  * TODO List
  * 
  * Asteroid collision/breakdown
+ * Rejig Asteroid creation to get more variety
  * Add city (cities?)
  * Collect resources
  * Lemmanoid kidnapping/rescue
@@ -26,13 +27,12 @@
  * 
  ************************************************/
 
-#define SPRITE_MAX_WIDTH (512)
 
 //Helper functions
 /////////////////////////////////////////////////////
 // Create a unique asteroid object
 /////////////////////////////////////////////////////
-VECTOROBJECT CreateAsteroid(u16 x, u16 y)
+VECTOROBJECT CreateAsteroid(u16 x, u16 y, u8 Scale)
 {
 	VECTOROBJECT vReturn;
 	u8 iLoopAsteroidPoint;
@@ -52,7 +52,7 @@ VECTOROBJECT CreateAsteroid(u16 x, u16 y)
 	vReturn.Position.y=y;
 
 	// Set scale, rotation and speed randomly
-	vReturn.Scale=4;
+	vReturn.Scale=Scale;
 	vReturn.RotationSpeed=QRandom()>>4;
 	vReturn.RotationAngle=QRandom();
 	//Asteroid[iLoopAsteroid].Position.x=((u16)QRandom())<<4;
@@ -184,7 +184,46 @@ DrawSprite(SPRITE sprSprite, u16 iHorizontalOffset)
 
 }
 
-bool CheckCollision(POINT object1, SPRITEPOINT object2)
+bool CheckSpriteCollision(POINT object1, SPRITEPOINT object2)
+{
+	bool bReturn;
+	u16 iHorizontalDistance;
+	u16 iWrapDistance;
+	u16 iVerticalDistance;
+	const u16 iCollisionDistance=1024;
+	const u16 iWrapPoint=65535;
+	bReturn=0;
+
+	if (object1.x>=object2.x)
+	{
+		iHorizontalDistance=object1.x-object2.x;
+		iWrapDistance=(iWrapPoint-object1.x)+object2.x;
+	}
+	else
+	{
+		iHorizontalDistance=object2.x-object1.x;
+		iWrapDistance=(iWrapPoint-object2.x)+object1.x;
+	}
+	if (object1.y>=object2.y)
+	{
+		iVerticalDistance=object1.y-object2.y;
+	}
+	else
+	{
+		iVerticalDistance=object2.y-object1.y;
+	}
+
+	if ((iHorizontalDistance<=iCollisionDistance||iWrapDistance<=iCollisionDistance)&&iVerticalDistance<=iCollisionDistance)
+	{
+		// Our objects are within 1024 units (8 pixels give or take)
+		// Can now do finer detail checks if needed
+		bReturn=1;
+	}
+
+	return bReturn;
+}
+
+bool CheckAsteroidCollision(POINT object1, POINT object2)
 {
 	bool bReturn;
 	u16 iHorizontalDistance;
@@ -546,6 +585,7 @@ void DefenderoidsMain()
 	u16 iHeightMapLoop;
 	u16 iHorizontalOffset;
 	u8 iCurrentLevel;
+	LEVEL lvCurrent;
 	u8 iLives;
 	u8 iLoopShot;
 	u8 iLoopExplosion;
@@ -571,7 +611,7 @@ void DefenderoidsMain()
 	//	- RotationAngle;
 	//	- RotationSpeed;
 
-	VECTOROBJECT Asteroid[12];
+	VECTOROBJECT Asteroid[MAX_ASTEROID];
 
 	VECTOROBJECT Shots[4];
 
@@ -642,8 +682,10 @@ void DefenderoidsMain()
 		// Level setup
 		////////////////////////////////////////////////////////////
 
+		lvCurrent=DefenderoidsLevels[iCurrentLevel];
+
 		// Invaders - do I want these to all appear at the start of the level or be phased in somehow?
-		for (iSpriteLoop=0;iSpriteLoop<DefenderoidsLevels[iCurrentLevel].InvaderCount;iSpriteLoop++)
+		for (iSpriteLoop=0;iSpriteLoop<lvCurrent.InvaderCount;iSpriteLoop++)
 		{
 			//x, y, ID, Type, Direction, Frame
 			//Invaders always move south on creation
@@ -652,7 +694,7 @@ void DefenderoidsMain()
 		}
 
 		// Lemmanoids
-		for (;iSpriteLoop<DefenderoidsLevels[iCurrentLevel].InvaderCount+DefenderoidsLevels[iCurrentLevel].LemmanoidCount;iSpriteLoop++)
+		for (;iSpriteLoop<lvCurrent.InvaderCount+lvCurrent.LemmanoidCount;iSpriteLoop++)
 		{
 			//x, y, ID, Type, Direction, Frame
 			//Lemmanoids move either west or east (DIR_EAST + [0|1]*DIR_WEST)
@@ -661,9 +703,9 @@ void DefenderoidsMain()
 		}
 
 		// Asteroids
-		for (iLoopAsteroid=0;iLoopAsteroid<DefenderoidsLevels[iCurrentLevel].AsteroidCount;iLoopAsteroid++)
+		for (iLoopAsteroid=0;iLoopAsteroid<lvCurrent.AsteroidCount;iLoopAsteroid++)
 		{
-			Asteroid[iLoopAsteroid] = CreateAsteroid(((u16)QRandom())<<8,((u16)QRandom())<<5);
+			Asteroid[iLoopAsteroid] = CreateAsteroid(((u16)QRandom())<<8,((u16)QRandom())<<5,4);
 		}
 
 		// Set up the player
@@ -681,7 +723,7 @@ void DefenderoidsMain()
 		bShoot=(JOYPAD & J_A);
 
 		// Main level loop
-		while ((!(JOYPAD & J_OPTION)) && iEnergyGauge>0 && DefenderoidsLevels[iCurrentLevel].InvaderCount>0)
+		while ((!(JOYPAD & J_OPTION)) && iEnergyGauge>0 && lvCurrent.InvaderCount>0)
 		{
 
 			iStartFrame=VBCounter;
@@ -808,11 +850,11 @@ void DefenderoidsMain()
 
 						*/
 
-						for (iSpriteLoop=0;iSpriteLoop<(DefenderoidsLevels[iCurrentLevel].InvaderCount);iSpriteLoop++)
+						for (iSpriteLoop=0;iSpriteLoop<(lvCurrent.InvaderCount);iSpriteLoop++)
 						{
 							if (SpriteList[iSpriteLoop].SpriteType == sprInvader)
 							{
-								if (CheckCollision(Shots[iLoopShot].Position,SpriteList[iSpriteLoop].Position))
+								if (CheckSpriteCollision(Shots[iLoopShot].Position,SpriteList[iSpriteLoop].Position))
 								{
 									// Add an explosion
 									for (iLoopExplosion=0;iLoopExplosion<8;iLoopExplosion++)
@@ -830,7 +872,7 @@ void DefenderoidsMain()
 									SpriteList[iSpriteLoop].SpriteType = sprMisc;
 									SetSprite(SpriteList[iSpriteLoop].SpriteID, 0, 0, 0, 0, PAL_SPRITE);
 									Shots[iLoopShot].Scale = 0;
-									iSpriteLoop = DefenderoidsLevels[iCurrentLevel].InvaderCount + 1;
+									iSpriteLoop = lvCurrent.InvaderCount + 1;
 
 
 								}
@@ -841,6 +883,34 @@ void DefenderoidsMain()
 						// Check for Asteroid collision as well
 						// On collision: destroy asteroid and create some smaller ones...
 						// When smallest asteroid is destroyed, create a Pictcell sprite
+
+						if (Shots[iLoopShot].Scale == 1)
+						{
+						for (iLoopAsteroid=0;iLoopAsteroid<(lvCurrent.AsteroidCount);iLoopAsteroid++)
+							{
+								if (CheckAsteroidCollision(Shots[iLoopShot].Position,Asteroid[iLoopAsteroid].Position))
+								{
+									// Use the Asteroid Scale object to determine what happens next
+									if (Asteroid[iLoopAsteroid].Scale>1)
+									{
+										//Split asteroid into smaller chunks
+										//First reduce the size of the current asteroid
+										Asteroid[iLoopAsteroid]=CreateAsteroid(Asteroid[iLoopAsteroid].Position.x,Asteroid[iLoopAsteroid].Position.y,Asteroid[iLoopAsteroid].Scale-1);
+										//Then spawn new ones (up to the MAX_ASTEROID limit)
+										if(lvCurrent.AsteroidCount<MAX_ASTEROID)
+										{
+											lvCurrent.AsteroidCount++;
+											Asteroid[lvCurrent.AsteroidCount]=CreateAsteroid(Asteroid[iLoopAsteroid].Position.x,Asteroid[iLoopAsteroid].Position.y,Asteroid[iLoopAsteroid].Scale-1);
+										}
+									}
+									else
+									{
+										//Destroy asteroid and drop a Pictcell
+									}
+									iLoopAsteroid=MAX_ASTEROID;
+								}
+							}
+						}
 
 						if (Shots[iLoopShot].Scale == 1)
 						{
@@ -889,7 +959,7 @@ void DefenderoidsMain()
 			//////////////////////////////////////////////////////
 			// Asteroids
 			//////////////////////////////////////////////////////
-			for (iLoopAsteroid=0;iLoopAsteroid<DefenderoidsLevels[iCurrentLevel].AsteroidCount;iLoopAsteroid++)
+			for (iLoopAsteroid=0;iLoopAsteroid<lvCurrent.AsteroidCount;iLoopAsteroid++)
 			{
 				// Increase rotation angle
 				Asteroid[iLoopAsteroid].RotationAngle+=Asteroid[iLoopAsteroid].RotationSpeed;
@@ -952,7 +1022,7 @@ void DefenderoidsMain()
 			//////////////////////////////////////////////////////
 			// Display Sprite objects
 			//////////////////////////////////////////////////////
-			for (iSpriteLoop=0;iSpriteLoop<(DefenderoidsLevels[iCurrentLevel].InvaderCount+DefenderoidsLevels[iCurrentLevel].LemmanoidCount);iSpriteLoop++)
+			for (iSpriteLoop=0;iSpriteLoop<(lvCurrent.InvaderCount+lvCurrent.LemmanoidCount);iSpriteLoop++)
 			{
 				if (!(SpriteList[iSpriteLoop].SpriteType == sprMisc))
 				{
@@ -1074,6 +1144,9 @@ void DefenderoidsMain()
 			//Sleep(60);
 
 		} // Level Loop
+
+		iCurrentLevel++;
+		lvCurrent=DefenderoidsLevels[iCurrentLevel];
 
 		// Close down all sprites at end of level loop
 		for (iSpriteLoop=0;iSpriteLoop<64;iSpriteLoop++)
