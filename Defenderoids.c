@@ -32,21 +32,46 @@
 /////////////////////////////////////////////////////
 // Create a unique asteroid object
 /////////////////////////////////////////////////////
-VECTOROBJECT CreateAsteroid(u16 x, u16 y, u8 Scale)
+VECTOROBJECT CreateAsteroid(s16 x, s16 y, u8 Scale)
 {
 	VECTOROBJECT vReturn;
 	u8 iLoopAsteroidPoint;
 	u8 iTemplateID;
+	u8 iPointScaling;
+	u8 iScale;
 
 	VECTOROBJECT AsteroidTemplate[] = {
 		{{3,3},{0,0},{0,0},4,{{0,6,1},{6,6,1},{6,0,1},{0,6,1}},3,0,0},
-		{{3,3},{0,0},{0,0},7,{{2,0,1},{5,1,1},{4,4,1},{1,3,1},{2,2,1},{0,1,1},{2,0,1}},3,0,0}
+		{{3,3},{0,0},{0,0},7,{{2,0,1},{5,1,1},{4,4,1},{1,3,1},{2,2,1},{0,1,1},{2,0,1}},3,0,0},
+		{{0,0},{0,0},{0,0},9,{{0,1,1},{1,1,1},{1,0,1},{1,-1,1},{0,-1,1},{-1,-1,1},{-1,0,1},{-1,1,1},{0,1,1}},0,0,0}
 	};
 
 	//InitialiseQRandom();
 
-	iTemplateID=1;
+	iTemplateID=2;
 	vReturn=AsteroidTemplate[iTemplateID];
+	for (iLoopAsteroidPoint=0;iLoopAsteroidPoint<vReturn.Points;iLoopAsteroidPoint++)
+	{
+		iPointScaling=QRandom();
+		iScale=1;
+		if (iPointScaling>192)
+		{
+			iScale=4;
+		}
+		if (iPointScaling>128)
+		{
+			iScale=3;
+		}
+		if (iPointScaling>64)
+		{
+			iScale=2;
+		}
+		vReturn.VectorList[iLoopAsteroidPoint].x=vReturn.VectorList[iLoopAsteroidPoint].x*iScale;
+		vReturn.VectorList[iLoopAsteroidPoint].y=vReturn.VectorList[iLoopAsteroidPoint].y*iScale;
+	}
+	// First and Last points in the asteroid have to be the same
+	vReturn.VectorList[vReturn.Points-1].x=vReturn.VectorList[0].x;
+	vReturn.VectorList[vReturn.Points-1].y=vReturn.VectorList[0].y;
 
 	vReturn.Position.x=x;
 	vReturn.Position.y=y;
@@ -611,7 +636,7 @@ void DefenderoidsMain()
 	//	- RotationAngle;
 	//	- RotationSpeed;
 
-	VECTOROBJECT Asteroid[MAX_ASTEROID];
+	VECTOROBJECT Asteroid[MAX_ASTEROID+1];
 
 	VECTOROBJECT Shots[4];
 
@@ -1134,6 +1159,9 @@ void DefenderoidsMain()
 			*/
 
 			//Debug info
+			PrintString(SCR_2_PLANE, 0, 0, 17, "Asteroids:  /");
+			PrintDecimal(SCR_2_PLANE, 0, 10,17,lvCurrent.AsteroidCount,2);
+			PrintDecimal(SCR_2_PLANE, 0, 13,17,MAX_ASTEROID,2);
 
 			//Frame counter
 			PrintDecimal(SCR_1_PLANE, 0, 4, 18, 60/(VBCounter-iStartFrame), 2);
