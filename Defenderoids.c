@@ -54,17 +54,17 @@ VECTOROBJECT CreateAsteroid(s16 x, s16 y, u8 Scale)
 	{
 		iPointScaling=QRandom();
 		iScale=1;
-		if (iPointScaling>192)
+		if (iPointScaling>64)
 		{
-			iScale=4;
+			iScale=2;
 		}
 		if (iPointScaling>128)
 		{
 			iScale=3;
 		}
-		if (iPointScaling>64)
+		if (iPointScaling>192)
 		{
-			iScale=2;
+			iScale=4;
 		}
 		vReturn.VectorList[iLoopAsteroidPoint].x=vReturn.VectorList[iLoopAsteroidPoint].x*iScale;
 		vReturn.VectorList[iLoopAsteroidPoint].y=vReturn.VectorList[iLoopAsteroidPoint].y*iScale;
