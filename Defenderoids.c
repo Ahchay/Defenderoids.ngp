@@ -213,11 +213,11 @@ DrawSprite(SPRITE sprSprite, u16 iHorizontalOffset)
 				break;
 			case sprCity:
 				// Use Direction as BlockID (0-3)
-				// Use Frame as age (0-3)<<
-				CopyAnimationFrame(Sprites, sprSprite.BaseTile, 1, (sprSprite.SpriteType) + (sprSprite.Direction) + (sprSprite.Frame<<2) -1);
+				// Use Frame as age (0,4,18,12)
+				CopyAnimationFrame(Sprites, sprSprite.BaseTile, 1, (sprSprite.SpriteType) + (sprSprite.Direction) + sprSprite.Frame -1);
 				break;
 			default:
-				CopyAnimationFrame(Sprites, sprSprite.BaseTile, 1, (sprSprite.SpriteType));
+				CopyAnimationFrame(Sprites, sprSprite.BaseTile, 1, (sprSprite.SpriteType) -1);
 				break;
 		}
 
@@ -640,6 +640,9 @@ void DefenderoidsMain()
 	u8 iEnergyGauge;
 	u8 iEnergyLoop;
 	u8 iGaugePalette;
+	u8 iCityBlock;
+	u8 iMinAge;
+	u8 iCityLoop;
 
 	/////////////////////////////////////////////////////////
 	// Template vector/sprite arrays
@@ -731,8 +734,14 @@ void DefenderoidsMain()
 
 		lvCurrent=DefenderoidsLevels[iCurrentLevel];
 
+		// City (create as sprites 0-3 so I can find them easier later)
+		SpriteList[0] = CreateSprite(16<<SPRITE_SCALE,92<<SPRITE_SCALE,1,sprCity,CITYBLOCK2,0);
+		SpriteList[1] = CreateSprite(24<<SPRITE_SCALE,92<<SPRITE_SCALE,2,sprCity,CITYBLOCK3,0);
+		SpriteList[2] = CreateSprite(8<<SPRITE_SCALE,92<<SPRITE_SCALE,0,sprCity,CITYBLOCK1,0);
+		SpriteList[3] = CreateSprite(32<<SPRITE_SCALE,92<<SPRITE_SCALE,3,sprCity,CITYBLOCK4,0);
+
 		// Invaders - do I want these to all appear at the start of the level or be phased in somehow?
-		for (iSpriteLoop=0;iSpriteLoop<lvCurrent.InvaderCount;iSpriteLoop++)
+		for (iSpriteLoop=4;iSpriteLoop<lvCurrent.InvaderCount+4;iSpriteLoop++)
 		{
 			//x, y, ID, Type, Direction, Frame
 			//Invaders always move south on creation
@@ -741,19 +750,13 @@ void DefenderoidsMain()
 		}
 
 		// Lemmanoids
-		for (;iSpriteLoop<lvCurrent.InvaderCount+lvCurrent.LemmanoidCount;iSpriteLoop++)
+		for (;iSpriteLoop<lvCurrent.InvaderCount+lvCurrent.LemmanoidCount+4;iSpriteLoop++)
 		{
 			//x, y, ID, Type, Direction, Frame
 			//Lemmanoids move either west or east (DIR_EAST + [0|1]*DIR_WEST)
 			//Spawn them vertically at the median point of the terrain
 			SpriteList[iSpriteLoop] = CreateSprite(((u16)QRandom())<<8,100<<8,iSpriteLoop,sprLemmanoid,DIR_EAST + ((QRandom()>>7)*DIR_WEST),(QRandom()>>5));
 		}
-
-		// City
-		SpriteList[iSpriteLoop] = CreateSprite(8<<SPRITE_SCALE,92<<SPRITE_SCALE,lvCurrent.InvaderCount+lvCurrent.LemmanoidCount,sprCity,CITYBLOCK1,0);
-		SpriteList[iSpriteLoop+1] = CreateSprite(16<<SPRITE_SCALE,92<<SPRITE_SCALE,lvCurrent.InvaderCount+lvCurrent.LemmanoidCount+1,sprCity,CITYBLOCK2,0);
-		SpriteList[iSpriteLoop+2] = CreateSprite(24<<SPRITE_SCALE,92<<SPRITE_SCALE,lvCurrent.InvaderCount+lvCurrent.LemmanoidCount+2,sprCity,CITYBLOCK3,0);
-		SpriteList[iSpriteLoop+3] = CreateSprite(32<<SPRITE_SCALE,92<<SPRITE_SCALE,lvCurrent.InvaderCount+lvCurrent.LemmanoidCount+3,sprCity,CITYBLOCK4,0);
 
 		// Asteroids
 		for (iLoopAsteroid=0;iLoopAsteroid<lvCurrent.AsteroidCount;iLoopAsteroid++)
@@ -903,7 +906,7 @@ void DefenderoidsMain()
 
 						*/
 
-						for (iSpriteLoop=0;iSpriteLoop<(lvCurrent.InvaderCount);iSpriteLoop++)
+						for (iSpriteLoop=0;iSpriteLoop<MAX_SPRITE;iSpriteLoop++)
 						{
 							if (SpriteList[iSpriteLoop].SpriteType == sprInvader)
 							{
@@ -1149,9 +1152,9 @@ void DefenderoidsMain()
 										SpriteList[iPictcellLoop].RelatedSpriteID=SpriteList[iSpriteLoop].SpriteID;
 										SpriteList[iSpriteLoop].RelatedSpriteID=SpriteList[iPictcellLoop].SpriteID;
 										if(SpriteList[iSpriteLoop].Direction==DIR_EAST)
-											SpriteList[iPictcellLoop].SpriteType=sprMisc+2;
+											SpriteList[iPictcellLoop].SpriteType=sprMisc+3;
 										else
-											SpriteList[iPictcellLoop].SpriteType=sprMisc+1;
+											SpriteList[iPictcellLoop].SpriteType=sprMisc+2;
 										iPictcellLoop=MAX_SPRITE;
 									}
 								}
@@ -1159,10 +1162,39 @@ void DefenderoidsMain()
 							SpriteList[iSpriteLoop].Frame++;
 							if (SpriteList[iSpriteLoop].Frame>3) SpriteList[iSpriteLoop].Frame=0;
 							break;
-						case sprMisc+1:
 						case sprMisc+2:
+						case sprMisc+3:
+							// Check for being near a city, add to the city and remove the link to the Lemmanoid
+							if (SpriteList[iSpriteLoop].Position.x>MIN_CITY&&SpriteList[iSpriteLoop].Position.x<MAX_CITY)
+							{
+								// Clear from Lemmanoid
+								SpriteList[SpriteList[iSpriteLoop].RelatedSpriteID].RelatedSpriteID=0;
+								// Destroy pictcell
+								SpriteList[iSpriteLoop].SpriteType=sprMisc;
+								SpriteList[iSpriteLoop].RelatedSpriteID=0;
+								// Add to city
+								// Find "first" city block with minimum age (frame)
+								// Start at city block 5 - so we don't keep adding once the city is complete
+								iCityBlock=4;
+								iMinAge=CITYAGE4;
+								for(iCityLoop=0;iCityLoop<4;iCityLoop++)
+								{
+									if(SpriteList[iCityLoop].Frame<iMinAge)
+									{
+										iMinAge=SpriteList[iCityLoop].Frame;
+										iCityBlock=iCityLoop;
+									}
+								}
+								if (iCityBlock<4)
+								{
+									SpriteList[iCityBlock].Frame+=4;
+									PrintDecimal(SCR_2_PLANE,0,iCityBlock<<2,18,SpriteList[iCityBlock].Frame,3);
+								}
+							}
+							
 							SpriteList[iSpriteLoop].Position.x=SpriteList[SpriteList[iSpriteLoop].RelatedSpriteID].Position.x;
 							SpriteList[iSpriteLoop].Position.y=SpriteList[SpriteList[iSpriteLoop].RelatedSpriteID].Position.y-256;
+
 							break;
 						case sprPictcell:
 							if (SpriteList[iSpriteLoop].Direction== DIR_SOUTH)

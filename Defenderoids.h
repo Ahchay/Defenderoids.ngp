@@ -59,6 +59,15 @@ typedef struct Sprite
 #define CITYBLOCK2 1
 #define CITYBLOCK3 2
 #define CITYBLOCK4 3
+#define CITYAGE1 0
+#define CITYAGE2 4
+#define CITYAGE3 8
+#define CITYAGE4 12
+
+// 
+
+#define MIN_CITY 1024
+#define MAX_CITY 4096
 
 typedef struct Level
 {
