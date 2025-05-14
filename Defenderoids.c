@@ -30,6 +30,10 @@
  * 	Add to city - Done
  * Lemmanoid kidnapping/rescue
  * Different enemy types
+ * Ship collisions
+ * Shot collisions
+ *  Proximity collision - Done
+ *  Fine tune collision
  * Level success/failure modes
  * Bring the Qix back?
  * 
@@ -48,16 +52,12 @@ VECTOROBJECT CreateAsteroid(s16 x, s16 y, u8 Scale)
 	u8 iPointScaling;
 	u8 iScale;
 
-	VECTOROBJECT AsteroidTemplate[] = {
-		{{3,3},{0,0},{0,0},4,{{0,6,1},{6,6,1},{6,0,1},{0,6,1}},3,0,0},
-		{{3,3},{0,0},{0,0},7,{{2,0,1},{5,1,1},{4,4,1},{1,3,1},{2,2,1},{0,1,1},{2,0,1}},3,0,0},
-		{{0,0},{0,0},{0,0},9,{{0,1,1},{1,1,1},{1,0,1},{1,-1,1},{0,-1,1},{-1,-1,1},{-1,0,1},{-1,1,1},{0,1,1}},0,0,0}
-	};
+	VECTOROBJECT AsteroidTemplate= {{0,0},{0,0},{0,0},9,{{0,1,1},{1,1,1},{1,0,1},{1,-1,1},{0,-1,1},{-1,-1,1},{-1,0,1},{-1,1,1},{0,1,1}},0,0,0};
 
 	//InitialiseQRandom();
 
 	iTemplateID=2;
-	vReturn=AsteroidTemplate[iTemplateID];
+	vReturn=AsteroidTemplate;
 	for (iLoopAsteroidPoint=0;iLoopAsteroidPoint<vReturn.Points;iLoopAsteroidPoint++)
 	{
 		iPointScaling=QRandom();
