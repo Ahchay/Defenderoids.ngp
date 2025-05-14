@@ -22,12 +22,12 @@
  *  Asteroid drop pictcell - Done
  * Rejig Asteroid creation to get more variety - Done
  *  Asteroids can sometimes get weird shapes (flat lines, points etc)
- * Add city
+ * Add city - Done
  * Collect resources
  * 	Pictcell base movement - Done
  * 	Lemmanoids pickup - Done
  * 	Ship pickup
- * 	Add to city
+ * 	Add to city - Done
  * Lemmanoid kidnapping/rescue
  * Different enemy types
  * Level success/failure modes
