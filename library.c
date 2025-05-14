@@ -1903,6 +1903,7 @@ void CopyAnimationFrame(const u16 AnimTiles[][8], u16 TileNumber, u16 TileCount,
 
 	TileRam += (TileNumber * 8);
 	theAnim += (AnimNumber * 8);
+	theAnim-=8;
 
 	// Copy the specified tiles into tile ram
 	for (i = 0; i < (TileCount * 8); i ++)

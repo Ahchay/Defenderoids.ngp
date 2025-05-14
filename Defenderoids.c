@@ -185,7 +185,7 @@ DrawSprite(SPRITE sprSprite, u16 iHorizontalOffset)
 
 	if(iRelativeX>144||iRelativeY>112||iRelativeX<8||iRelativeY<8) {
 		//Replace tile with the empty sprite if it's outside the visible area
-		CopyAnimationFrame(Sprites, sprSprite.BaseTile, 1, sprMisc-1);
+		CopyAnimationFrame(Sprites, sprSprite.BaseTile, 1, sprMisc);
 	}
 	else {
 		//Sprite Tile selection will differ depending on SpriteType
@@ -199,25 +199,25 @@ DrawSprite(SPRITE sprSprite, u16 iHorizontalOffset)
 		switch (sprSprite.SpriteType)
 		{
 			case sprInvader:
-				CopyAnimationFrame(Sprites, sprSprite.BaseTile, 1, (sprSprite.SpriteType) + sprSprite.Frame -1);
+				CopyAnimationFrame(Sprites, sprSprite.BaseTile, 1, (sprSprite.SpriteType) + sprSprite.Frame);
 				break;
 			case sprPictcell:
-				CopyAnimationFrame(Sprites, sprSprite.BaseTile, 1, (sprSprite.SpriteType) + sprSprite.Frame -1);
+				CopyAnimationFrame(Sprites, sprSprite.BaseTile, 1, (sprSprite.SpriteType) + sprSprite.Frame);
 				break;
 			case sprLemmanoid:
 				// Flipped sprites behave weirdly - are their x/y positions also flipped?
 				//if(sprSprite.Direction==DIR_WEST) {
 				//	FlipSprite(sprSprite.SpriteID,1,0);
 				//}
-				CopyAnimationFrame(Sprites, sprSprite.BaseTile, 1, (sprSprite.SpriteType) + (sprSprite.Direction) + sprSprite.Frame -1);
+				CopyAnimationFrame(Sprites, sprSprite.BaseTile, 1, (sprSprite.SpriteType) + (sprSprite.Direction) + sprSprite.Frame);
 				break;
 			case sprCity:
 				// Use Direction as BlockID (0-3)
 				// Use Frame as age (0,4,18,12)
-				CopyAnimationFrame(Sprites, sprSprite.BaseTile, 1, (sprSprite.SpriteType) + (sprSprite.Direction) + sprSprite.Frame -1);
+				CopyAnimationFrame(Sprites, sprSprite.BaseTile, 1, (sprSprite.SpriteType) + (sprSprite.Direction) + sprSprite.Frame);
 				break;
 			default:
-				CopyAnimationFrame(Sprites, sprSprite.BaseTile, 1, (sprSprite.SpriteType) -1);
+				CopyAnimationFrame(Sprites, sprSprite.BaseTile, 1, (sprSprite.SpriteType));
 				break;
 		}
 
