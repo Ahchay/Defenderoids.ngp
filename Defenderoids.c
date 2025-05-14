@@ -20,12 +20,12 @@
  * 	Asteroid collision - Done
  *  Asteroid split into smaller - Done
  *  Asteroid drop pictcell - Done
- * Rejig Asteroid creation to get more variety
- * 	Done
+ * Rejig Asteroid creation to get more variety - Done
+ *  Asteroids can sometimes get weird shapes (flat lines, points etc)
  * Add city
  * Collect resources
  * 	Pictcell base movement - Done
- * 	Lemmanoids pickup
+ * 	Lemmanoids pickup - Done
  * 	Ship pickup
  * 	Add to city
  * Lemmanoid kidnapping/rescue
@@ -128,6 +128,7 @@ SPRITE CreateSprite(u16 x, u16 y, u8 ID, u8 Type, u8 Direction, u8 Frame)
 	sprReturn.Direction = Direction;
 	sprReturn.BaseTile = spTileBase + ID;
 	sprReturn.Frame = Frame;
+	sprReturn.RelatedSpriteID = 0;
 
 	// map the sprites to their selected Palette
 	switch (sprReturn.SpriteType)
@@ -194,6 +195,7 @@ DrawSprite(SPRITE sprSprite, u16 iHorizontalOffset)
 		//Spacie -- sprSpacie + Type + 4 frames
 		//Pictcell -- sprPictCell + 4 frames
 		//City -- sprCity + blockid + age
+		//Default -- No animation
 		switch (sprSprite.SpriteType)
 		{
 			case sprInvader:
@@ -209,6 +211,11 @@ DrawSprite(SPRITE sprSprite, u16 iHorizontalOffset)
 				//}
 				CopyAnimationFrame(Sprites, sprSprite.BaseTile, 1, (sprSprite.SpriteType) + (sprSprite.Direction) + sprSprite.Frame -1);
 				break;
+			case sprCity:
+				// Use Direction as BlockID (0-3)
+				// Use Frame as age (0-3)<<
+				CopyAnimationFrame(Sprites, sprSprite.BaseTile, 1, (sprSprite.SpriteType) + (sprSprite.Direction) + (sprSprite.Frame<<2) -1);
+				break;
 			default:
 				CopyAnimationFrame(Sprites, sprSprite.BaseTile, 1, (sprSprite.SpriteType));
 				break;
@@ -217,7 +224,6 @@ DrawSprite(SPRITE sprSprite, u16 iHorizontalOffset)
 	}
 
 	// Cast the relativeX position to (u8) once the bounds checking has been completed
-	// The "duplicate" sprite that gets created won't show on screen as the sprite tile will be set to the empty tile
 	SetSpritePosition(sprSprite.SpriteID, (u8)iRelativeX, iRelativeY);
 
 }
@@ -615,6 +621,7 @@ void DefenderoidsMain()
 	u8 iSpriteScale;
 	u8 iLoopAsteroid;
 	u8 iSpriteLoop;
+	u8 iPictcellLoop;
 	u16 iCounter;
 	u8 iEngineLoop;
 	s16 iVelocityX;
@@ -664,7 +671,8 @@ void DefenderoidsMain()
 	SetPalette(SPRITE_PLANE, (u8)(PAL_SPRITE), RGB(0,0,0), RGB(15,15,15), RGB(11,11,11), RGB(5,5,5));
 	SetPalette(SPRITE_PLANE, (u8)(PAL_INVADER), RGB(0,0,0), RGB(0,15,0), RGB(15,15,0), RGB(15,0,0));
 	SetPalette(SPRITE_PLANE, (u8)(PAL_LEMMANOID), RGB(0,0,0), RGB(15, 11, 12), RGB(0,0,15), RGB(0,15,0));
-	SetPalette(SPRITE_PLANE, (u8)(PAL_PICTSEL), RGB(0,0,0), RGB(0, 12, 12), RGB(15,0,0), RGB(0,0,15));
+	SetPalette(SPRITE_PLANE, (u8)(PAL_PICTSEL), RGB(0,0,0), RGB(9, 9, 9), RGB(15,0,0), RGB(0,0,15));
+	SetPalette(SPRITE_PLANE, (u8)(PAL_CITY), RGB(0,0,0), RGB(0, 0, 15), RGB(15,0,0), RGB(0,15,0));
 	// Lemmanoid palettes for debugging if I need to distinguish between individuals
 	// SpriteID:
 	// 	4 = White
@@ -740,6 +748,12 @@ void DefenderoidsMain()
 			//Spawn them vertically at the median point of the terrain
 			SpriteList[iSpriteLoop] = CreateSprite(((u16)QRandom())<<8,100<<8,iSpriteLoop,sprLemmanoid,DIR_EAST + ((QRandom()>>7)*DIR_WEST),(QRandom()>>5));
 		}
+
+		// City
+		SpriteList[iSpriteLoop] = CreateSprite(8<<SPRITE_SCALE,92<<SPRITE_SCALE,lvCurrent.InvaderCount+lvCurrent.LemmanoidCount,sprCity,CITYBLOCK1,0);
+		SpriteList[iSpriteLoop+1] = CreateSprite(16<<SPRITE_SCALE,92<<SPRITE_SCALE,lvCurrent.InvaderCount+lvCurrent.LemmanoidCount+1,sprCity,CITYBLOCK2,0);
+		SpriteList[iSpriteLoop+2] = CreateSprite(24<<SPRITE_SCALE,92<<SPRITE_SCALE,lvCurrent.InvaderCount+lvCurrent.LemmanoidCount+2,sprCity,CITYBLOCK3,0);
+		SpriteList[iSpriteLoop+3] = CreateSprite(32<<SPRITE_SCALE,92<<SPRITE_SCALE,lvCurrent.InvaderCount+lvCurrent.LemmanoidCount+3,sprCity,CITYBLOCK4,0);
 
 		// Asteroids
 		for (iLoopAsteroid=0;iLoopAsteroid<lvCurrent.AsteroidCount;iLoopAsteroid++)
@@ -951,8 +965,6 @@ void DefenderoidsMain()
 											//Search for the first "empty" sprite
 											if (SpriteList[iSpriteLoop].SpriteType==sprMisc)
 											{
-												PrintString(SCR_2_PLANE,0,0,17,"Creating Pictcell");
-												PrintDecimal(SCR_2_PLANE,0,0,18,iSpriteLoop,4);
 												SpriteList[iSpriteLoop]=CreateSprite(Asteroid[iLoopAsteroid].Position.x,Asteroid[iLoopAsteroid].Position.y,iSpriteLoop,sprPictcell,DIR_SOUTH,0);
 												iSpriteLoop=MAX_SPRITE+1;
 											}
@@ -1104,6 +1116,8 @@ void DefenderoidsMain()
 									}
 									break;
 							}
+							SpriteList[iSpriteLoop].Frame++;
+							if (SpriteList[iSpriteLoop].Frame>3) SpriteList[iSpriteLoop].Frame=0;
 							break;
 						case sprLemmanoid:
 							switch(SpriteList[iSpriteLoop].Direction)
@@ -1118,27 +1132,54 @@ void DefenderoidsMain()
 								default:
 									break;
 							}
+							// Pickup Pictcell?
+							// Iterate through the sprite list again? Any way to avoid that?
+							// Pickup Pictcell when pictcell.Direction==0 && pictcell.Position.x=Lemmanoid.Position.x (don't need to check for y)
+							// Need to also make sure that each Lemmanoid *only* picks up one Pictcell
+							if (SpriteList[iSpriteLoop].RelatedSpriteID==0)
+							{
+								for(iPictcellLoop=0;iPictcellLoop<MAX_SPRITE;iPictcellLoop++)
+								{
+									// Never actually get picked up?
+									if (SpriteList[iPictcellLoop].SpriteType==sprPictcell && SpriteList[iPictcellLoop].Direction==0 && WrapDistance(SpriteList[iPictcellLoop].Position.x,SpriteList[iSpriteLoop].Position.x,SPRITE_MAX_WIDTH)<1024 && SpriteList[iPictcellLoop].RelatedSpriteID==0)
+									{
+										// Bingo. Attach this sprite to the Lemmanoid and change the type to the left/right carrying Hod
+										// Use MasterSpriteID to chain it to another Sprite
+										SpriteList[iPictcellLoop].Direction=SpriteList[iSpriteLoop].Direction;
+										SpriteList[iPictcellLoop].RelatedSpriteID=SpriteList[iSpriteLoop].SpriteID;
+										SpriteList[iSpriteLoop].RelatedSpriteID=SpriteList[iPictcellLoop].SpriteID;
+										if(SpriteList[iSpriteLoop].Direction==DIR_EAST)
+											SpriteList[iPictcellLoop].SpriteType=sprMisc+2;
+										else
+											SpriteList[iPictcellLoop].SpriteType=sprMisc+1;
+										iPictcellLoop=MAX_SPRITE;
+									}
+								}
+							}
+							SpriteList[iSpriteLoop].Frame++;
+							if (SpriteList[iSpriteLoop].Frame>3) SpriteList[iSpriteLoop].Frame=0;
+							break;
+						case sprMisc+1:
+						case sprMisc+2:
+							SpriteList[iSpriteLoop].Position.x=SpriteList[SpriteList[iSpriteLoop].RelatedSpriteID].Position.x;
+							SpriteList[iSpriteLoop].Position.y=SpriteList[SpriteList[iSpriteLoop].RelatedSpriteID].Position.y-256;
 							break;
 						case sprPictcell:
-							switch(SpriteList[iSpriteLoop].Direction)
+							if (SpriteList[iSpriteLoop].Direction== DIR_SOUTH)
 							{
-							case DIR_SOUTH:
-									SpriteList[iSpriteLoop].Position.y+=64;
-									if (SpriteList[iSpriteLoop].Position.y>((u16)(HeightMap[((u8)(SpriteList[iSpriteLoop].Position.x>>SPRITE_SCALE))+4]+4)<<SPRITE_SCALE)-1024)
-									{
-										SpriteList[iSpriteLoop].Direction = 0;
-									}
-									break;
-								default:
-									break;
+								SpriteList[iSpriteLoop].Position.y+=64;
+								if (SpriteList[iSpriteLoop].Position.y>((u16)(HeightMap[((u8)(SpriteList[iSpriteLoop].Position.x>>SPRITE_SCALE))+4]+4)<<SPRITE_SCALE)-1024)
+								{
+									SpriteList[iSpriteLoop].Direction = 0;
+									SpriteList[iSpriteLoop].RelatedSpriteID = 0;
+								}
 							}
+							SpriteList[iSpriteLoop].Frame++;
+							if (SpriteList[iSpriteLoop].Frame>3) SpriteList[iSpriteLoop].Frame=0;
 							break;
 						default:
 							break;
 					}
-
-					SpriteList[iSpriteLoop].Frame++;
-					if (SpriteList[iSpriteLoop].Frame>3) SpriteList[iSpriteLoop].Frame=0;
 
 					DrawSprite(SpriteList[iSpriteLoop],iHorizontalOffset);
 				}

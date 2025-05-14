@@ -486,20 +486,22 @@ void SetSprite(u8 SpriteNo, u16 TileNo, u8 Chain, u8 XPos, u8 YPos, u8 PaletteNo
 //		Sprite palette memory starts at SPRITE_COLOUR (0x8c00)
 //		
 //////////////////////////////////////////////////////////////////////////////
-void SetSpriteOptions(u8 SpriteNo, bool HorizontalFlip, bool VerticalFlip)
+void SetSpriteOptions(u8 SpriteNo, bool HorizontalFlip, bool VerticalFlip, bool Chain)
 {
 	u16 SprCtrlReg;
 	u8 * theSprite = SPRITE_RAM;
 
 	theSprite += (SpriteNo * 4);
 
-	// First remove any existing flip attributes
-	SprCtrlReg&=63;
+	// First remove any existing attributes
+	SprCtrlReg&=57;
 	// Apply flips if required
 	if (VerticalFlip==1)
 		SprCtrlReg|=64;
 	if (HorizontalFlip==1)
 		SprCtrlReg|=128;
+	if (Chain==1)
+		SprCtrlReg|=6;
 
 	*(theSprite+1) = SprCtrlReg;
 
@@ -884,6 +886,27 @@ signed char Cos(unsigned char dAngle)
    return SineTable256[dAngle+64];
 }
 
+//////////////////////////////////////////////////////////////////////////////
+// WrapDistance
+// Calculates the distance between two points with a wrap around (max)
+//////////////////////////////////////////////////////////////////////////////
+u16 WrapDistance(u16 First, u16 Second, u16 Wrap)
+{
+	u16 iDistance;
+	u16 retval;
+
+	if (First>=Second)
+	{
+		iDistance=First-Second;
+		retval=(Wrap-First)+Second;
+	}
+	else
+	{
+		iDistance=Second-First;
+		retval=(Wrap-Second)+First;
+	}
+	return retval;
+}
 
 
 //////////////////////////////////////////////////////////////////////////////

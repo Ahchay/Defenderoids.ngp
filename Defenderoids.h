@@ -21,11 +21,11 @@ const u8 BITMAP_HEIGHT=112;
 
 //Game constants
 #define SPRITE_MAX_WIDTH (512)
-#define MAX_ASTEROID (18)
-#define MAX_SPRITE (63)
+#define MAX_ASTEROID (12)
+#define MAX_SPRITE (64)
 
 
-typedef struct SpritePoint
+typedef struct SpritePointz
 {
 	u16 x;
 	u16 y;
@@ -33,7 +33,7 @@ typedef struct SpritePoint
 
 //Direction is affected by sprite type
 //Lemmanoids will be left/right - possibly up/down if they are floaters or being kidnapped?
-//Invaders are TBD
+//Invaders are multi-directional (and may not have a fixed direction anyway)
 //Cities will use it as the "age/build completion"
 //Pictcells will have no direction attrib
 //
@@ -45,6 +45,7 @@ typedef struct Sprite
 	u16 BaseTile;
 	u16 Frame;
 	u16 Direction;
+	u8 RelatedSpriteID;
 } SPRITE;
 
 // Direction constants
@@ -52,6 +53,12 @@ typedef struct Sprite
 #define DIR_WEST 3
 #define DIR_SOUTH 7
 #define DIR_NORTH 11
+
+// City block IDs (left-right)
+#define CITYBLOCK1 0
+#define CITYBLOCK2 1
+#define CITYBLOCK3 2
+#define CITYBLOCK4 3
 
 typedef struct Level
 {

@@ -29,7 +29,7 @@ void PrintBinary(u8 Plane, u8 PaletteNo, u8 x, u8 y, u16 Value, u8 Len);
 
 void SetSprite(u8 SpriteNo, u16 TileNo, u8 Chain, u8 XPos, u8 YPos, u8 PaletteNo);
 void SetSpritePosition(u8 SpriteNo, u8 XPos, u8 YPos);
-void SetSpriteOptions(u8 SpriteNo, bool HorizontalFlip, bool VerticalFlip);
+void SetSpriteOptions(u8 SpriteNo, bool HorizontalFlip, bool VerticalFlip, bool Chain);
 
 void SeedRandom(void);
 u16 GetRandom(u16 Value);
@@ -38,6 +38,8 @@ unsigned char QRandom();
 
 signed char Sin(unsigned char dAngle);
 signed char Cos(unsigned char dAngle);
+
+u16 WrapDistance(u16 First, u16 Second, u16 Wrap);
 
 typedef struct tagTIME
 {
