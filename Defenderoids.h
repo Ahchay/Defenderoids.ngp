@@ -13,6 +13,7 @@
 #define PAL_LEMMANOID 2
 #define PAL_CITY 3
 #define PAL_PICTSEL 4
+#define PAL_ANGRYINVADER 5
 
 //Global consts
 const u8 SPRITE_SCALE=7;
@@ -25,7 +26,7 @@ const u8 BITMAP_HEIGHT=112;
 #define MAX_SPRITE (64)
 
 
-typedef struct SpritePointz
+typedef struct SpritePoint
 {
 	u16 x;
 	u16 y;

@@ -893,18 +893,28 @@ signed char Cos(unsigned char dAngle)
 u16 WrapDistance(u16 First, u16 Second, u16 Wrap)
 {
 	u16 iDistance;
+	u16 iWrapDistance;
 	u16 retval;
 
+	//Start by calculating Difference between First and Second
+	//both directly (x1-x2) and indirectly (wrap-x1)+x2
 	if (First>=Second)
 	{
 		iDistance=First-Second;
-		retval=(Wrap-First)+Second;
+		iWrapDistance=(Wrap-First)+Second;
 	}
 	else
 	{
 		iDistance=Second-First;
-		retval=(Wrap-Second)+First;
+		iWrapDistance=(Wrap-Second)+First;
 	}
+
+	//Return the smaller of the two distances
+	if (iDistance<iWrapDistance)
+		retval=iDistance;
+	else
+		retval=iWrapDistance;
+
 	return retval;
 }
 

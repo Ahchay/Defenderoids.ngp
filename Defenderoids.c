@@ -450,6 +450,23 @@ void DrawGameScreen()
 	//Other window dressing (debug info and scorecard/lives count etc)
 	PrintString(SCR_1_PLANE, 0, 0, 16, "ENERGY:");
 
+	/*
+	PrintString(SCR_2_PLANE,0,1,1,"INVADERS");
+	PrintString(SCR_2_PLANE,0,1,2,"0:");
+	PrintString(SCR_2_PLANE,0,1,3,"1:");
+	PrintString(SCR_2_PLANE,0,1,4,"2:");
+	PrintString(SCR_2_PLANE,0,1,5,"3:");
+	PrintString(SCR_2_PLANE,0,1,6,"4:");
+	PrintString(SCR_2_PLANE,0,1,7,"5:");
+	PrintString(SCR_2_PLANE,0,1,8,"LEMMANOIDS");
+	PrintString(SCR_2_PLANE,0,1,9,"0:");
+	PrintString(SCR_2_PLANE,0,1,10,"1:");
+	PrintString(SCR_2_PLANE,0,1,11,"2:");
+	PrintString(SCR_2_PLANE,0,1,12,"3:");
+	PrintString(SCR_2_PLANE,0,1,13,"4:");
+	PrintString(SCR_2_PLANE,0,1,14,"5:");
+	*/
+
 }
 
 void DrawGameOverScreen()
@@ -677,6 +694,7 @@ void DefenderoidsMain()
 	// Set up the palettes
 	SetPalette(SPRITE_PLANE, (u8)(PAL_SPRITE), RGB(0,0,0), RGB(15,15,15), RGB(11,11,11), RGB(5,5,5));
 	SetPalette(SPRITE_PLANE, (u8)(PAL_INVADER), RGB(0,0,0), RGB(0,15,0), RGB(15,15,0), RGB(15,0,0));
+	SetPalette(SPRITE_PLANE, (u8)(PAL_ANGRYINVADER), RGB(0,0,0), RGB(15,0,0), RGB(15,15,0), RGB(0,0,15));
 	SetPalette(SPRITE_PLANE, (u8)(PAL_LEMMANOID), RGB(0,0,0), RGB(15, 11, 12), RGB(0,0,15), RGB(0,15,0));
 	SetPalette(SPRITE_PLANE, (u8)(PAL_PICTSEL), RGB(0,0,0), RGB(9, 9, 9), RGB(15,0,0), RGB(0,0,15));
 	SetPalette(SPRITE_PLANE, (u8)(PAL_CITY), RGB(0,0,0), RGB(0, 0, 15), RGB(15,0,0), RGB(0,15,0));
@@ -744,13 +762,13 @@ void DefenderoidsMain()
 		SpriteList[2] = CreateSprite(8<<SPRITE_SCALE,92<<SPRITE_SCALE,0,sprCity,CITYBLOCK1,0);
 		SpriteList[3] = CreateSprite(32<<SPRITE_SCALE,92<<SPRITE_SCALE,3,sprCity,CITYBLOCK4,0);
 
-		// Invaders - do I want these to all appear at the start of the level or be phased in somehow?
+		// Invaders
 		for (iSpriteLoop=4;iSpriteLoop<lvCurrent.InvaderCount+4;iSpriteLoop++)
 		{
 			//x, y, ID, Type, Direction, Frame
 			//Invaders always move south on creation
 			//Eventually, we'll spawn these on a timer rather than just dumping them all in at the outset of the level
-			SpriteList[iSpriteLoop] = CreateSprite(((u16)QRandom())<<8,((u16)QRandom())<<4,iSpriteLoop,sprInvader,DIR_SOUTH,0);
+			SpriteList[iSpriteLoop] = CreateSprite(((u16)QRandom())<<8,((u16)QRandom())<<4,iSpriteLoop,sprInvader,DIR_SOUTH,(QRandom()>>6));
 		}
 
 		// Lemmanoids
@@ -932,18 +950,24 @@ void DefenderoidsMain()
 									SpriteList[iSpriteLoop].SpriteType = sprMisc;
 									if (SpriteList[iSpriteLoop].RelatedSpriteID!=0)
 									{
+										// Drop the Lemmanoid
 										// Invader has a captured Lemmanoid, give 'em an umbrella and let them go
 										for(iUmbrellaLoop=0;iUmbrellaLoop<=MAX_SPRITE;iUmbrellaLoop++)
 										{
 											//Search for the first "empty" sprite
-											if (SpriteList[iUmbrellaLoop].SpriteType==sprMisc+1)
+											if (SpriteList[iUmbrellaLoop].SpriteType==sprMisc)
 											{
-												SpriteList[iUmbrellaLoop]=CreateSprite(0,0,iUmbrellaLoop,sprPictcell,DIR_SOUTH,0);
-												SpriteList[SpriteList[iSpriteLoop].RelatedSpriteID].RelatedSpriteID=iUmbrellaLoop;
-												SpriteList[SpriteList[iSpriteLoop].RelatedSpriteID].Direction=DIR_SOUTH;
+												SpriteList[iUmbrellaLoop]=CreateSprite(0,0,iUmbrellaLoop,sprMisc+1,DIR_SOUTH,0);
+												SpriteList[SpriteList[iSpriteLoop].RelatedSpriteID].RelatedSpriteID=SpriteList[iUmbrellaLoop].SpriteID;
+												SpriteList[iUmbrellaLoop].RelatedSpriteID=SpriteList[SpriteList[iSpriteLoop].RelatedSpriteID].SpriteID;
 												iUmbrellaLoop=MAX_SPRITE+1;
 											}
 										}
+										// Check that an umbrella has actually been created (may have exceeded the 64 sprite limit) and if not set the related sprite ID to 0
+										if (SpriteList[SpriteList[iSpriteLoop].RelatedSpriteID].RelatedSpriteID==SpriteList[iSpriteLoop].SpriteID)
+											SpriteList[SpriteList[iSpriteLoop].RelatedSpriteID].RelatedSpriteID=0;
+										SpriteList[SpriteList[iSpriteLoop].RelatedSpriteID].Direction=DIR_SOUTH;
+										SpriteList[iSpriteLoop].RelatedSpriteID=0;
 
 									}
 									SetSprite(SpriteList[iSpriteLoop].SpriteID, 0, 0, 0, 0, PAL_SPRITE);
@@ -1122,6 +1146,7 @@ void DefenderoidsMain()
 					{
 						case sprInvader:
 							// Invaders bob up and down
+							//PrintDecimal(SCR_2_PLANE,0,3,2+iSpriteLoop-4,SpriteList[iSpriteLoop].Position.x,5);
 
 							// Need to home in on a Lemmanoid if there's one nearby
 							// So, if Y-position is <$foo from the heightmap, and a Lemmanoid is within $bar horizontal units, start adjusting the trajectory towards the Lemmanoid
@@ -1130,42 +1155,57 @@ void DefenderoidsMain()
 							switch(SpriteList[iSpriteLoop].Direction)
 							{
 								case DIR_SOUTH:
+									//PrintString(SCR_2_PLANE,0,9,2+iSpriteLoop-4,"S           ");
 									// Check for any nearby Lemmanoids
-									if (SpriteList[iSpriteLoop].Position.y>(u16)(HeightMap[((u8)(SpriteList[iSpriteLoop].Position.x>>SPRITE_SCALE))+4]-32)<<SPRITE_SCALE)
+									// Don't check if already carrying a hostage
+									if (SpriteList[iSpriteLoop].Position.y>(u16)(HeightMap[((u8)(SpriteList[iSpriteLoop].Position.x>>SPRITE_SCALE))+4]-32)<<SPRITE_SCALE&&SpriteList[iSpriteLoop].RelatedSpriteID==0)
 									{
 										for(iLemmanoidLoop=0;iLemmanoidLoop<MAX_SPRITE;iLemmanoidLoop++)
 										{
-											if (WrapDistance(SpriteList[iSpriteLoop].Position.x>>SPRITE_SCALE,SpriteList[iLemmanoidLoop].Position.x>>SPRITE_SCALE,SPRITE_MAX_WIDTH)<32)
+											// Leave any Lemmanoid alone if it is already captured (or, as it currently stands, is holding anything - might put that into the plot "The mystical power of the Pictcells can temporarily protect the Lemmanoids")
+											if(SpriteList[iLemmanoidLoop].SpriteType==sprLemmanoid&&SpriteList[iLemmanoidLoop].RelatedSpriteID==0)
 											{
-												if(SpriteList[iSpriteLoop].Position.x>SpriteList[iLemmanoidLoop].Position.x)
-													SpriteList[iSpriteLoop].Position.x-=32;
-												else
-													SpriteList[iSpriteLoop].Position.x+=32;
-												iLemmanoidLoop=MAX_SPRITE;
+												//PrintDecimal(SCR_2_PLANE,0,10,3+iSpriteLoop-4,SpriteList[iLemmanoidLoop].Position.x,5);
+												//PrintDecimal(SCR_2_PLANE,0,10,2+iSpriteLoop-4,WrapDistance(SpriteList[iSpriteLoop].Position.x,SpriteList[iLemmanoidLoop].Position.x,65535),5);
+												if (WrapDistance(SpriteList[iSpriteLoop].Position.x>>SPRITE_SCALE,SpriteList[iLemmanoidLoop].Position.x>>SPRITE_SCALE,SPRITE_MAX_WIDTH)<64)
+												{
+												
+													if (SpriteList[iSpriteLoop].Position.y>(u16)(HeightMap[((u8)(SpriteList[iSpriteLoop].Position.x>>SPRITE_SCALE))+4]-16)<<SPRITE_SCALE)
+													{
+														//Gotcha
+														//PrintString(SCR_2_PLANE,0,11,2+iSpriteLoop-4,"C");
+														//PrintDecimal(SCR_2_PLANE,0,12,2+iSpriteLoop-4,iLemmanoidLoop,2);
+														SpriteList[iSpriteLoop].RelatedSpriteID=SpriteList[iLemmanoidLoop].SpriteID;
+														SpriteList[iLemmanoidLoop].RelatedSpriteID=SpriteList[iSpriteLoop].SpriteID;
+														SpriteList[iLemmanoidLoop].Direction=DIR_NORTH;
+													}
+													else
+													{
+														//PrintString(SCR_2_PLANE,0,14,2+iSpriteLoop-4,"H");
+														//PrintDecimal(SCR_2_PLANE,0,15,2+iSpriteLoop-4,iLemmanoidLoop,2);
+														SetSprite(SpriteList[iSpriteLoop].SpriteID, SpriteList[iSpriteLoop].BaseTile , 0, 0, 0, PAL_ANGRYINVADER);
+														if(SpriteList[iSpriteLoop].Position.x>SpriteList[iLemmanoidLoop].Position.x)
+															SpriteList[iSpriteLoop].Position.x-=256;
+														else
+															SpriteList[iSpriteLoop].Position.x+=256;
+													}
+													// Fixate on a single Lemmanoid
+													iLemmanoidLoop=MAX_SPRITE;
+												}
 											}
 										}
 									}
 									SpriteList[iSpriteLoop].Position.x=SpriteList[iSpriteLoop].Position.x+QRandom()-QRandom();
 									SpriteList[iSpriteLoop].Position.y+=64;
-									if (SpriteList[iSpriteLoop].Position.y>(u16)(HeightMap[((u8)(SpriteList[iSpriteLoop].Position.x>>SPRITE_SCALE))+4]+4)<<SPRITE_SCALE)
+									// We only need to check for Lemmanoid capture as we approach the ground
+									if (SpriteList[iSpriteLoop].Position.y>(u16)(HeightMap[((u8)(SpriteList[iSpriteLoop].Position.x>>SPRITE_SCALE))+4]-8)<<SPRITE_SCALE)
 									{
-										// We only need to check for Lemmanoid capture at the southern-most point
 										SpriteList[iSpriteLoop].Direction = DIR_NORTH;
-										for(iLemmanoidLoop=0;iLemmanoidLoop<MAX_SPRITE;iLemmanoidLoop++)
-										{
-											if (WrapDistance(SpriteList[iSpriteLoop].Position.x>>SPRITE_SCALE,SpriteList[iLemmanoidLoop].Position.x>>SPRITE_SCALE,SPRITE_MAX_WIDTH)<8)
-											{
-												//Gotcha
-												PrintString(SCR_2_PLANE,0,0,18,"Gotcha!");
-												SpriteList[iSpriteLoop].RelatedSpriteID=SpriteList[iLemmanoidLoop].RelatedSpriteID;
-												SpriteList[iLemmanoidLoop].RelatedSpriteID=SpriteList[iSpriteLoop].RelatedSpriteID;
-												SpriteList[iLemmanoidLoop].Direction=DIR_NORTH;
-												iLemmanoidLoop=MAX_SPRITE;
-											}
-										}
+										SetSprite(SpriteList[iSpriteLoop].SpriteID, SpriteList[iSpriteLoop].BaseTile , 0, 0, 0, PAL_INVADER);
 									}
 									break;
 								case DIR_NORTH:
+									//PrintString(SCR_2_PLANE,0,9,2+iSpriteLoop-4,"N");
 									// Slow down if carrying anything
 									SpriteList[iSpriteLoop].Position.x=SpriteList[iSpriteLoop].Position.x+QRandom()-QRandom();
 									if (SpriteList[iSpriteLoop].RelatedSpriteID == 0)
@@ -1184,6 +1224,7 @@ void DefenderoidsMain()
 							break;
 						case sprLemmanoid:
 							// Lemmanoids lope along the mountain left and right, unless they've been captured
+							//PrintDecimal(SCR_2_PLANE,0,3,9+iSpriteLoop-5,SpriteList[iSpriteLoop].Position.x,5);
 							switch(SpriteList[iSpriteLoop].Direction)
 							{
 							case DIR_WEST:
@@ -1197,7 +1238,7 @@ void DefenderoidsMain()
 								case DIR_NORTH:
 									// Captured, so movement is tied to the capturing alien (RelatedSpriteID)
 									SpriteList[iSpriteLoop].Position.x=SpriteList[SpriteList[iSpriteLoop].RelatedSpriteID].Position.x;
-									SpriteList[iSpriteLoop].Position.y=SpriteList[SpriteList[iSpriteLoop].RelatedSpriteID].Position.y+8<<SPRITE_SCALE;
+									SpriteList[iSpriteLoop].Position.y=SpriteList[SpriteList[iSpriteLoop].RelatedSpriteID].Position.y+(8<<SPRITE_SCALE);
 									break;
 								case DIR_SOUTH:
 									// Floating back to earth
@@ -1242,6 +1283,10 @@ void DefenderoidsMain()
 							SpriteList[iSpriteLoop].Frame++;
 							if (SpriteList[iSpriteLoop].Frame>3) SpriteList[iSpriteLoop].Frame=0;
 							break;
+						case sprMisc+1:
+							//Umbrella - spawn just above the associated Lemmanoid
+							SpriteList[iSpriteLoop].Position.x=SpriteList[SpriteList[iSpriteLoop].RelatedSpriteID].Position.x;
+							SpriteList[iSpriteLoop].Position.y=SpriteList[SpriteList[iSpriteLoop].RelatedSpriteID].Position.y-(8<<SPRITE_SCALE);
 						case sprMisc+2:
 						case sprMisc+3:
 							// Carried Pictcells will move along with their associated Lemmanoid
