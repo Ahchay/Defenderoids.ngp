@@ -459,6 +459,23 @@ void SetSprite(u8 SpriteNo, u16 TileNo, u8 Chain, u8 XPos, u8 YPos, u8 PaletteNo
 }
 
 //////////////////////////////////////////////////////////////////////////////
+// SetSpritePalette
+// Changes the palette for a given sprite
+// Parameters:
+// - SpriteNo
+// - PaletteNo
+// 
+//////////////////////////////////////////////////////////////////////////////
+void SetSpritePalette(u8 SpriteNo, u8 PaletteNo)
+{
+	u8 * theSpriteCol = SPRITE_COLOUR;
+
+	theSpriteCol += SpriteNo;
+	*theSpriteCol = PaletteNo;
+
+}
+
+//////////////////////////////////////////////////////////////////////////////
 // SetSpriteOptions
 // Applies sprite parameters to the 2nd bit
 // Inputs:

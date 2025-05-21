@@ -698,6 +698,7 @@ void DefenderoidsMain()
 	SetPalette(SPRITE_PLANE, (u8)(PAL_LEMMANOID), RGB(0,0,0), RGB(15, 11, 12), RGB(0,0,15), RGB(0,15,0));
 	SetPalette(SPRITE_PLANE, (u8)(PAL_PICTSEL), RGB(0,0,0), RGB(9, 9, 9), RGB(15,0,0), RGB(0,0,15));
 	SetPalette(SPRITE_PLANE, (u8)(PAL_CITY), RGB(0,0,0), RGB(0, 0, 15), RGB(15,0,0), RGB(0,15,0));
+	SetPalette(SPRITE_PLANE, (u8)(PAL_UMBRELLA), RGB(0,0,0), RGB(15, 0, 0), RGB(15,15,15), RGB(10,5,0));
 	// Lemmanoid palettes for debugging if I need to distinguish between individuals
 	// SpriteID:
 	// 	4 = White
@@ -947,32 +948,25 @@ void DefenderoidsMain()
 											iLoopExplosion = 9;
 										}
 									} 
-									SpriteList[iSpriteLoop].SpriteType = sprMisc;
 									if (SpriteList[iSpriteLoop].RelatedSpriteID!=0)
 									{
-										// Drop the Lemmanoid
+										// Drop the Lemmanoid - do we need to check for sprite type?
 										// Invader has a captured Lemmanoid, give 'em an umbrella and let them go
-										for(iUmbrellaLoop=0;iUmbrellaLoop<=MAX_SPRITE;iUmbrellaLoop++)
-										{
-											//Search for the first "empty" sprite
-											if (SpriteList[iUmbrellaLoop].SpriteType==sprMisc)
-											{
-												SpriteList[iUmbrellaLoop]=CreateSprite(0,0,iUmbrellaLoop,sprMisc+1,DIR_SOUTH,0);
-												SpriteList[SpriteList[iSpriteLoop].RelatedSpriteID].RelatedSpriteID=SpriteList[iUmbrellaLoop].SpriteID;
-												SpriteList[iUmbrellaLoop].RelatedSpriteID=SpriteList[SpriteList[iSpriteLoop].RelatedSpriteID].SpriteID;
-												iUmbrellaLoop=MAX_SPRITE+1;
-											}
-										}
-										// Check that an umbrella has actually been created (may have exceeded the 64 sprite limit) and if not set the related sprite ID to 0
-										if (SpriteList[SpriteList[iSpriteLoop].RelatedSpriteID].RelatedSpriteID==SpriteList[iSpriteLoop].SpriteID)
-											SpriteList[SpriteList[iSpriteLoop].RelatedSpriteID].RelatedSpriteID=0;
+										// No need for another loop - we can recycle the invader sprite ID for the umbrella?
+										// Keep the RelatedSpriteID connections active
+										SpriteList[iSpriteLoop].SpriteType=sprMisc+1;
+										SetSpritePalette(SpriteList[iSpriteLoop].SpriteID,PAL_UMBRELLA);
+
+										// Set the Lemmanoid movement direction
 										SpriteList[SpriteList[iSpriteLoop].RelatedSpriteID].Direction=DIR_SOUTH;
-										SpriteList[iSpriteLoop].RelatedSpriteID=0;
 
 									}
-									SetSprite(SpriteList[iSpriteLoop].SpriteID, 0, 0, 0, 0, PAL_SPRITE);
+									else
+									{
+										SpriteList[iSpriteLoop].SpriteType = sprMisc;
+									}
 									Shots[iLoopShot].Scale = 0;
-									iSpriteLoop = lvCurrent.InvaderCount + 1;
+									iSpriteLoop = MAX_SPRITE + 1;
 
 
 								}
@@ -1140,208 +1134,210 @@ void DefenderoidsMain()
 			//////////////////////////////////////////////////////
 			for (iSpriteLoop=0;iSpriteLoop<MAX_SPRITE;iSpriteLoop++)
 			{
-				if (!(SpriteList[iSpriteLoop].SpriteType == sprMisc))
+				switch(SpriteList[iSpriteLoop].SpriteType)
 				{
-					switch(SpriteList[iSpriteLoop].SpriteType)
-					{
-						case sprInvader:
-							// Invaders bob up and down
-							//PrintDecimal(SCR_2_PLANE,0,3,2+iSpriteLoop-4,SpriteList[iSpriteLoop].Position.x,5);
+					case sprInvader:
+						// Invaders bob up and down
+						//PrintDecimal(SCR_2_PLANE,0,3,2+iSpriteLoop-4,SpriteList[iSpriteLoop].Position.x,5);
 
-							// Need to home in on a Lemmanoid if there's one nearby
-							// So, if Y-position is <$foo from the heightmap, and a Lemmanoid is within $bar horizontal units, start adjusting the trajectory towards the Lemmanoid
-							// On capture. Change the Lemmanoid direction to North and switch the related flag to the capturing alien
-							// Aliens with cargo will move half as slowly as normal, and maybe wobble a bit on the way up or something
-							switch(SpriteList[iSpriteLoop].Direction)
-							{
-								case DIR_SOUTH:
-									//PrintString(SCR_2_PLANE,0,9,2+iSpriteLoop-4,"S           ");
-									// Check for any nearby Lemmanoids
-									// Don't check if already carrying a hostage
-									if (SpriteList[iSpriteLoop].Position.y>(u16)(HeightMap[((u8)(SpriteList[iSpriteLoop].Position.x>>SPRITE_SCALE))+4]-32)<<SPRITE_SCALE&&SpriteList[iSpriteLoop].RelatedSpriteID==0)
+						// Need to home in on a Lemmanoid if there's one nearby
+						// So, if Y-position is <$foo from the heightmap, and a Lemmanoid is within $bar horizontal units, start adjusting the trajectory towards the Lemmanoid
+						// On capture. Change the Lemmanoid direction to North and switch the related flag to the capturing alien
+						// Aliens with cargo will move half as slowly as normal, and maybe wobble a bit on the way up or something
+						switch(SpriteList[iSpriteLoop].Direction)
+						{
+							case DIR_SOUTH:
+								//PrintString(SCR_2_PLANE,0,9,2+iSpriteLoop-4,"S           ");
+								// Check for any nearby Lemmanoids
+								// Don't check if already carrying a hostage
+								if (SpriteList[iSpriteLoop].Position.y>(u16)(HeightMap[((u8)(SpriteList[iSpriteLoop].Position.x>>SPRITE_SCALE))+4]-32)<<SPRITE_SCALE&&SpriteList[iSpriteLoop].RelatedSpriteID==0)
+								{
+									for(iLemmanoidLoop=0;iLemmanoidLoop<MAX_SPRITE;iLemmanoidLoop++)
 									{
-										for(iLemmanoidLoop=0;iLemmanoidLoop<MAX_SPRITE;iLemmanoidLoop++)
+										// Leave any Lemmanoid alone if it is already captured (or, as it currently stands, is holding anything - might put that into the plot "The mystical power of the Pictcells can temporarily protect the Lemmanoids")
+										if(SpriteList[iLemmanoidLoop].SpriteType==sprLemmanoid&&SpriteList[iLemmanoidLoop].RelatedSpriteID==0)
 										{
-											// Leave any Lemmanoid alone if it is already captured (or, as it currently stands, is holding anything - might put that into the plot "The mystical power of the Pictcells can temporarily protect the Lemmanoids")
-											if(SpriteList[iLemmanoidLoop].SpriteType==sprLemmanoid&&SpriteList[iLemmanoidLoop].RelatedSpriteID==0)
+											//PrintDecimal(SCR_2_PLANE,0,10,3+iSpriteLoop-4,SpriteList[iLemmanoidLoop].Position.x,5);
+											//PrintDecimal(SCR_2_PLANE,0,10,2+iSpriteLoop-4,WrapDistance(SpriteList[iSpriteLoop].Position.x,SpriteList[iLemmanoidLoop].Position.x,65535),5);
+											if (WrapDistance(SpriteList[iSpriteLoop].Position.x>>SPRITE_SCALE,SpriteList[iLemmanoidLoop].Position.x>>SPRITE_SCALE,SPRITE_MAX_WIDTH)<64)
 											{
-												//PrintDecimal(SCR_2_PLANE,0,10,3+iSpriteLoop-4,SpriteList[iLemmanoidLoop].Position.x,5);
-												//PrintDecimal(SCR_2_PLANE,0,10,2+iSpriteLoop-4,WrapDistance(SpriteList[iSpriteLoop].Position.x,SpriteList[iLemmanoidLoop].Position.x,65535),5);
-												if (WrapDistance(SpriteList[iSpriteLoop].Position.x>>SPRITE_SCALE,SpriteList[iLemmanoidLoop].Position.x>>SPRITE_SCALE,SPRITE_MAX_WIDTH)<64)
+											
+												if (SpriteList[iSpriteLoop].Position.y>(u16)(HeightMap[((u8)(SpriteList[iSpriteLoop].Position.x>>SPRITE_SCALE))+4]-16)<<SPRITE_SCALE)
 												{
-												
-													if (SpriteList[iSpriteLoop].Position.y>(u16)(HeightMap[((u8)(SpriteList[iSpriteLoop].Position.x>>SPRITE_SCALE))+4]-16)<<SPRITE_SCALE)
-													{
-														//Gotcha
-														//PrintString(SCR_2_PLANE,0,11,2+iSpriteLoop-4,"C");
-														//PrintDecimal(SCR_2_PLANE,0,12,2+iSpriteLoop-4,iLemmanoidLoop,2);
-														SpriteList[iSpriteLoop].RelatedSpriteID=SpriteList[iLemmanoidLoop].SpriteID;
-														SpriteList[iLemmanoidLoop].RelatedSpriteID=SpriteList[iSpriteLoop].SpriteID;
-														SpriteList[iLemmanoidLoop].Direction=DIR_NORTH;
-													}
-													else
-													{
-														//PrintString(SCR_2_PLANE,0,14,2+iSpriteLoop-4,"H");
-														//PrintDecimal(SCR_2_PLANE,0,15,2+iSpriteLoop-4,iLemmanoidLoop,2);
-														SetSprite(SpriteList[iSpriteLoop].SpriteID, SpriteList[iSpriteLoop].BaseTile , 0, 0, 0, PAL_ANGRYINVADER);
-														if(SpriteList[iSpriteLoop].Position.x>SpriteList[iLemmanoidLoop].Position.x)
-															SpriteList[iSpriteLoop].Position.x-=256;
-														else
-															SpriteList[iSpriteLoop].Position.x+=256;
-													}
-													// Fixate on a single Lemmanoid
-													iLemmanoidLoop=MAX_SPRITE;
+													//Gotcha
+													//PrintString(SCR_2_PLANE,0,11,2+iSpriteLoop-4,"C");
+													//PrintDecimal(SCR_2_PLANE,0,12,2+iSpriteLoop-4,iLemmanoidLoop,2);
+													SpriteList[iSpriteLoop].RelatedSpriteID=SpriteList[iLemmanoidLoop].SpriteID;
+													SpriteList[iLemmanoidLoop].RelatedSpriteID=SpriteList[iSpriteLoop].SpriteID;
+													SpriteList[iLemmanoidLoop].Direction=DIR_NORTH;
 												}
+												else
+												{
+													//PrintString(SCR_2_PLANE,0,14,2+iSpriteLoop-4,"H");
+													//PrintDecimal(SCR_2_PLANE,0,15,2+iSpriteLoop-4,iLemmanoidLoop,2);
+													SetSprite(SpriteList[iSpriteLoop].SpriteID, SpriteList[iSpriteLoop].BaseTile , 0, 0, 0, PAL_ANGRYINVADER);
+													if(SpriteList[iSpriteLoop].Position.x>SpriteList[iLemmanoidLoop].Position.x)
+														SpriteList[iSpriteLoop].Position.x-=256;
+													else
+														SpriteList[iSpriteLoop].Position.x+=256;
+												}
+												// Fixate on a single Lemmanoid
+												iLemmanoidLoop=MAX_SPRITE;
 											}
 										}
 									}
-									SpriteList[iSpriteLoop].Position.x=SpriteList[iSpriteLoop].Position.x+QRandom()-QRandom();
-									SpriteList[iSpriteLoop].Position.y+=64;
-									// We only need to check for Lemmanoid capture as we approach the ground
-									if (SpriteList[iSpriteLoop].Position.y>(u16)(HeightMap[((u8)(SpriteList[iSpriteLoop].Position.x>>SPRITE_SCALE))+4]-8)<<SPRITE_SCALE)
-									{
-										SpriteList[iSpriteLoop].Direction = DIR_NORTH;
-										SetSprite(SpriteList[iSpriteLoop].SpriteID, SpriteList[iSpriteLoop].BaseTile , 0, 0, 0, PAL_INVADER);
-									}
-									break;
-								case DIR_NORTH:
-									//PrintString(SCR_2_PLANE,0,9,2+iSpriteLoop-4,"N");
-									// Slow down if carrying anything
-									SpriteList[iSpriteLoop].Position.x=SpriteList[iSpriteLoop].Position.x+QRandom()-QRandom();
-									if (SpriteList[iSpriteLoop].RelatedSpriteID == 0)
-										SpriteList[iSpriteLoop].Position.y-=64;
-									else
-										SpriteList[iSpriteLoop].Position.y-=32;
-
-									if (SpriteList[iSpriteLoop].Position.y>(u16)(HeightMap[((u8)(SpriteList[iSpriteLoop].Position.x>>SPRITE_SCALE))+4]+4)<<SPRITE_SCALE)
-									{
-										SpriteList[iSpriteLoop].Direction = DIR_SOUTH;
-									}
-									break;
-							}
-							SpriteList[iSpriteLoop].Frame++;
-							if (SpriteList[iSpriteLoop].Frame>3) SpriteList[iSpriteLoop].Frame=0;
-							break;
-						case sprLemmanoid:
-							// Lemmanoids lope along the mountain left and right, unless they've been captured
-							//PrintDecimal(SCR_2_PLANE,0,3,9+iSpriteLoop-5,SpriteList[iSpriteLoop].Position.x,5);
-							switch(SpriteList[iSpriteLoop].Direction)
-							{
-							case DIR_WEST:
-									SpriteList[iSpriteLoop].Position.x-=128;
-									SpriteList[iSpriteLoop].Position.y = (u16)(HeightMap[((u8)(SpriteList[iSpriteLoop].Position.x>>SPRITE_SCALE))+4]-4)<<SPRITE_SCALE;
-									break;
-								case DIR_EAST:
-									SpriteList[iSpriteLoop].Position.x+=128;
-									SpriteList[iSpriteLoop].Position.y = (u16)(HeightMap[((u8)(SpriteList[iSpriteLoop].Position.x>>SPRITE_SCALE))+4]-4)<<SPRITE_SCALE;
-									break;
-								case DIR_NORTH:
-									// Captured, so movement is tied to the capturing alien (RelatedSpriteID)
-									SpriteList[iSpriteLoop].Position.x=SpriteList[SpriteList[iSpriteLoop].RelatedSpriteID].Position.x;
-									SpriteList[iSpriteLoop].Position.y=SpriteList[SpriteList[iSpriteLoop].RelatedSpriteID].Position.y+(8<<SPRITE_SCALE);
-									break;
-								case DIR_SOUTH:
-									// Floating back to earth
-									// Give 'em a little wobble
-									SpriteList[iSpriteLoop].Position.x=SpriteList[iSpriteLoop].Position.x+QRandom()-QRandom();
-									SpriteList[iSpriteLoop].Position.y+=32;
-									if (SpriteList[iSpriteLoop].Position.y>(u16)(HeightMap[((u8)(SpriteList[iSpriteLoop].Position.x>>SPRITE_SCALE))+4]+4)<<SPRITE_SCALE){
-										// Resume walking
-										if (QRandom()<128)
-											SpriteList[iSpriteLoop].Direction = DIR_EAST;
-										else
-											SpriteList[iSpriteLoop].Direction = DIR_WEST;
-									}
-									break;
-								default:
-									break;
-							}
-							// Pickup Pictcell?
-							// Iterate through the sprite list again? Any way to avoid that?
-							// Pickup Pictcell when pictcell.Direction==0 && pictcell.Position.x=Lemmanoid.Position.x (don't need to check for y)
-							// Need to also make sure that each Lemmanoid *only* picks up one Pictcell
-							if (SpriteList[iSpriteLoop].RelatedSpriteID==0)
-							{
-								for(iPictcellLoop=0;iPictcellLoop<MAX_SPRITE;iPictcellLoop++)
-								{
-									// Never actually get picked up?
-									if (SpriteList[iPictcellLoop].SpriteType==sprPictcell && SpriteList[iPictcellLoop].Direction==0 && WrapDistance(SpriteList[iPictcellLoop].Position.x,SpriteList[iSpriteLoop].Position.x,SPRITE_MAX_WIDTH)<1024 && SpriteList[iPictcellLoop].RelatedSpriteID==0)
-									{
-										// Bingo. Attach this sprite to the Lemmanoid and change the type to the left/right carrying Hod
-										// Use MasterSpriteID to chain it to another Sprite
-										SpriteList[iPictcellLoop].Direction=SpriteList[iSpriteLoop].Direction;
-										SpriteList[iPictcellLoop].RelatedSpriteID=SpriteList[iSpriteLoop].SpriteID;
-										SpriteList[iSpriteLoop].RelatedSpriteID=SpriteList[iPictcellLoop].SpriteID;
-										if(SpriteList[iSpriteLoop].Direction==DIR_EAST)
-											SpriteList[iPictcellLoop].SpriteType=sprMisc+3;
-										else
-											SpriteList[iPictcellLoop].SpriteType=sprMisc+2;
-										iPictcellLoop=MAX_SPRITE;
-									}
 								}
-							}
-							SpriteList[iSpriteLoop].Frame++;
-							if (SpriteList[iSpriteLoop].Frame>3) SpriteList[iSpriteLoop].Frame=0;
-							break;
-						case sprMisc+1:
-							//Umbrella - spawn just above the associated Lemmanoid
-							SpriteList[iSpriteLoop].Position.x=SpriteList[SpriteList[iSpriteLoop].RelatedSpriteID].Position.x;
-							SpriteList[iSpriteLoop].Position.y=SpriteList[SpriteList[iSpriteLoop].RelatedSpriteID].Position.y-(8<<SPRITE_SCALE);
-						case sprMisc+2:
-						case sprMisc+3:
-							// Carried Pictcells will move along with their associated Lemmanoid
-							// Check for being near a city, add to the city and remove the link to the Lemmanoid
-							if (SpriteList[iSpriteLoop].Position.x>MIN_CITY&&SpriteList[iSpriteLoop].Position.x<MAX_CITY)
-							{
-								// Clear from Lemmanoid
-								SpriteList[SpriteList[iSpriteLoop].RelatedSpriteID].RelatedSpriteID=0;
-								// Destroy pictcell
-								SpriteList[iSpriteLoop].SpriteType=sprMisc;
-								SpriteList[iSpriteLoop].RelatedSpriteID=0;
-								// Add to city
-								// Find "first" city block with minimum age (frame)
-								// Start at city block 5 - so we don't keep adding once the city is complete
-								iCityBlock=4;
-								iMinAge=CITYAGE4;
-								for(iCityLoop=0;iCityLoop<4;iCityLoop++)
-								{
-									if(SpriteList[iCityLoop].Frame<iMinAge)
-									{
-										iMinAge=SpriteList[iCityLoop].Frame;
-										iCityBlock=iCityLoop;
-									}
-								}
-								if (iCityBlock<4)
-								{
-									SpriteList[iCityBlock].Frame+=4;
-									PrintDecimal(SCR_2_PLANE,0,iCityBlock<<2,18,SpriteList[iCityBlock].Frame,3);
-								}
-							}
-							
-							SpriteList[iSpriteLoop].Position.x=SpriteList[SpriteList[iSpriteLoop].RelatedSpriteID].Position.x;
-							SpriteList[iSpriteLoop].Position.y=SpriteList[SpriteList[iSpriteLoop].RelatedSpriteID].Position.y-256;
-
-							break;
-						case sprPictcell:
-							// Pictcells will float to the ground level and then wait to be picked up
-							if (SpriteList[iSpriteLoop].Direction== DIR_SOUTH)
-							{
+								SpriteList[iSpriteLoop].Position.x=SpriteList[iSpriteLoop].Position.x+QRandom()-QRandom();
 								SpriteList[iSpriteLoop].Position.y+=64;
-								if (SpriteList[iSpriteLoop].Position.y>((u16)(HeightMap[((u8)(SpriteList[iSpriteLoop].Position.x>>SPRITE_SCALE))+4]+4)<<SPRITE_SCALE)-1024)
+								// We only need to check for Lemmanoid capture as we approach the ground
+								if (SpriteList[iSpriteLoop].Position.y>(u16)(HeightMap[((u8)(SpriteList[iSpriteLoop].Position.x>>SPRITE_SCALE))+4]-8)<<SPRITE_SCALE)
 								{
-									SpriteList[iSpriteLoop].Direction = 0;
-									SpriteList[iSpriteLoop].RelatedSpriteID = 0;
+									SpriteList[iSpriteLoop].Direction = DIR_NORTH;
+									SetSprite(SpriteList[iSpriteLoop].SpriteID, SpriteList[iSpriteLoop].BaseTile , 0, 0, 0, PAL_INVADER);
+								}
+								break;
+							case DIR_NORTH:
+								//PrintString(SCR_2_PLANE,0,9,2+iSpriteLoop-4,"N");
+								// Slow down if carrying anything
+								SpriteList[iSpriteLoop].Position.x=SpriteList[iSpriteLoop].Position.x+QRandom()-QRandom();
+								if (SpriteList[iSpriteLoop].RelatedSpriteID == 0)
+									SpriteList[iSpriteLoop].Position.y-=64;
+								else
+									SpriteList[iSpriteLoop].Position.y-=32;
+
+								if (SpriteList[iSpriteLoop].Position.y>(u16)(HeightMap[((u8)(SpriteList[iSpriteLoop].Position.x>>SPRITE_SCALE))+4]+4)<<SPRITE_SCALE)
+								{
+									SpriteList[iSpriteLoop].Direction = DIR_SOUTH;
+								}
+								break;
+						}
+						SpriteList[iSpriteLoop].Frame++;
+						if (SpriteList[iSpriteLoop].Frame>3) SpriteList[iSpriteLoop].Frame=0;
+						break;
+					case sprLemmanoid:
+						// Lemmanoids lope along the mountain left and right, unless they've been captured
+						//PrintDecimal(SCR_2_PLANE,0,3,9+iSpriteLoop-5,SpriteList[iSpriteLoop].Position.x,5);
+						switch(SpriteList[iSpriteLoop].Direction)
+						{
+						case DIR_WEST:
+								SpriteList[iSpriteLoop].Position.x-=128;
+								SpriteList[iSpriteLoop].Position.y = (u16)(HeightMap[((u8)(SpriteList[iSpriteLoop].Position.x>>SPRITE_SCALE))+4]-4)<<SPRITE_SCALE;
+								break;
+							case DIR_EAST:
+								SpriteList[iSpriteLoop].Position.x+=128;
+								SpriteList[iSpriteLoop].Position.y = (u16)(HeightMap[((u8)(SpriteList[iSpriteLoop].Position.x>>SPRITE_SCALE))+4]-4)<<SPRITE_SCALE;
+								break;
+							case DIR_NORTH:
+								// Captured, so movement is tied to the capturing alien (RelatedSpriteID)
+								SpriteList[iSpriteLoop].Position.x=SpriteList[SpriteList[iSpriteLoop].RelatedSpriteID].Position.x;
+								SpriteList[iSpriteLoop].Position.y=SpriteList[SpriteList[iSpriteLoop].RelatedSpriteID].Position.y+(8<<SPRITE_SCALE);
+								break;
+							case DIR_SOUTH:
+								// Floating back to earth
+								// Give 'em a little wobble
+								SpriteList[iSpriteLoop].Position.x=SpriteList[iSpriteLoop].Position.x+QRandom()-QRandom();
+								SpriteList[iSpriteLoop].Position.y+=32;
+								if (SpriteList[iSpriteLoop].Position.y>(u16)(HeightMap[((u8)(SpriteList[iSpriteLoop].Position.x>>SPRITE_SCALE))+4]+4)<<SPRITE_SCALE){
+									// Drop the umbrella
+									SpriteList[SpriteList[iSpriteLoop].RelatedSpriteID].SpriteType=sprMisc;
+									SpriteList[SpriteList[iSpriteLoop].RelatedSpriteID].RelatedSpriteID=0;
+									SpriteList[iSpriteLoop].RelatedSpriteID=0;
+									// Resume walking
+									if (QRandom()<128)
+										SpriteList[iSpriteLoop].Direction = DIR_EAST;
+									else
+										SpriteList[iSpriteLoop].Direction = DIR_WEST;
+								}
+								break;
+							default:
+								break;
+						}
+						// Pickup Pictcell?
+						// Iterate through the sprite list again? Any way to avoid that?
+						// Pickup Pictcell when pictcell.Direction==0 && pictcell.Position.x=Lemmanoid.Position.x (don't need to check for y)
+						// Need to also make sure that each Lemmanoid *only* picks up one Pictcell
+						if (SpriteList[iSpriteLoop].RelatedSpriteID==0)
+						{
+							for(iPictcellLoop=0;iPictcellLoop<MAX_SPRITE;iPictcellLoop++)
+							{
+								// Never actually get picked up?
+								if (SpriteList[iPictcellLoop].SpriteType==sprPictcell && SpriteList[iPictcellLoop].Direction==0 && WrapDistance(SpriteList[iPictcellLoop].Position.x,SpriteList[iSpriteLoop].Position.x,SPRITE_MAX_WIDTH)<1024 && SpriteList[iPictcellLoop].RelatedSpriteID==0)
+								{
+									// Bingo. Attach this sprite to the Lemmanoid and change the type to the left/right carrying Hod
+									// Use MasterSpriteID to chain it to another Sprite
+									SpriteList[iPictcellLoop].Direction=SpriteList[iSpriteLoop].Direction;
+									SpriteList[iPictcellLoop].RelatedSpriteID=SpriteList[iSpriteLoop].SpriteID;
+									SpriteList[iSpriteLoop].RelatedSpriteID=SpriteList[iPictcellLoop].SpriteID;
+									if(SpriteList[iSpriteLoop].Direction==DIR_EAST)
+										SpriteList[iPictcellLoop].SpriteType=sprMisc+3;
+									else
+										SpriteList[iPictcellLoop].SpriteType=sprMisc+2;
+									iPictcellLoop=MAX_SPRITE;
 								}
 							}
-							SpriteList[iSpriteLoop].Frame++;
-							if (SpriteList[iSpriteLoop].Frame>3) SpriteList[iSpriteLoop].Frame=0;
-							break;
-						default:
-							break;
-					}
+						}
+						SpriteList[iSpriteLoop].Frame++;
+						if (SpriteList[iSpriteLoop].Frame>3) SpriteList[iSpriteLoop].Frame=0;
+						break;
+					case sprMisc+1:
+						//Umbrella - spawn just above the associated Lemmanoid
+						SpriteList[iSpriteLoop].Position.x=SpriteList[SpriteList[iSpriteLoop].RelatedSpriteID].Position.x;
+						SpriteList[iSpriteLoop].Position.y=SpriteList[SpriteList[iSpriteLoop].RelatedSpriteID].Position.y-(786);
+						break;
+					case sprMisc+2:
+					case sprMisc+3:
+						// Carried Pictcells will move along with their associated Lemmanoid
+						// Check for being near a city, add to the city and remove the link to the Lemmanoid
+						if (SpriteList[iSpriteLoop].Position.x>MIN_CITY&&SpriteList[iSpriteLoop].Position.x<MAX_CITY)
+						{
+							// Clear from Lemmanoid
+							SpriteList[SpriteList[iSpriteLoop].RelatedSpriteID].RelatedSpriteID=0;
+							// Destroy pictcell
+							SpriteList[iSpriteLoop].SpriteType=sprMisc;
+							SpriteList[iSpriteLoop].RelatedSpriteID=0;
+							// Add to city
+							// Find "first" city block with minimum age (frame)
+							// Start at city block 5 - so we don't keep adding once the city is complete
+							iCityBlock=4;
+							iMinAge=CITYAGE4;
+							for(iCityLoop=0;iCityLoop<4;iCityLoop++)
+							{
+								if(SpriteList[iCityLoop].Frame<iMinAge)
+								{
+									iMinAge=SpriteList[iCityLoop].Frame;
+									iCityBlock=iCityLoop;
+								}
+							}
+							if (iCityBlock<4)
+							{
+								SpriteList[iCityBlock].Frame+=4;
+								PrintDecimal(SCR_2_PLANE,0,iCityBlock<<2,18,SpriteList[iCityBlock].Frame,3);
+							}
+						}
+						
+						SpriteList[iSpriteLoop].Position.x=SpriteList[SpriteList[iSpriteLoop].RelatedSpriteID].Position.x;
+						SpriteList[iSpriteLoop].Position.y=SpriteList[SpriteList[iSpriteLoop].RelatedSpriteID].Position.y-256;
 
-					DrawSprite(SpriteList[iSpriteLoop],iHorizontalOffset);
+						break;
+					case sprPictcell:
+						// Pictcells will float to the ground level and then wait to be picked up
+						if (SpriteList[iSpriteLoop].Direction== DIR_SOUTH)
+						{
+							SpriteList[iSpriteLoop].Position.y+=64;
+							if (SpriteList[iSpriteLoop].Position.y>((u16)(HeightMap[((u8)(SpriteList[iSpriteLoop].Position.x>>SPRITE_SCALE))+4]+4)<<SPRITE_SCALE)-1024)
+							{
+								SpriteList[iSpriteLoop].Direction = 0;
+								SpriteList[iSpriteLoop].RelatedSpriteID = 0;
+							}
+						}
+						SpriteList[iSpriteLoop].Frame++;
+						if (SpriteList[iSpriteLoop].Frame>3) SpriteList[iSpriteLoop].Frame=0;
+						break;
+					default:
+						break;
 				}
+
+				DrawSprite(SpriteList[iSpriteLoop],iHorizontalOffset);
 			}
 
 			//////////////////////////////////////////////////////

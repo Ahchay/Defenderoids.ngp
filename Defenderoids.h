@@ -14,6 +14,7 @@
 #define PAL_CITY 3
 #define PAL_PICTSEL 4
 #define PAL_ANGRYINVADER 5
+#define PAL_UMBRELLA 6
 
 //Global consts
 const u8 SPRITE_SCALE=7;
