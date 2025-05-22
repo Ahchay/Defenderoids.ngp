@@ -53,9 +53,10 @@ typedef struct Sprite
 
 // Direction constants
 #define DIR_EAST 0
-#define DIR_WEST 3
-#define DIR_SOUTH 7
-#define DIR_NORTH 11
+#define DIR_WEST 4
+#define DIR_SOUTH 8
+#define DIR_NORTH 12
+#define DIR_HOME 16
 
 // City block IDs (left-right)
 #define CITYBLOCK1 0
@@ -66,6 +67,7 @@ typedef struct Sprite
 #define CITYAGE2 4
 #define CITYAGE3 8
 #define CITYAGE4 12
+#define CITY_COMPLETE 12
 
 // 
 
@@ -78,6 +80,7 @@ typedef struct Level
 	u8 InvaderCount;
 	u8 LemmanoidCount;
 	u8 AsteroidCount;
+	u8 CityStatus;
 } LEVEL;
 
 // Function templates

@@ -21,23 +21,39 @@
  *  Asteroid split into smaller - Done
  *  Asteroid drop pictcell - Done
  * 	Rejig Asteroid creation to get more variety - Done
- *  Asteroids can sometimes get weird shapes (flat lines, points etc)
+ *  Asteroids can sometimes get weird shapes (flat lines, points, boxes etc)
+ *  Asteroids sometimes don't move/rotate after splitting
+ *   Use the shot movement vector as a base for new asteroids vectors
  * Add city - Done
  * Collect resources
  * 	Pictcell base movement - Done
  * 	Lemmanoids pickup - Done
- * 	Ship pickup
  * 	Add to city - Done
+ * Lemmanoids
+ * 	Umbrellas - Done
+ *  Go home
+ *   Check home condition - Done
+ *   Destroy Lemmanoid sprite - Done
+ *   Animation - Done
+ *  Change to mutant
  * Aliens
  *  Different enemy types
- * 	Capture Lemmanoids
+ *   Bomber (attack the city)
+ *   Rammer (attack the player)
+ * 	Capture Lemmanoids - Done
+ *  Release Lemmanoids - Done
  *  Spawn on a timer
  * Ship collisions
+ * 	Asteroids
+ *  Invaders
+ * 	Pictcells
  * Shot collisions
  *  Proximity collision - Done
  *  Fine tune collision
  * Level success/failure modes
- * Bring the Qix back?
+ * 	Success: City built, Lemmanoids rescued
+ *  Failure: Lemmanoids destroyed/captured (Qix space level)
+ *  Game Over: Energy gauge goes to zero
  * 
  ************************************************/
 
@@ -688,7 +704,7 @@ void DefenderoidsMain()
 
 	VECTOROBJECT Explosions[8];
 
-	SPRITE SpriteList[MAX_SPRITE+1];
+	SPRITE SpriteList[MAX_SPRITE];
 
 	VECTOROBJECT PlayerOne;
 
@@ -760,11 +776,12 @@ void DefenderoidsMain()
 
 		lvCurrent=DefenderoidsLevels[iCurrentLevel];
 
-		// City (create as sprites 0-3 so I can find them easier later)
-		SpriteList[0] = CreateSprite(16<<SPRITE_SCALE,92<<SPRITE_SCALE,0,sprCity,CITYBLOCK2,0);
-		SpriteList[1] = CreateSprite(24<<SPRITE_SCALE,92<<SPRITE_SCALE,1,sprCity,CITYBLOCK3,0);
-		SpriteList[2] = CreateSprite(8<<SPRITE_SCALE,92<<SPRITE_SCALE,2,sprCity,CITYBLOCK1,0);
-		SpriteList[3] = CreateSprite(32<<SPRITE_SCALE,92<<SPRITE_SCALE,3,sprCity,CITYBLOCK4,0);
+		// City (need to create at end of sprite list so they end up at back of priority queue)
+		SpriteList[0] = CreateSprite(16<<SPRITE_SCALE,92<<SPRITE_SCALE,60,sprCity,CITYBLOCK2,0);
+		SpriteList[1] = CreateSprite(24<<SPRITE_SCALE,92<<SPRITE_SCALE,61,sprCity,CITYBLOCK3,0);
+		SpriteList[2] = CreateSprite(8<<SPRITE_SCALE,92<<SPRITE_SCALE,62,sprCity,CITYBLOCK1,0);
+		SpriteList[3] = CreateSprite(32<<SPRITE_SCALE,92<<SPRITE_SCALE,63,sprCity,CITYBLOCK4,0);
+
 
 		// Invaders
 		for (iSpriteLoop=4;iSpriteLoop<lvCurrent.InvaderCount+4;iSpriteLoop++)
@@ -1222,13 +1239,26 @@ void DefenderoidsMain()
 						//PrintDecimal(SCR_2_PLANE,0,3,9+iSpriteLoop-5,SpriteList[iSpriteLoop].Position.x,5);
 						switch(SpriteList[iSpriteLoop].Direction)
 						{
-						case DIR_WEST:
-								SpriteList[iSpriteLoop].Position.x-=128;
-								SpriteList[iSpriteLoop].Position.y = (u16)(HeightMap[((u8)(SpriteList[iSpriteLoop].Position.x>>SPRITE_SCALE))+4]-4)<<SPRITE_SCALE;
-								break;
+							case DIR_WEST:
 							case DIR_EAST:
-								SpriteList[iSpriteLoop].Position.x+=128;
+								if (SpriteList[iSpriteLoop].Direction==DIR_WEST)
+									{SpriteList[iSpriteLoop].Position.x-=128;}
+								else
+									{SpriteList[iSpriteLoop].Position.x+=128;}
 								SpriteList[iSpriteLoop].Position.y = (u16)(HeightMap[((u8)(SpriteList[iSpriteLoop].Position.x>>SPRITE_SCALE))+4]-4)<<SPRITE_SCALE;
+								// Check for go home condition
+								if (SpriteList[iSpriteLoop].Position.x>MIN_CITY&&SpriteList[iSpriteLoop].Position.x<MAX_CITY&&lvCurrent.CityStatus==CITY_COMPLETE)
+								{
+									//Yippee!
+									// Drop anything that the Lemmanoid is carrying
+									if (SpriteList[iSpriteLoop].RelatedSpriteID!=0)
+									{
+										SpriteList[SpriteList[iSpriteLoop].RelatedSpriteID].SpriteType=sprMisc;
+										SpriteList[SpriteList[iSpriteLoop].RelatedSpriteID].RelatedSpriteID=0;
+										SpriteList[iSpriteLoop].RelatedSpriteID=0;
+									}
+									SpriteList[iSpriteLoop].Direction=DIR_HOME;
+								}
 								break;
 							case DIR_NORTH:
 								// Captured, so movement is tied to the capturing alien (RelatedSpriteID)
@@ -1252,6 +1282,12 @@ void DefenderoidsMain()
 										SpriteList[iSpriteLoop].Direction = DIR_WEST;
 								}
 								break;
+							case DIR_HOME:
+								// Check the frame and destroy the sprite after the animation has completed
+								if (SpriteList[iSpriteLoop].Frame==3) 
+								{
+									SpriteList[iSpriteLoop].SpriteType=sprMisc;if (SpriteList[iSpriteLoop].Frame>3) SpriteList[iSpriteLoop].Frame=0;
+								}
 							default:
 								break;
 						}
@@ -1284,7 +1320,7 @@ void DefenderoidsMain()
 						break;
 					case sprMisc+1:
 						//Umbrella - spawn just above the associated Lemmanoid
-						SpriteList[iSpriteLoop].Position.x=SpriteList[SpriteList[iSpriteLoop].RelatedSpriteID].Position.x;
+						SpriteList[iSpriteLoop].Position.x=SpriteList[SpriteList[iSpriteLoop].RelatedSpriteID].Position.x-378;
 						SpriteList[iSpriteLoop].Position.y=SpriteList[SpriteList[iSpriteLoop].RelatedSpriteID].Position.y-(786);
 						break;
 					case sprMisc+2:
@@ -1300,7 +1336,7 @@ void DefenderoidsMain()
 							SpriteList[iSpriteLoop].RelatedSpriteID=0;
 							// Add to city
 							// Find "first" city block with minimum age (frame)
-							// Start at city block 5 - so we don't keep adding once the city is complete
+							// Start at city age 5/block 4 - so we don't keep adding once the city is complete
 							iCityBlock=4;
 							iMinAge=CITYAGE4;
 							for(iCityLoop=0;iCityLoop<4;iCityLoop++)
@@ -1314,7 +1350,10 @@ void DefenderoidsMain()
 							if (iCityBlock<4)
 							{
 								SpriteList[iCityBlock].Frame+=4;
+								lvCurrent.CityStatus++;
+								PrintDecimal(SCR_2_PLANE,0,0,17,lvCurrent.CityStatus,3);
 							}
+							// else - City complete
 						}
 						else
 						{
