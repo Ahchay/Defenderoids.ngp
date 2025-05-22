@@ -48,6 +48,7 @@ typedef struct Sprite
 	u16 Frame;
 	u16 Direction;
 	u8 RelatedSpriteID;
+	bool Initiated;
 } SPRITE;
 
 // Direction constants

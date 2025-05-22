@@ -131,6 +131,7 @@ SPRITE CreateSprite(u16 x, u16 y, u8 ID, u8 Type, u8 Direction, u8 Frame)
 	sprReturn.BaseTile = spTileBase + ID;
 	sprReturn.Frame = Frame;
 	sprReturn.RelatedSpriteID = 0;
+	sprReturn.Initiated = 1;
 
 	// map the sprites to their selected Palette
 	switch (sprReturn.SpriteType)
@@ -171,63 +172,65 @@ DrawSprite(SPRITE sprSprite, u16 iHorizontalOffset)
 	u16 iRelativeX;
 	u8 iRelativeY;
 
-	///////////////////////////////////////////////////////////
-	// Even though the sprite plane is a (u8) (256 pixels)
-	// we still need to calculate the relative position as (u16)
-	// as the game world is 512 pixels.
-	///////////////////////////////////////////////////////////
-	iRelativeX = (sprSprite.Position.x>>SPRITE_SCALE);
+	if(sprSprite.Initiated==1)
+	{
 
-	if (iRelativeX>=iHorizontalOffset) {
-		iRelativeX=iRelativeX-iHorizontalOffset;
-	} else {
-		iRelativeX=SPRITE_MAX_WIDTH-iHorizontalOffset+iRelativeX;
-	}
-	iRelativeY = (u8)(sprSprite.Position.y>>SPRITE_SCALE)+8;
+		///////////////////////////////////////////////////////////
+		// Even though the sprite plane is a (u8) (256 pixels)
+		// we still need to calculate the relative position as (u16)
+		// as the game world is 512 pixels.
+		///////////////////////////////////////////////////////////
+		iRelativeX = (sprSprite.Position.x>>SPRITE_SCALE);
 
-	if(iRelativeX>144||iRelativeY>112||iRelativeX<8||iRelativeY<8) {
-		//Replace tile with the empty sprite if it's outside the visible area
-		CopyAnimationFrame(Sprites, sprSprite.BaseTile, 1, sprMisc);
-	}
-	else {
-		//Sprite Tile selection will differ depending on SpriteType
-		//Sprite Misc -- sprMisc + type (Empty, Umbrella, Builders Hat, Hod, etc)
-		//Invader -- sprInvader + 4 frames
-		//Lemmanoid -- sprLemmanoid + Direction + 4 frames
-		//Spacie -- sprSpacie + Type + 4 frames
-		//Pictcell -- sprPictCell + 4 frames
-		//City -- sprCity + blockid + age
-		//Default -- No animation
-		switch (sprSprite.SpriteType)
-		{
-			case sprInvader:
-				CopyAnimationFrame(Sprites, sprSprite.BaseTile, 1, (sprSprite.SpriteType) + sprSprite.Frame);
-				break;
-			case sprPictcell:
-				CopyAnimationFrame(Sprites, sprSprite.BaseTile, 1, (sprSprite.SpriteType) + sprSprite.Frame);
-				break;
-			case sprLemmanoid:
-				// Flipped sprites behave weirdly - are their x/y positions also flipped?
-				//if(sprSprite.Direction==DIR_WEST) {
-				//	FlipSprite(sprSprite.SpriteID,1,0);
-				//}
-				CopyAnimationFrame(Sprites, sprSprite.BaseTile, 1, (sprSprite.SpriteType) + (sprSprite.Direction) + sprSprite.Frame);
-				break;
-			case sprCity:
-				// Use Direction as BlockID (0-3)
-				// Use Frame as age (0,4,18,12)
-				CopyAnimationFrame(Sprites, sprSprite.BaseTile, 1, (sprSprite.SpriteType) + (sprSprite.Direction) + sprSprite.Frame);
-				break;
-			default:
-				CopyAnimationFrame(Sprites, sprSprite.BaseTile, 1, (sprSprite.SpriteType));
-				break;
+		if (iRelativeX>=iHorizontalOffset) {
+			iRelativeX=iRelativeX-iHorizontalOffset;
+		} else {
+			iRelativeX=SPRITE_MAX_WIDTH-iHorizontalOffset+iRelativeX;
 		}
+		iRelativeY = (u8)(sprSprite.Position.y>>SPRITE_SCALE)+8;
 
+		if(iRelativeX>144||iRelativeY>112||iRelativeX<8||iRelativeY<8) {
+			//Replace tile with the empty sprite if it's outside the visible area
+			CopyAnimationFrame(Sprites, sprSprite.BaseTile, 1, sprMisc);
+		}
+		else {
+			//Sprite Tile selection will differ depending on SpriteType
+			//Sprite Misc -- sprMisc + type (Empty, Umbrella, Builders Hat, Hod, etc)
+			//Invader -- sprInvader + 4 frames
+			//Lemmanoid -- sprLemmanoid + Direction + 4 frames
+			//Spacie -- sprSpacie + Type + 4 frames
+			//Pictcell -- sprPictCell + 4 frames
+			//City -- sprCity + blockid + age
+			//Default -- No animation
+			switch (sprSprite.SpriteType)
+			{
+				case sprInvader:
+					CopyAnimationFrame(Sprites, sprSprite.BaseTile, 1, (sprSprite.SpriteType) + sprSprite.Frame);
+					break;
+				case sprPictcell:
+					CopyAnimationFrame(Sprites, sprSprite.BaseTile, 1, (sprSprite.SpriteType) + sprSprite.Frame);
+					break;
+				case sprLemmanoid:
+					// Flipped sprites behave weirdly - are their x/y positions also flipped?
+					//if(sprSprite.Direction==DIR_WEST) {
+					//	FlipSprite(sprSprite.SpriteID,1,0);
+					//}
+					CopyAnimationFrame(Sprites, sprSprite.BaseTile, 1, (sprSprite.SpriteType) + (sprSprite.Direction) + sprSprite.Frame);
+					break;
+				case sprCity:
+					// Use Direction as BlockID (0-3)
+					// Use Frame as age (0,4,18,12)
+					CopyAnimationFrame(Sprites, sprSprite.BaseTile, 1, (sprSprite.SpriteType) + (sprSprite.Direction) + sprSprite.Frame);
+					break;
+				default:
+					CopyAnimationFrame(Sprites, sprSprite.BaseTile, 1, (sprSprite.SpriteType));
+					break;
+			}
+			// Cast the relativeX position to (u8) once the bounds checking has been completed
+			SetSpritePosition(sprSprite.SpriteID, (u8)iRelativeX, iRelativeY);
+
+		}
 	}
-
-	// Cast the relativeX position to (u8) once the bounds checking has been completed
-	SetSpritePosition(sprSprite.SpriteID, (u8)iRelativeX, iRelativeY);
-
 }
 
 bool CheckSpriteCollision(POINT object1, SPRITEPOINT object2)
@@ -758,9 +761,9 @@ void DefenderoidsMain()
 		lvCurrent=DefenderoidsLevels[iCurrentLevel];
 
 		// City (create as sprites 0-3 so I can find them easier later)
-		SpriteList[0] = CreateSprite(16<<SPRITE_SCALE,92<<SPRITE_SCALE,1,sprCity,CITYBLOCK2,0);
-		SpriteList[1] = CreateSprite(24<<SPRITE_SCALE,92<<SPRITE_SCALE,2,sprCity,CITYBLOCK3,0);
-		SpriteList[2] = CreateSprite(8<<SPRITE_SCALE,92<<SPRITE_SCALE,0,sprCity,CITYBLOCK1,0);
+		SpriteList[0] = CreateSprite(16<<SPRITE_SCALE,92<<SPRITE_SCALE,0,sprCity,CITYBLOCK2,0);
+		SpriteList[1] = CreateSprite(24<<SPRITE_SCALE,92<<SPRITE_SCALE,1,sprCity,CITYBLOCK3,0);
+		SpriteList[2] = CreateSprite(8<<SPRITE_SCALE,92<<SPRITE_SCALE,2,sprCity,CITYBLOCK1,0);
 		SpriteList[3] = CreateSprite(32<<SPRITE_SCALE,92<<SPRITE_SCALE,3,sprCity,CITYBLOCK4,0);
 
 		// Invaders
@@ -1311,12 +1314,13 @@ void DefenderoidsMain()
 							if (iCityBlock<4)
 							{
 								SpriteList[iCityBlock].Frame+=4;
-								PrintDecimal(SCR_2_PLANE,0,iCityBlock<<2,18,SpriteList[iCityBlock].Frame,3);
 							}
 						}
-						
-						SpriteList[iSpriteLoop].Position.x=SpriteList[SpriteList[iSpriteLoop].RelatedSpriteID].Position.x;
-						SpriteList[iSpriteLoop].Position.y=SpriteList[SpriteList[iSpriteLoop].RelatedSpriteID].Position.y-256;
+						else
+						{
+							SpriteList[iSpriteLoop].Position.x=SpriteList[SpriteList[iSpriteLoop].RelatedSpriteID].Position.x;
+							SpriteList[iSpriteLoop].Position.y=SpriteList[SpriteList[iSpriteLoop].RelatedSpriteID].Position.y-256;
+						}
 
 						break;
 					case sprPictcell:
@@ -1415,7 +1419,7 @@ void DefenderoidsMain()
 		lvCurrent=DefenderoidsLevels[iCurrentLevel];
 
 		// Close down all sprites at end of level loop
-		for (iSpriteLoop=0;iSpriteLoop<64;iSpriteLoop++)
+		for (iSpriteLoop=0;iSpriteLoop<MAX_SPRITE;iSpriteLoop++)
 		{
 			SetSprite(iSpriteLoop, 0, 0, 0, 0, PAL_SPRITE);
 		}
