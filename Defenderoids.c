@@ -36,7 +36,8 @@
  *   Check home condition - Done
  *   Destroy Lemmanoid sprite - Done
  *   Animation - Done
- *  Change to mutant
+ *  Change to mutant - Done
+ *  Mutant behaviour - Chase player or bomb city?
  * Aliens
  *  Different enemy types
  *   Bomber (attack the city)
@@ -928,7 +929,6 @@ void DefenderoidsMain()
 					}
 					else
 					{
-
 						/*
 							Okay, so collision detection part deux
 
@@ -936,12 +936,11 @@ void DefenderoidsMain()
 							a significant amount
 
 							In fact, is a simple x/y check enough?
-
 						*/
 
 						for (iSpriteLoop=0;iSpriteLoop<MAX_SPRITE;iSpriteLoop++)
 						{
-							if (SpriteList[iSpriteLoop].SpriteType == sprInvader)
+							if (SpriteList[iSpriteLoop].SpriteType == sprInvader||(SpriteList[iSpriteLoop].SpriteType == sprLemmanoid&&SpriteList[iSpriteLoop].Direction == DIR_MUTANT))
 							{
 								if (CheckSpriteCollision(Shots[iLoopShot].Position,SpriteList[iSpriteLoop].Position))
 								{
@@ -1289,6 +1288,27 @@ void DefenderoidsMain()
 								{
 									SpriteList[iSpriteLoop].SpriteType=sprMisc;if (SpriteList[iSpriteLoop].Frame>3) SpriteList[iSpriteLoop].Frame=0;
 								}
+								break;
+							case DIR_MUTANT:
+								// Hunt down the player?
+								// Vertical movement is fine, but horizontal isn't...
+								if(SpriteList[iSpriteLoop].Position.x<iHorizontalOffset<<SPRITE_SCALE)
+								{
+									SpriteList[iSpriteLoop].Position.x+=64;
+								}
+								else
+								{
+									SpriteList[iSpriteLoop].Position.x-=64;
+								}
+								if(SpriteList[iSpriteLoop].Position.y<(PlayerOne.Position.y<<SPRITE_SCALE))
+								{
+									SpriteList[iSpriteLoop].Position.y+=64;
+								}
+								else
+								{
+									SpriteList[iSpriteLoop].Position.y-=64;
+								}
+								break;
 							default:
 								break;
 						}
