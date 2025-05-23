@@ -67,7 +67,7 @@ Game over when your energy reduces to zero
 Game organisation:
 
 We have five different types of object:
--	Playership
+-	Player/ship
 -	Shots
 -	Mountain
 -	Sprites

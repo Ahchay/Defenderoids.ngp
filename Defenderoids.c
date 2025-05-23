@@ -24,6 +24,7 @@
  *  Asteroids can sometimes get weird shapes (flat lines, points, boxes etc)
  *  Asteroids sometimes don't move/rotate after splitting
  *   Use the shot movement vector as a base for new asteroids vectors
+ *  Asteroids always seem to rotate/move in the same direction?
  * Add city - Done
  * Collect resources
  * 	Pictcell base movement - Done
@@ -642,26 +643,16 @@ void DefenderoidsMain()
 	// Define variables
 	u8 iLoopX;
 	u8 iLoopY;
-	u8 iPointLoop;
 	u16 iTile;
-	u8 iMainLoop;
 	u16 bmpPlayField[2032];
-	u8 iPoint;
-	s16 iStartX;
-	s16 iStartY;
-	s16 iEndX;
-	s16 iEndY;
-	s16 iTempX;
-	s16 iTempY;
 	u16 iStartFrame;
-	s8 cSin;
-	s8 cCos;
-	u8 iSpriteScale;
+	u16 iCounter;
 	u8 iLoopAsteroid;
 	u8 iSpriteLoop;
 	u8 iPictcellLoop;
-	u16 iCounter;
 	u8 iEngineLoop;
+	u8 iCityLoop;
+	u8 iLemmanoidLoop;
 	s16 iVelocityX;
 	s16 iVelocityY;
 	u16 iHeightMapLoop;
@@ -680,10 +671,7 @@ void DefenderoidsMain()
 	u8 iGaugePalette;
 	u8 iCityBlock;
 	u8 iMinAge;
-	u8 iCityLoop;
-	u8 iUmbrellaLoop;
-	u8 iLemmanoidLoop;
-
+	
 	/////////////////////////////////////////////////////////
 	// Template vector/sprite arrays
 	/////////////////////////////////////////////////////////
