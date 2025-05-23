@@ -1166,7 +1166,7 @@ void DefenderoidsMain()
 									for(iLemmanoidLoop=0;iLemmanoidLoop<MAX_SPRITE;iLemmanoidLoop++)
 									{
 										// Leave any Lemmanoid alone if it is already captured (or, as it currently stands, is holding anything - might put that into the plot "The mystical power of the Pictcells can temporarily protect the Lemmanoids")
-										if(SpriteList[iLemmanoidLoop].SpriteType==sprLemmanoid&&SpriteList[iLemmanoidLoop].RelatedSpriteID==0)
+										if(SpriteList[iLemmanoidLoop].SpriteType==sprLemmanoid&&SpriteList[iLemmanoidLoop].RelatedSpriteID==0&&SpriteList[iLemmanoidLoop].Direction<=DIR_WEST)
 										{
 											//PrintDecimal(SCR_2_PLANE,0,10,3+iSpriteLoop-4,SpriteList[iLemmanoidLoop].Position.x,5);
 											//PrintDecimal(SCR_2_PLANE,0,10,2+iSpriteLoop-4,WrapDistance(SpriteList[iSpriteLoop].Position.x,SpriteList[iLemmanoidLoop].Position.x,65535),5);
@@ -1211,13 +1211,24 @@ void DefenderoidsMain()
 								// Slow down if carrying anything
 								SpriteList[iSpriteLoop].Position.x=SpriteList[iSpriteLoop].Position.x+QRandom()-QRandom();
 								if (SpriteList[iSpriteLoop].RelatedSpriteID == 0)
-									SpriteList[iSpriteLoop].Position.y-=64;
-								else
-									SpriteList[iSpriteLoop].Position.y-=32;
-
-								if (SpriteList[iSpriteLoop].Position.y>(u16)(HeightMap[((u8)(SpriteList[iSpriteLoop].Position.x>>SPRITE_SCALE))+4]+4)<<SPRITE_SCALE)
 								{
-									SpriteList[iSpriteLoop].Direction = DIR_SOUTH;
+									SpriteList[iSpriteLoop].Position.y-=64;
+									if (SpriteList[iSpriteLoop].Position.y<64)
+									{
+										SpriteList[iSpriteLoop].Direction = DIR_SOUTH;
+									}
+								}
+								else
+								{
+									SpriteList[iSpriteLoop].Position.y-=32;
+									if (SpriteList[iSpriteLoop].Position.y<32)
+									{
+										SpriteList[iSpriteLoop].Direction = DIR_SOUTH;
+										//Drop and mutate the Lemmanoid
+										SpriteList[SpriteList[iSpriteLoop].RelatedSpriteID].Direction=DIR_MUTANT;
+										SpriteList[SpriteList[iSpriteLoop].RelatedSpriteID].RelatedSpriteID=0;
+										SpriteList[iSpriteLoop].RelatedSpriteID=0;
+									}
 								}
 								break;
 						}
