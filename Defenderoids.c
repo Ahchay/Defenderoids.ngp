@@ -671,6 +671,8 @@ void DefenderoidsMain()
 	u8 iGaugePalette;
 	u8 iCityBlock;
 	u8 iMinAge;
+	u8 iCaptureDistance;
+	u8 iCaptureHeight;
 	
 	/////////////////////////////////////////////////////////
 	// Template vector/sprite arrays
@@ -1158,7 +1160,8 @@ void DefenderoidsMain()
 								//PrintString(SCR_2_PLANE,0,9,2+iSpriteLoop-4,"S           ");
 								// Check for any nearby Lemmanoids
 								// Don't check if already carrying a hostage
-								if (SpriteList[iSpriteLoop].Position.y>(u16)(HeightMap[((u8)(SpriteList[iSpriteLoop].Position.x>>SPRITE_SCALE))+4]-32)<<SPRITE_SCALE&&SpriteList[iSpriteLoop].RelatedSpriteID==0)
+								iCaptureHeight=((u16)(HeightMap[((u8)(SpriteList[iSpriteLoop].Position.x>>SPRITE_SCALE))+4]-4))-(SpriteList[iSpriteLoop].Position.y>>SPRITE_SCALE);
+								if (iCaptureHeight<32&&SpriteList[iSpriteLoop].RelatedSpriteID==0)
 								{
 									for(iLemmanoidLoop=0;iLemmanoidLoop<MAX_SPRITE;iLemmanoidLoop++)
 									{
@@ -1167,20 +1170,20 @@ void DefenderoidsMain()
 										{
 											//PrintDecimal(SCR_2_PLANE,0,10,3+iSpriteLoop-4,SpriteList[iLemmanoidLoop].Position.x,5);
 											//PrintDecimal(SCR_2_PLANE,0,10,2+iSpriteLoop-4,WrapDistance(SpriteList[iSpriteLoop].Position.x,SpriteList[iLemmanoidLoop].Position.x,65535),5);
-											if (WrapDistance(SpriteList[iSpriteLoop].Position.x>>SPRITE_SCALE,SpriteList[iLemmanoidLoop].Position.x>>SPRITE_SCALE,SPRITE_MAX_WIDTH)<64)
-											{
+											iCaptureDistance=WrapDistance(SpriteList[iSpriteLoop].Position.x>>SPRITE_SCALE,SpriteList[iLemmanoidLoop].Position.x>>SPRITE_SCALE,SPRITE_MAX_WIDTH);
 											
-												if (SpriteList[iSpriteLoop].Position.y>(u16)(HeightMap[((u8)(SpriteList[iSpriteLoop].Position.x>>SPRITE_SCALE))+4]-16)<<SPRITE_SCALE)
-												{
+											if (iCaptureDistance<64&&iCaptureHeight<8)
+											{
 													//Gotcha
 													//PrintString(SCR_2_PLANE,0,11,2+iSpriteLoop-4,"C");
 													//PrintDecimal(SCR_2_PLANE,0,12,2+iSpriteLoop-4,iLemmanoidLoop,2);
 													SpriteList[iSpriteLoop].RelatedSpriteID=SpriteList[iLemmanoidLoop].SpriteID;
 													SpriteList[iLemmanoidLoop].RelatedSpriteID=SpriteList[iSpriteLoop].SpriteID;
 													SpriteList[iLemmanoidLoop].Direction=DIR_NORTH;
-												}
-												else
-												{
+													iLemmanoidLoop=MAX_SPRITE;
+											}
+											else if (iCaptureDistance<128)
+											{
 													//PrintString(SCR_2_PLANE,0,14,2+iSpriteLoop-4,"H");
 													//PrintDecimal(SCR_2_PLANE,0,15,2+iSpriteLoop-4,iLemmanoidLoop,2);
 													SetSprite(SpriteList[iSpriteLoop].SpriteID, SpriteList[iSpriteLoop].BaseTile , 0, 0, 0, PAL_ANGRYINVADER);
@@ -1188,7 +1191,6 @@ void DefenderoidsMain()
 														SpriteList[iSpriteLoop].Position.x-=256;
 													else
 														SpriteList[iSpriteLoop].Position.x+=256;
-												}
 												// Fixate on a single Lemmanoid
 												iLemmanoidLoop=MAX_SPRITE;
 											}
@@ -1339,7 +1341,6 @@ void DefenderoidsMain()
 							{
 								SpriteList[iCityBlock].Frame+=4;
 								lvCurrent.CityStatus++;
-								PrintDecimal(SCR_2_PLANE,0,0,17,lvCurrent.CityStatus,3);
 							}
 							// else - City complete
 						}
