@@ -25,6 +25,8 @@ const u8 BITMAP_HEIGHT=112;
 #define SPRITE_MAX_WIDTH (512)
 #define MAX_ASTEROID (12)
 #define MAX_SPRITE (64)
+#define MAX_SHOT 4
+#define MAX_EXPLOSION 8
 
 
 typedef struct SpritePoint

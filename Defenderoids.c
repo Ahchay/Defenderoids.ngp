@@ -689,11 +689,11 @@ void DefenderoidsMain()
 	//	- RotationAngle;
 	//	- RotationSpeed;
 
-	VECTOROBJECT Asteroid[MAX_ASTEROID+1];
+	VECTOROBJECT Asteroid[MAX_ASTEROID];
 
-	VECTOROBJECT Shots[4];
+	VECTOROBJECT Shots[MAX_SHOT];
 
-	VECTOROBJECT Explosions[8];
+	VECTOROBJECT Explosions[MAX_EXPLOSION];
 
 	SPRITE SpriteList[MAX_SPRITE];
 
@@ -917,7 +917,7 @@ void DefenderoidsMain()
 			//////////////////////////////////////////////////////
 			// Shots
 			//////////////////////////////////////////////////////
-			for (iLoopShot=0;iLoopShot<3;iLoopShot++)
+			for (iLoopShot=0;iLoopShot<MAX_SHOT-1;iLoopShot++)
 			{
 				if (Shots[iLoopShot].Scale == 1)
 				{
@@ -945,7 +945,7 @@ void DefenderoidsMain()
 								if (CheckSpriteCollision(Shots[iLoopShot].Position,SpriteList[iSpriteLoop].Position))
 								{
 									// Add an explosion
-									for (iLoopExplosion=0;iLoopExplosion<8;iLoopExplosion++)
+									for (iLoopExplosion=0;iLoopExplosion<MAX_EXPLOSION-1;iLoopExplosion++)
 									{
 										if (Explosions[iLoopExplosion].Scale == 0)
 										{
@@ -954,7 +954,7 @@ void DefenderoidsMain()
 											// Need a better 'splode noise
 											//VGM_PlaySFX((u8*)noise,1);
 
-											iLoopExplosion = 9;
+											iLoopExplosion = MAX_EXPLOSION;
 										}
 									} 
 									if (SpriteList[iSpriteLoop].RelatedSpriteID!=0)
@@ -1000,7 +1000,7 @@ void DefenderoidsMain()
 										//First reduce the size of the current asteroid
 										Asteroid[iLoopAsteroid]=CreateAsteroid(Asteroid[iLoopAsteroid].Position.x,Asteroid[iLoopAsteroid].Position.y,Asteroid[iLoopAsteroid].Scale-1);
 										//Then spawn new ones (up to the MAX_ASTEROID limit)
-										if(lvCurrent.AsteroidCount<MAX_ASTEROID)
+										if(lvCurrent.AsteroidCount<MAX_ASTEROID-1)
 										{
 											Asteroid[lvCurrent.AsteroidCount]=CreateAsteroid(Asteroid[iLoopAsteroid].Position.x,Asteroid[iLoopAsteroid].Position.y,Asteroid[iLoopAsteroid].Scale);
 											lvCurrent.AsteroidCount++;
@@ -1047,7 +1047,7 @@ void DefenderoidsMain()
 			//////////////////////////////////////////////////////
 			// Explosions
 			//////////////////////////////////////////////////////
-			for (iLoopExplosion=0;iLoopExplosion<8;iLoopExplosion++)
+			for (iLoopExplosion=0;iLoopExplosion<MAX_EXPLOSION-1;iLoopExplosion++)
 			{
 				if (Explosions[iLoopExplosion].Scale != 0)
 				{
