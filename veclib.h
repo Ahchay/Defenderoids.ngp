@@ -16,6 +16,7 @@ typedef struct ColourPoint
 
 typedef struct VectorObject
 {
+	u8 ObjectType;
 	POINT Origin;
 	POINT Position;
 	POINT MovementVector;

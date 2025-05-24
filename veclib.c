@@ -83,6 +83,7 @@ void DrawVectorObject(u16 * BitmapAddress, VECTOROBJECT VectorObject, u16 iHoriz
 			{
 				// Use the colour attrib associated with the end point
 				DrawLine((u16*)BitmapAddress,(u8)(iStartX),(u8)(iStartY),(u8)(iEndX),(u8)(iEndY),VectorObject.VectorList[iPoint].colour);
+
 			}
 
 			iStartX = VectorObject.VectorList[iPoint].x;
