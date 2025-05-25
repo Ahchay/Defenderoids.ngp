@@ -81,21 +81,17 @@ VECTOROBJECT CreateAsteroid(s16 x, s16 y, u8 Scale)
 	for (iLoopAsteroidPoint=0;iLoopAsteroidPoint<vReturn.Points;iLoopAsteroidPoint++)
 	{
 		iPointScaling=QRandom();
-		iScale=1;
-		if (iPointScaling>64)
+		iScale=0;
+		if (iPointScaling>82)
+		{
+			iScale=1;
+		}
+		if (iPointScaling>164)
 		{
 			iScale=2;
 		}
-		if (iPointScaling>128)
-		{
-			iScale=3;
-		}
-		if (iPointScaling>192)
-		{
-			iScale=4;
-		}
-		vReturn.VectorList[iLoopAsteroidPoint].x=vReturn.VectorList[iLoopAsteroidPoint].x*iScale;
-		vReturn.VectorList[iLoopAsteroidPoint].y=vReturn.VectorList[iLoopAsteroidPoint].y*iScale;
+		vReturn.VectorList[iLoopAsteroidPoint].x=vReturn.VectorList[iLoopAsteroidPoint].x<<iScale;
+		vReturn.VectorList[iLoopAsteroidPoint].y=vReturn.VectorList[iLoopAsteroidPoint].y<<iScale;
 	}
 	// First and Last points in the asteroid have to be the same
 	vReturn.VectorList[vReturn.Points-1].x=vReturn.VectorList[0].x;
@@ -106,11 +102,11 @@ VECTOROBJECT CreateAsteroid(s16 x, s16 y, u8 Scale)
 
 	// Set scale, rotation and speed randomly
 	vReturn.Scale=Scale;
-	vReturn.RotationSpeed=QRandom()>>4;
-	vReturn.RotationAngle=QRandom();
+	vReturn.RotationSpeed=((s8)QRandom()>>4)-((s8)QRandom()>>4);
+	vReturn.RotationAngle=((s8)QRandom()-(s8)QRandom());
 	//Asteroid[iLoopAsteroid].Position.x=((u16)QRandom())<<4;
 	//Asteroid[iLoopAsteroid].Position.y=((u16)QRandom())<<4;
-	vReturn.MovementVector.x=QRandom();
+	vReturn.MovementVector.x=((s8)QRandom()-(s8)QRandom());
 	vReturn.MovementVector.y=QRandom()>>2;
 
 	return vReturn;
