@@ -71,37 +71,6 @@ void SetAlarm(ALARM * pAlarm);
 void CpuSpeed(u8 spd);
 void ResumeOff(void);
 
-typedef struct tagSoundEffect
-{
-   u8 Channel;
-   u8 Length;
-   u8 Repeat;
-   u16 InitialTone;
-   u16 ToneStep;
-   u8 ToneSpeed;
-   u8 ToneOWB;
-   u16 ToneLowerLimit;
-   u16 ToneUpperLimit;
-   u8 InitialVol;
-   u8 VolStep;
-   u8 VolSpeed;
-   u8 VolOWB;
-   u8 VolLowerLimit;
-   u8 VolUpperLimit;
-} SOUNDEFFECT;
-
-void InstallSoundDriver(void);
-void InstallSounds(const SOUNDEFFECT SoundData[], u8 NumSounds);
-void PlaySound(u8 SoundNumber);
-void StopAllSounds(void);
-
-// NeoTracker Support
-void NeoTracker_InstallDriver(void);
-void NeoTracker_SendGroup(const u8 theGroup[], const int Len);
-void NeoTracker_PlayMusic(const int Number);
-void NeoTracker_PlaySFX(const int Number);
-void NeoTracker_StopAll(void);
-
 // bitmap mode support//Function declarations
 void CreateBitmap(u16 * BitmapAddress, u8 Width, u8 Height);
 void SetPixel(u16 * BitmapAddress, s16 xPosition, s16 yPosition, u16 Colour);

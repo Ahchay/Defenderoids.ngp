@@ -1,5 +1,5 @@
 #include "ngpc.h"
-#include "carthdr.h" // TODO: edit game name in carthdr.h
+#include "carthdr.h"
 #include "library.h"
 #include "Tiles\Alphabet.c"
 #include "vgmplayer.h"

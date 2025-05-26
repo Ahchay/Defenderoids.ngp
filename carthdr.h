@@ -6,7 +6,7 @@
 extern void main(void); // used in main.c for cartridge header
 
 
-const char Licensed[28] = " PRESENTED BY CHRIS AHCHAY  ";
+const char Licensed[28] = " LICENSED BY SNK CORPORATION";
 const FuncPtr ptr = main;
 const short CartID = 0;
 // System is actually 00 for CartVer and x10 for System but I

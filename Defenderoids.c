@@ -144,7 +144,7 @@ SPRITE CreateSprite(u16 x, u16 y, u8 ID, u8 Type, u8 Direction, u8 Frame)
 	sprReturn.Direction = Direction;
 	sprReturn.BaseTile = spTileBase + ID;
 	sprReturn.Frame = Frame;
-	sprReturn.RelatedSpriteID = 0;
+	sprReturn.RelatedSpriteID = 99;
 	sprReturn.Initiated = 1;
 
 	// map the sprites to their selected Palette
@@ -999,7 +999,7 @@ void DefenderoidsMain()
 											}
 										} 
 										// Check affected sprite for other sprites to handle
-										if (SpriteList[iSpriteLoop].RelatedSpriteID!=0)
+										if (SpriteList[iSpriteLoop].RelatedSpriteID!=99)
 										{
 											// Drop the Lemmanoid - do we need to check for sprite type?
 											// Invader has a captured Lemmanoid, give 'em an umbrella and let them go
@@ -1164,12 +1164,12 @@ void DefenderoidsMain()
 								// Check for any nearby Lemmanoids
 								// Don't check if already carrying a hostage
 								iCaptureHeight=((u16)(HeightMap[((u8)(SpriteList[iSpriteLoop].Position.x>>SPRITE_SCALE))+4]-4))-(SpriteList[iSpriteLoop].Position.y>>SPRITE_SCALE);
-								if (iCaptureHeight<32&&SpriteList[iSpriteLoop].RelatedSpriteID==0)
+								if (iCaptureHeight<32&&SpriteList[iSpriteLoop].RelatedSpriteID==99)
 								{
 									for(iLemmanoidLoop=0;iLemmanoidLoop<MAX_SPRITE;iLemmanoidLoop++)
 									{
 										// Leave any Lemmanoid alone if it is already captured (or, as it currently stands, is holding anything - might put that into the plot "The mystical power of the Pictcells can temporarily protect the Lemmanoids")
-										if(SpriteList[iLemmanoidLoop].SpriteType==sprLemmanoid&&SpriteList[iLemmanoidLoop].RelatedSpriteID==0&&SpriteList[iLemmanoidLoop].Direction<=DIR_WEST)
+										if(SpriteList[iLemmanoidLoop].SpriteType==sprLemmanoid&&SpriteList[iLemmanoidLoop].RelatedSpriteID==99&&SpriteList[iLemmanoidLoop].Direction<=DIR_WEST)
 										{
 											//PrintDecimal(SCR_2_PLANE,0,10,3+iSpriteLoop-4,SpriteList[iLemmanoidLoop].Position.x,5);
 											//PrintDecimal(SCR_2_PLANE,0,10,2+iSpriteLoop-4,WrapDistance(SpriteList[iSpriteLoop].Position.x,SpriteList[iLemmanoidLoop].Position.x,65535),5);
@@ -1213,7 +1213,7 @@ void DefenderoidsMain()
 								//PrintString(SCR_2_PLANE,0,9,2+iSpriteLoop-4,"N");
 								// Slow down if carrying anything
 								SpriteList[iSpriteLoop].Position.x=SpriteList[iSpriteLoop].Position.x+QRandom()-QRandom();
-								if (SpriteList[iSpriteLoop].RelatedSpriteID == 0)
+								if (SpriteList[iSpriteLoop].RelatedSpriteID == 99)
 								{
 									SpriteList[iSpriteLoop].Position.y-=64;
 									if (SpriteList[iSpriteLoop].Position.y<64)
@@ -1229,8 +1229,8 @@ void DefenderoidsMain()
 										SpriteList[iSpriteLoop].Direction = DIR_SOUTH;
 										//Drop and mutate the Lemmanoid
 										SpriteList[SpriteList[iSpriteLoop].RelatedSpriteID].Direction=DIR_MUTANT;
-										SpriteList[SpriteList[iSpriteLoop].RelatedSpriteID].RelatedSpriteID=0;
-										SpriteList[iSpriteLoop].RelatedSpriteID=0;
+										SpriteList[SpriteList[iSpriteLoop].RelatedSpriteID].RelatedSpriteID=99;
+										SpriteList[iSpriteLoop].RelatedSpriteID=99;
 									}
 								}
 								break;
@@ -1255,11 +1255,11 @@ void DefenderoidsMain()
 								{
 									//Yippee!
 									// Drop anything that the Lemmanoid is carrying
-									if (SpriteList[iSpriteLoop].RelatedSpriteID!=0)
+									if (SpriteList[iSpriteLoop].RelatedSpriteID!=99)
 									{
 										SpriteList[SpriteList[iSpriteLoop].RelatedSpriteID].SpriteType=sprMisc;
-										SpriteList[SpriteList[iSpriteLoop].RelatedSpriteID].RelatedSpriteID=0;
-										SpriteList[iSpriteLoop].RelatedSpriteID=0;
+										SpriteList[SpriteList[iSpriteLoop].RelatedSpriteID].RelatedSpriteID=99;
+										SpriteList[iSpriteLoop].RelatedSpriteID=99;
 									}
 									SpriteList[iSpriteLoop].Direction=DIR_HOME;
 								}
@@ -1277,8 +1277,8 @@ void DefenderoidsMain()
 								if (SpriteList[iSpriteLoop].Position.y>(u16)(HeightMap[((u8)(SpriteList[iSpriteLoop].Position.x>>SPRITE_SCALE))+4]+4)<<SPRITE_SCALE){
 									// Drop the umbrella
 									SpriteList[SpriteList[iSpriteLoop].RelatedSpriteID].SpriteType=sprMisc;
-									SpriteList[SpriteList[iSpriteLoop].RelatedSpriteID].RelatedSpriteID=0;
-									SpriteList[iSpriteLoop].RelatedSpriteID=0;
+									SpriteList[SpriteList[iSpriteLoop].RelatedSpriteID].RelatedSpriteID=99;
+									SpriteList[iSpriteLoop].RelatedSpriteID=99;
 									// Resume walking
 									if (QRandom()<128)
 										SpriteList[iSpriteLoop].Direction = DIR_EAST;
@@ -1320,12 +1320,12 @@ void DefenderoidsMain()
 						// Iterate through the sprite list again? Any way to avoid that?
 						// Pickup Pictcell when pictcell.Direction==0 && pictcell.Position.x=Lemmanoid.Position.x (don't need to check for y)
 						// Need to also make sure that each Lemmanoid *only* picks up one Pictcell
-						if (SpriteList[iSpriteLoop].RelatedSpriteID==0)
+						if (SpriteList[iSpriteLoop].RelatedSpriteID==99)
 						{
 							for(iPictcellLoop=0;iPictcellLoop<MAX_SPRITE;iPictcellLoop++)
 							{
 								// Never actually get picked up?
-								if (SpriteList[iPictcellLoop].SpriteType==sprPictcell && SpriteList[iPictcellLoop].Direction==0 && WrapDistance(SpriteList[iPictcellLoop].Position.x,SpriteList[iSpriteLoop].Position.x,SPRITE_MAX_WIDTH)<1024 && SpriteList[iPictcellLoop].RelatedSpriteID==0)
+								if (SpriteList[iPictcellLoop].SpriteType==sprPictcell && SpriteList[iPictcellLoop].Direction==0 && WrapDistance(SpriteList[iPictcellLoop].Position.x,SpriteList[iSpriteLoop].Position.x,SPRITE_MAX_WIDTH)<1024 && SpriteList[iPictcellLoop].RelatedSpriteID==99)
 								{
 									// Bingo. Attach this sprite to the Lemmanoid and change the type to the left/right carrying Hod
 									// Use MasterSpriteID to chain it to another Sprite
@@ -1355,10 +1355,10 @@ void DefenderoidsMain()
 						if (SpriteList[iSpriteLoop].Position.x>MIN_CITY&&SpriteList[iSpriteLoop].Position.x<MAX_CITY)
 						{
 							// Clear from Lemmanoid
-							SpriteList[SpriteList[iSpriteLoop].RelatedSpriteID].RelatedSpriteID=0;
+							SpriteList[SpriteList[iSpriteLoop].RelatedSpriteID].RelatedSpriteID=99;
 							// Destroy pictcell
 							SpriteList[iSpriteLoop].SpriteType=sprMisc;
-							SpriteList[iSpriteLoop].RelatedSpriteID=0;
+							SpriteList[iSpriteLoop].RelatedSpriteID=99;
 							// Add to city
 							// Find "first" city block with minimum age (frame)
 							// Start at city age 5/block 4 - so we don't keep adding once the city is complete
@@ -1394,7 +1394,7 @@ void DefenderoidsMain()
 							if (SpriteList[iSpriteLoop].Position.y>((u16)(HeightMap[((u8)(SpriteList[iSpriteLoop].Position.x>>SPRITE_SCALE))+4]+4)<<SPRITE_SCALE)-1024)
 							{
 								SpriteList[iSpriteLoop].Direction = 0;
-								SpriteList[iSpriteLoop].RelatedSpriteID = 0;
+								SpriteList[iSpriteLoop].RelatedSpriteID = 99;
 							}
 						}
 						SpriteList[iSpriteLoop].Frame++;
