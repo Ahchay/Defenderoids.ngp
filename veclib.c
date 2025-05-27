@@ -5,12 +5,12 @@
 #define VECTOR_SCALE (7)
 #define VECTOR_MAX_WIDTH (511)
 
-void DrawVectorObjectAbsolute(u16 * BitmapAddress, VECTOROBJECT VectorObject)
+void DrawVectorObjectAbsolute(u16 * BitmapAddress, SMALLVECTOROBJECT VectorObject)
 {
 	DrawVectorObject(BitmapAddress, VectorObject, 0);
 }
 
-void DrawVectorObject(u16 * BitmapAddress, VECTOROBJECT VectorObject, u16 iHorizontalOffset)
+void DrawVectorObject(u16 * BitmapAddress, SMALLVECTOROBJECT VectorObject, u16 iHorizontalOffset)
 {
 	s16 iStartX;
 	s16 iStartY;
@@ -42,8 +42,8 @@ void DrawVectorObject(u16 * BitmapAddress, VECTOROBJECT VectorObject, u16 iHoriz
 
 		iPositionY = VectorObject.Position.y>>VECTOR_SCALE;
 
-		iStartX = VectorObject.VectorList[0].x;
-		iStartY = VectorObject.VectorList[0].y;
+		iStartX = VectorObject.PointList[0].x;
+		iStartY = VectorObject.PointList[0].y;
 
 		//Plot the centre point
 		//SetPixel((u16*)BitmapAddress,iPositionX,iPositionY,3);
@@ -65,8 +65,8 @@ void DrawVectorObject(u16 * BitmapAddress, VECTOROBJECT VectorObject, u16 iHoriz
 			iStartY = iPositionY+iTempY;
 			//if (iStartY<0) iStartY=0;
 
-			iEndX = (VectorObject.VectorList[iPoint].x-VectorObject.Origin.x)*VectorObject.Scale;
-			iEndY = (VectorObject.VectorList[iPoint].y-VectorObject.Origin.y)*VectorObject.Scale;
+			iEndX = (VectorObject.PointList[iPoint].x-VectorObject.Origin.x)*VectorObject.Scale;
+			iEndY = (VectorObject.PointList[iPoint].y-VectorObject.Origin.y)*VectorObject.Scale;
 
 			// rotate point
 			iTempX = ((iEndX * cCos)>>VECTOR_SCALE) - ((iEndY * cSin)>>VECTOR_SCALE);
@@ -82,12 +82,12 @@ void DrawVectorObject(u16 * BitmapAddress, VECTOROBJECT VectorObject, u16 iHoriz
 			if (iStartX>=0&&iStartY>=0&&iEndX>=0&&iEndY>=0&&iStartX<=BitmapAddress[0]&&iStartY<=BitmapAddress[1]&&iEndX<=BitmapAddress[0]&&iEndY<=BitmapAddress[1])
 			{
 				// Use the colour attrib associated with the end point
-				DrawLine((u16*)BitmapAddress,(u8)(iStartX),(u8)(iStartY),(u8)(iEndX),(u8)(iEndY),VectorObject.VectorList[iPoint].colour);
+				DrawLine((u16*)BitmapAddress,(u8)(iStartX),(u8)(iStartY),(u8)(iEndX),(u8)(iEndY),VectorObject.PointList[iPoint].colour);
 
 			}
 
-			iStartX = VectorObject.VectorList[iPoint].x;
-			iStartY = VectorObject.VectorList[iPoint].y;
+			iStartX = VectorObject.PointList[iPoint].x;
+			iStartY = VectorObject.PointList[iPoint].y;
 		}
 	}
 }
@@ -96,9 +96,7 @@ void DrawVectorSpriteAbsolute(u16 * BitmapAddress, VECTOROBJECT VectorObject)
 {
 	DrawVectorSprite(BitmapAddress, VectorObject, 0);
 }
-// Only works when HorizontalOffset is between 0 and 72?
-// i.e. half the bitmap width. So, it must have something to do with that...
-// Might be affecting the drawobject above as well...
+
 void DrawVectorSprite(u16 * BitmapAddress, VECTOROBJECT VectorObject, u16 iHorizontalOffset)
 {
 	s16 iStartX;
@@ -120,11 +118,11 @@ void DrawVectorSprite(u16 * BitmapAddress, VECTOROBJECT VectorObject, u16 iHoriz
 	while (iPoint<VectorObject.Points)
 	{
 
-		if (VectorObject.VectorList[iPoint].colour != 0)
+		if (VectorObject.PointList[iPoint].colour != 0)
 		{
 
-			iStartX = (VectorObject.VectorList[iPoint].x-VectorObject.Origin.x)*VectorObject.Scale;
-			iStartY = (VectorObject.VectorList[iPoint].y-VectorObject.Origin.y)*VectorObject.Scale;
+			iStartX = (VectorObject.PointList[iPoint].x-VectorObject.Origin.x)*VectorObject.Scale;
+			iStartY = (VectorObject.PointList[iPoint].y-VectorObject.Origin.y)*VectorObject.Scale;
 
 			// rotate point.
 			iTempX = ((iStartX * cCos)>>7) - ((iStartY * cSin)>>7);
@@ -139,7 +137,55 @@ void DrawVectorSprite(u16 * BitmapAddress, VECTOROBJECT VectorObject, u16 iHoriz
 			{
 				for (iLoopY=0;iLoopY<VectorObject.Scale;iLoopY++)
 				{
-					SetPixel((u16*)BitmapAddress,(u8)(iStartX+iLoopX),(u8)(iStartY+iLoopY),VectorObject.VectorList[iPoint].colour);
+					SetPixel((u16*)BitmapAddress,(u8)(iStartX+iLoopX),(u8)(iStartY+iLoopY),VectorObject.PointList[iPoint].colour);
+				}
+			}
+		}
+		iPoint++;
+	}
+}
+
+void DrawSmallVectorSprite(u16 * BitmapAddress, SMALLVECTOROBJECT VectorObject, u16 iHorizontalOffset)
+{
+	s16 iStartX;
+	s16 iStartY;
+	s16 iEndX;
+	s16 iEndY;
+	s16 iTempX;
+	s16 iTempY;
+	u8 iPoint = 0;
+	s8 cSin;
+	s8 cCos;
+	u8 iLoopX;
+	u8 iLoopY;
+	u8 iPositionX;
+
+	cSin = Sin(VectorObject.RotationAngle);
+	cCos = Cos(VectorObject.RotationAngle);
+
+	while (iPoint<VectorObject.Points)
+	{
+
+		if (VectorObject.PointList[iPoint].colour != 0)
+		{
+
+			iStartX = (VectorObject.PointList[iPoint].x-VectorObject.Origin.x)*VectorObject.Scale;
+			iStartY = (VectorObject.PointList[iPoint].y-VectorObject.Origin.y)*VectorObject.Scale;
+
+			// rotate point.
+			iTempX = ((iStartX * cCos)>>7) - ((iStartY * cSin)>>7);
+			iTempY = ((iStartX * cSin)>>7) + ((iStartY * cCos)>>7);
+
+			iPositionX = VectorObject.Position.x % VECTOR_MAX_WIDTH;
+			iStartX = (iPositionX-iHorizontalOffset)+iTempX;
+			iStartY = VectorObject.Position.y+iTempY;
+
+			// Quick and dirty method to scale up the individual points
+			for (iLoopX=0;iLoopX<VectorObject.Scale;iLoopX++)
+			{
+				for (iLoopY=0;iLoopY<VectorObject.Scale;iLoopY++)
+				{
+					SetPixel((u16*)BitmapAddress,(u8)(iStartX+iLoopX),(u8)(iStartY+iLoopY),VectorObject.PointList[iPoint].colour);
 				}
 			}
 		}

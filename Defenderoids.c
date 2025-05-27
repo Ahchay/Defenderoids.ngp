@@ -64,15 +64,15 @@
 /////////////////////////////////////////////////////
 // Create a unique asteroid object
 /////////////////////////////////////////////////////
-VECTOROBJECT CreateAsteroid(s16 x, s16 y, u8 Scale)
+SMALLVECTOROBJECT CreateAsteroid(s16 x, s16 y, u8 Scale)
 {
-	VECTOROBJECT vReturn;
+	SMALLVECTOROBJECT vReturn;
 	u8 iLoopAsteroidPoint;
 	u8 iTemplateID;
 	u8 iPointScaling;
 	u8 iScale;
 
-	VECTOROBJECT AsteroidTemplate= {VEC_ASTEROID,{0,0},{0,0},{0,0},9,{{0,1,1},{1,1,1},{1,0,1},{1,-1,1},{0,-1,1},{-1,-1,1},{-1,0,1},{-1,1,1},{0,1,1}},0,0,0};
+	SMALLVECTOROBJECT AsteroidTemplate= {VEC_ASTEROID,{0,0},{0,0},{0,0},9,{{0,1,1},{1,1,1},{1,0,1},{1,-1,1},{0,-1,1},{-1,-1,1},{-1,0,1},{-1,1,1},{0,1,1}},0,0,0};
 
 	//InitialiseQRandom();
 
@@ -90,12 +90,12 @@ VECTOROBJECT CreateAsteroid(s16 x, s16 y, u8 Scale)
 		{
 			iScale=2;
 		}
-		vReturn.VectorList[iLoopAsteroidPoint].x=vReturn.VectorList[iLoopAsteroidPoint].x<<iScale;
-		vReturn.VectorList[iLoopAsteroidPoint].y=vReturn.VectorList[iLoopAsteroidPoint].y<<iScale;
+		vReturn.PointList[iLoopAsteroidPoint].x=vReturn.PointList[iLoopAsteroidPoint].x<<iScale;
+		vReturn.PointList[iLoopAsteroidPoint].y=vReturn.PointList[iLoopAsteroidPoint].y<<iScale;
 	}
 	// First and Last points in the asteroid have to be the same
-	vReturn.VectorList[vReturn.Points-1].x=vReturn.VectorList[0].x;
-	vReturn.VectorList[vReturn.Points-1].y=vReturn.VectorList[0].y;
+	vReturn.PointList[vReturn.Points-1].x=vReturn.PointList[0].x;
+	vReturn.PointList[vReturn.Points-1].y=vReturn.PointList[0].y;
 
 	vReturn.Position.x=x;
 	vReturn.Position.y=y;
@@ -328,21 +328,21 @@ bool CheckAsteroidCollision(POINT object1, POINT object2)
 /////////////////////////////////////////////////////
 // Create an explosion object
 ////////////////////////////////////////////////////
-VECTOROBJECT CreateExplosion(SPRITEPOINT spPosition, u8 iDirection)
+SMALLVECTOROBJECT CreateExplosion(SPRITEPOINT spPosition, u8 iDirection)
 {
-	VECTOROBJECT voReturn;
+	SMALLVECTOROBJECT voReturn;
 	u8 iPointLoop;
 
 	voReturn.ObjectType = VEC_EXPLOSION;
 	voReturn.Scale = 1;
 	// Copy the Explosion object from the template
-	voReturn.Points = 16;
+	voReturn.Points = 8;
 	iPointLoop=0;
 	for(iPointLoop=0;iPointLoop<voReturn.Points;iPointLoop++)
 	{
-		voReturn.VectorList[iPointLoop].x = 0;
-		voReturn.VectorList[iPointLoop].y = 0;
-		voReturn.VectorList[iPointLoop].colour = QRandom()>>6;
+		voReturn.PointList[iPointLoop].x = 0;
+		voReturn.PointList[iPointLoop].y = 0;
+		voReturn.PointList[iPointLoop].colour = QRandom()>>6;
 	}
 	voReturn.Origin.x = 0;
 	voReturn.Origin.y = 0;
@@ -380,9 +380,9 @@ VECTOROBJECT CreatePlayer()
 	iPointLoop=0;
 	while (iPointLoop<PlayerOne.Points)
 	{
-		PlayerOne.VectorList[iPointLoop].x = PlayerSprite[iPointLoop].x;
-		PlayerOne.VectorList[iPointLoop].y = PlayerSprite[iPointLoop].y;
-		PlayerOne.VectorList[iPointLoop].colour = PlayerSprite[iPointLoop].colour;
+		PlayerOne.PointList[iPointLoop].x = PlayerSprite[iPointLoop].x;
+		PlayerOne.PointList[iPointLoop].y = PlayerSprite[iPointLoop].y;
+		PlayerOne.PointList[iPointLoop].colour = PlayerSprite[iPointLoop].colour;
 		iPointLoop++;
 	}
 
@@ -392,9 +392,9 @@ VECTOROBJECT CreatePlayer()
 /////////////////////////////////////////////////////
 // CreateShot()
 /////////////////////////////////////////////////////
-VECTOROBJECT CreateShot(u16 iHorizontalOffset,VECTOROBJECT PlayerOne, bool bShotType)
+SMALLVECTOROBJECT CreateShot(u16 iHorizontalOffset,VECTOROBJECT PlayerOne, bool bShotType)
 {
-	VECTOROBJECT vecShot;
+	SMALLVECTOROBJECT vecShot;
 	u8 iPointLoop;
 	u8 iShotSide;
 
@@ -409,9 +409,9 @@ VECTOROBJECT CreateShot(u16 iHorizontalOffset,VECTOROBJECT PlayerOne, bool bShot
 	vecShot.Points = SHOT_POINTS;
 	for(iPointLoop=0;iPointLoop<=vecShot.Points;iPointLoop++)
 	{
-		vecShot.VectorList[iPointLoop].x = Shot[iPointLoop].x+iShotSide;
-		vecShot.VectorList[iPointLoop].y = Shot[iPointLoop].y;
-		vecShot.VectorList[iPointLoop].colour = Shot[iPointLoop].colour;
+		vecShot.PointList[iPointLoop].x = Shot[iPointLoop].x+iShotSide;
+		vecShot.PointList[iPointLoop].y = Shot[iPointLoop].y;
+		vecShot.PointList[iPointLoop].colour = Shot[iPointLoop].colour;
 	}
 	vecShot.Origin.x = 3;
 	vecShot.Origin.y = 0;
@@ -685,7 +685,7 @@ void DefenderoidsMain()
 	//	- Position;
 	//	- MovementVector;
 	//	- Points;
-	//	- VectorList[64];
+	//	- PointList[64];
 	//	- Scale;
 	//	- RotationAngle;
 	//	- RotationSpeed;
@@ -696,7 +696,9 @@ void DefenderoidsMain()
 
 	//VECTOROBJECT Explosions[MAX_EXPLOSION];
 
-	VECTOROBJECT VectorList[MAX_VECTOR + 1];
+	SMALLVECTOROBJECT VectorList[MAX_VECTOR + 1];
+
+	VECTOROBJECT vShip;
 
 	SPRITE SpriteList[MAX_SPRITE];
 
@@ -775,7 +777,7 @@ void DefenderoidsMain()
 		SpriteList[3] = CreateSprite(32<<SPRITE_SCALE,92<<SPRITE_SCALE,63,sprCity,CITYBLOCK4,0);
 
 		// Set up the player
-		VectorList[0] = CreatePlayer();
+		vShip = CreatePlayer();
 
 		// Invaders
 		for (iSpriteLoop=4;iSpriteLoop<lvCurrent.InvaderCount+4;iSpriteLoop++)
@@ -829,28 +831,28 @@ void DefenderoidsMain()
 			// B button = Thrust
 			// A butotn = Fire (must be released between shots)
 
-			if (JOYPAD & J_LEFT) VectorList[0].RotationAngle-=8;
-			if (JOYPAD & J_RIGHT) VectorList[0].RotationAngle+=8;
+			if (JOYPAD & J_LEFT) vShip.RotationAngle-=8;
+			if (JOYPAD & J_RIGHT) vShip.RotationAngle+=8;
 			if (JOYPAD & J_B)
 			{
 
 				// Movement vector should grow or shrink by +/- 127 in any given frame?
-				if (VectorList[0].MovementVector.x + Cos(VectorList[0].RotationAngle+192) < 0)
+				if (vShip.MovementVector.x + Cos(vShip.RotationAngle+192) < 0)
 				{
-					iVelocityX = (u16)((VectorList[0].MovementVector.x + Cos(VectorList[0].RotationAngle+192)) * -1)>>8;
+					iVelocityX = (u16)((vShip.MovementVector.x + Cos(vShip.RotationAngle+192)) * -1)>>8;
 				}
 				else
 				{
-					iVelocityX = (u16)((VectorList[0].MovementVector.x + Cos(VectorList[0].RotationAngle+192)))>>8;
+					iVelocityX = (u16)((vShip.MovementVector.x + Cos(vShip.RotationAngle+192)))>>8;
 				}
 
-				if (VectorList[0].MovementVector.y + Sin(VectorList[0].RotationAngle+192) < 0)
+				if (vShip.MovementVector.y + Sin(vShip.RotationAngle+192) < 0)
 				{
-					iVelocityY = (u16)((VectorList[0].MovementVector.y + Sin(VectorList[0].RotationAngle+192)) * -1)>>8;
+					iVelocityY = (u16)((vShip.MovementVector.y + Sin(vShip.RotationAngle+192)) * -1)>>8;
 				}
 				else
 				{
-					iVelocityY = (u16)((VectorList[0].MovementVector.y + Sin(VectorList[0].RotationAngle+192)))>>8;
+					iVelocityY = (u16)((vShip.MovementVector.y + Sin(vShip.RotationAngle+192)))>>8;
 				}
 
 				// Need to constrain the Movement Vector to a maximum velocity.
@@ -860,11 +862,11 @@ void DefenderoidsMain()
 					// Modify the movement vector by the angle.
 					// Because "zero" degrees is at right angles to "up", we need to rotate this by 270 degrees
 					// which on a 256 byte sine table is 192.
-					VectorList[0].MovementVector.x += (Cos(VectorList[0].RotationAngle+192));
+					vShip.MovementVector.x += (Cos(vShip.RotationAngle+192));
 				}
 				if (iVelocityY<2)
 				{
-					VectorList[0].MovementVector.y += (Sin(VectorList[0].RotationAngle+192));
+					vShip.MovementVector.y += (Sin(vShip.RotationAngle+192));
 				}
 			}
 			if (JOYPAD & J_A && bShoot)
@@ -882,7 +884,7 @@ void DefenderoidsMain()
 						VGM_PlaySFX((u8*)zap,1);
 
 						bShotType=!bShotType;
-						VectorList[iVectorLoop]=CreateShot(iHorizontalOffset,VectorList[0],bShotType);
+						VectorList[iVectorLoop]=CreateShot(iHorizontalOffset,vShip,bShotType);
 						
 						//Terminate the loop so that only one shot is created
 						iVectorLoop = MAX_VECTOR;
@@ -915,51 +917,53 @@ void DefenderoidsMain()
 			}
 
 			//////////////////////////////////////////////////////
+			// Player
+			//////////////////////////////////////////////////////
+
+			//Update the horizontal offset (ship remains centred horizontally)
+			iHorizontalOffset += vShip.MovementVector.x>>7;
+			//Bounds check - needs to wrap at sizeof(HeightMap)-1
+			if(iHorizontalOffset>sizeof(HeightMap)-1){
+				if(vShip.MovementVector.x<0){
+					iHorizontalOffset=sizeof(HeightMap)-(65535-iHorizontalOffset);
+				} else {
+					iHorizontalOffset=0;
+				}
+			}
+
+			//Keep player inside the playfield...
+			//Reduce vertical velocity to zero as they approach either top/bottom edge- need to decide whether to apply a bounce or just stop at the top/bottom of the screen
+			if (vShip.Position.y<4 && vShip.MovementVector.y<127){
+				vShip.MovementVector.y = 127;
+				vShip.Position.y=4;
+				//vShip.Position.y=((u16*)bmpPlayField)[1];
+			} else if (vShip.Position.y>bmpPlayField[1]-4 && vShip.MovementVector.y>127){
+				vShip.MovementVector.y = 0;
+				vShip.Position.y=bmpPlayField[1]-4;
+			}
+
+			// Apply vertical velocity
+			vShip.Position.y += vShip.MovementVector.y>>7;
+
+			// Add some engine noise if the player is thrusting
+			for(iEngineLoop=vShip.Points-4;iEngineLoop<=vShip.Points;iEngineLoop++)
+			{
+				iEngineNoise=0;
+				if (JOYPAD & J_B) iEngineNoise=(((QRandom()>>7))*3);
+
+				vShip.PointList[iEngineLoop].colour = iEngineNoise;
+			}
+
+			DrawVectorSpriteAbsolute((u16*)bmpPlayField, vShip);
+
+			//////////////////////////////////////////////////////
 			// Vector objects
 			//////////////////////////////////////////////////////
 			for (iVectorLoop=0;iVectorLoop<=MAX_VECTOR;iVectorLoop++)
 			{
 				switch (VectorList[iVectorLoop].ObjectType)
 				{
-					case VEC_SHIP:
-						//////////////////////////////////////////////////////
-						// Player
-						//////////////////////////////////////////////////////
-
-						//Update the horizontal offset (ship remains centred horizontally)
-						iHorizontalOffset += VectorList[iVectorLoop].MovementVector.x>>7;
-						//Bounds check - needs to wrap at sizeof(HeightMap)-1
-						if(iHorizontalOffset>sizeof(HeightMap)-1){
-							if(VectorList[iVectorLoop].MovementVector.x<0){
-								iHorizontalOffset=sizeof(HeightMap)-1;
-							} else {
-								iHorizontalOffset=0;
-							}
-						}
-
-						//Keep player inside the playfield...
-						//Reduce vertical velocity to zero as they approach either top/bottom edge- need to decide whether to apply a bounce or just stop at the top/bottom of the screen
-						if (VectorList[iVectorLoop].Position.y<4 && VectorList[iVectorLoop].MovementVector.y<127){
-							VectorList[iVectorLoop].MovementVector.y = 127;
-							VectorList[iVectorLoop].Position.y=4;
-							//VectorList[0].Position.y=((u16*)bmpPlayField)[1];
-						} else if (VectorList[iVectorLoop].Position.y>bmpPlayField[1]-4 && VectorList[iVectorLoop].MovementVector.y>127){
-							VectorList[iVectorLoop].MovementVector.y = 0;
-							VectorList[iVectorLoop].Position.y=bmpPlayField[1]-4;
-						}
-
-						// Apply vertical velocity
-						VectorList[iVectorLoop].Position.y += VectorList[iVectorLoop].MovementVector.y>>7;
-
-						// Add some engine noise if the player is thrusting
-						for(iEngineLoop=VectorList[iVectorLoop].Points-4;iEngineLoop<=VectorList[iVectorLoop].Points;iEngineLoop++)
-						{
-							iEngineNoise=0;
-							if (JOYPAD & J_B) iEngineNoise=(((QRandom()>>7))*3);
-
-							VectorList[iVectorLoop].VectorList[iEngineLoop].colour = iEngineNoise;
-						}
-						break;
+					
 					case VEC_SHOT:
 						// Shots will exist for 6 frames (based on RotationSpeed) or if they leave the playfield vertically, whichever is true first
 						VectorList[iVectorLoop].RotationSpeed++;
@@ -1096,8 +1100,8 @@ void DefenderoidsMain()
 						{
 							// Why not just a few QRandom() calls within the rotation speed area?
 							// Looks ace. Need to figure out the rotation angle to get the direction right is all
-							VectorList[iVectorLoop].VectorList[iLoopExplosionPoint].x +=(QRandom()>>(8-VectorList[iVectorLoop].RotationSpeed));
-							VectorList[iVectorLoop].VectorList[iLoopExplosionPoint].y +=(QRandom()>>(8-VectorList[iVectorLoop].RotationSpeed));
+							VectorList[iVectorLoop].PointList[iLoopExplosionPoint].x +=(QRandom()>>(8-VectorList[iVectorLoop].RotationSpeed));
+							VectorList[iVectorLoop].PointList[iLoopExplosionPoint].y +=(QRandom()>>(8-VectorList[iVectorLoop].RotationSpeed));
 						}
 
 						// Destroy the Explosion after a few frames
@@ -1128,10 +1132,7 @@ void DefenderoidsMain()
 						DrawVectorObject((u16*)bmpPlayField, VectorList[iVectorLoop], iHorizontalOffset);
 						break;
 					case VEC_EXPLOSION:
-						DrawVectorSprite((u16*)bmpPlayField, VectorList[iVectorLoop], iHorizontalOffset);
-						break;
-					case VEC_SHIP:
-						DrawVectorSpriteAbsolute((u16*)bmpPlayField, VectorList[iVectorLoop]);
+						DrawSmallVectorSprite((u16*)bmpPlayField, VectorList[iVectorLoop], iHorizontalOffset);
 						break;
 				}
 
@@ -1304,7 +1305,7 @@ void DefenderoidsMain()
 								{
 									SpriteList[iSpriteLoop].Position.x-=64;
 								}
-								if(SpriteList[iSpriteLoop].Position.y<(VectorList[0].Position.y<<SPRITE_SCALE))
+								if(SpriteList[iSpriteLoop].Position.y<(vShip.Position.y<<SPRITE_SCALE))
 								{
 									SpriteList[iSpriteLoop].Position.y+=64;
 								}
@@ -1430,8 +1431,8 @@ void DefenderoidsMain()
 			
 			/*
 			PrintString(SCR_2_PLANE,0,0,0,"PLAYER:(     ,     )");
-			PrintDecimal(SCR_2_PLANE, 0, 8, 0, VectorList[0].Position.x, 5);
-			PrintDecimal(SCR_2_PLANE, 0, 14, 0, VectorList[0].Position.y, 5);
+			PrintDecimal(SCR_2_PLANE, 0, 8, 0, vShip.Position.x, 5);
+			PrintDecimal(SCR_2_PLANE, 0, 14, 0, vShip.Position.y, 5);
 			PrintString(SCR_2_PLANE,0,0,1,"SHOT 0:(     ,     )");
 			PrintString(SCR_2_PLANE,0,0,2,"SHOT 1:(     ,     )");
 			PrintString(SCR_2_PLANE,0,0,3,"SHOT 2:(     ,     )");

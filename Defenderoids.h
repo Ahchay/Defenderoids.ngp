@@ -24,7 +24,7 @@ const u8 BITMAP_HEIGHT=112;
 //Game constants
 #define SPRITE_MAX_WIDTH (512)
 #define MAX_SPRITE (64)
-#define MAX_VECTOR 32
+#define MAX_VECTOR 48
 
 // Vector Type Objects
 #define VEC_NONE 0
