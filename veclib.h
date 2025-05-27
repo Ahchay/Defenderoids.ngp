@@ -28,7 +28,7 @@ typedef struct VectorObject
 	s8 RotationSpeed; // 1 byte
 } VECTOROBJECT;
 
-// 57 bytes
+// 67 bytes
 typedef struct SmallVectorObject
 {
 	u8 ObjectType; // 1 byte
@@ -36,7 +36,7 @@ typedef struct SmallVectorObject
 	POINT Position; // 4 bytes
 	POINT MovementVector; //4 bytes
 	u8 Points; // 1 byte
-	COLOURPOINT PointList[10]; //8 x 5 bytes (40 bytes)
+	COLOURPOINT PointList[10]; //10 x 5 bytes (50 bytes)
 	u8 Scale; // 1 byte
 	u8 RotationAngle; // 1 byte
 	s8 RotationSpeed; // 1 byte

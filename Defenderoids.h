@@ -32,6 +32,7 @@ const u8 BITMAP_HEIGHT=112;
 #define VEC_ASTEROID 2
 #define VEC_EXPLOSION 3
 #define VEC_SHOT 4
+#define VEC_QIX 5
 
 typedef struct SpritePoint
 {
@@ -63,7 +64,7 @@ typedef struct Sprite
 #define DIR_SOUTH 8
 #define DIR_NORTH 12
 #define DIR_HOME 16
-#define DIR_MUTANT 20
+#define DIR_MUTANOID 20
 
 // City block IDs (left-right)
 #define CITYBLOCK1 0
@@ -88,7 +89,13 @@ typedef struct Level
 	u8 LemmanoidCount;
 	u8 AsteroidCount;
 	u8 CityStatus;
+	u8 Saved;
 } LEVEL;
+
+const LEVEL DefenderoidsLevels[] = {
+	{"Start me up",5,5,4,0,0},
+	{"Getting Harder",12,12,3,0,0}
+};
 
 // Function templates
 u8 DefenderoidsLogo();

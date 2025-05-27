@@ -21,10 +21,10 @@
  *  Asteroid split into smaller - Done
  *  Asteroid drop pictcell - Done
  * 	Rejig Asteroid creation to get more variety - Done
- *  Asteroids can sometimes get weird shapes (flat lines, points, boxes etc)
- *  Asteroids sometimes don't move/rotate after splitting
+ *  Asteroids can sometimes get weird shapes (flat lines, points, boxes etc) - Done
+ *  Asteroids sometimes don't move/rotate after splitting - Done
  *   Use the shot movement vector as a base for new asteroids vectors
- *  Asteroids always seem to rotate/move in the same direction?
+ *  Asteroids always seem to rotate/move in the same direction? - Done
  * Add city - Done
  * Collect resources
  * 	Pictcell base movement - Done
@@ -32,19 +32,36 @@
  * 	Add to city - Done
  * Lemmanoids
  * 	Umbrellas - Done
- *  Go home
+ *  Go home - Done
  *   Check home condition - Done
  *   Destroy Lemmanoid sprite - Done
  *   Animation - Done
- *  Change to mutant - Done
- *  Mutant behaviour - Chase player or bomb city?
+ *  Change to Mutanoid - Done
+ *  Mutanoid behaviour - Chase player or bomb city?
+ *   Rudimentary homing behaviour - Done
+ *   Needs to be a bit more aggressive
+ *   And actually home in on the player rather than horizontal offset
  * Aliens
  *  Different enemy types
  *   Bomber (attack the city)
- *   Rammer (attack the player)
+ *    Want to try and get a missile command-y vibe
+ *   Rammer (attack the player) - use the Mutanoid - Done
+ *   Qix
+ *    No Invaders or Lemmanoids on Qix levels
+ *    Spawn at (0,0)
+ *    Qix will slop about doing Qix things over the planet surface
+ *    Qix is impervious to your lasers
+ *    Collision with the Qix is instantly fatal
+ *    No idea if this will work, but Shoot asteroids for pictcells as normal
+ *    Pick up the pictcell and drag it to the Qix, sort of Sinistar-y I guess
+ *    Each pictcell will destroy one vector of the Qix
+ *    Reduce Qix to 2 vectors to destroy
  * 	Capture Lemmanoids - Done
  *  Release Lemmanoids - Done
  *  Spawn on a timer
+ *   If active invaders <= level invader count
+ *    x% chance of creating an invader
+ *    always create invaders off screen (so player position - 256)
  * Ship collisions
  * 	Asteroids
  *  Invaders
@@ -55,7 +72,21 @@
  * Level success/failure modes
  * 	Success: City built, Lemmanoids rescued
  *  Failure: Lemmanoids destroyed/captured (Qix space level)
+ *  Both:
+ *   If LemmanoidCount==0
+ *    Test for *any* Lemmanoids in city - then success
+ *    else failure
+ *  On failure:
+ *   Next level will be a Qix Level
  *  Game Over: Energy gauge goes to zero
+ * Pause Mode
+ *  Option to bring up a menu rather than generate a game over condition
+ *  - Quit game
+ *  - Other options?
+ *    - Enable/Disable music
+ *    - Help
+ *    - About
+ *    - How to play
  * 
  ************************************************/
 
@@ -985,7 +1016,7 @@ void DefenderoidsMain()
 							for (iSpriteLoop=0;iSpriteLoop<MAX_SPRITE;iSpriteLoop++)
 							{
 								// Only Invaders and Mutated Lemmanoids can be shot
-								if (SpriteList[iSpriteLoop].SpriteType == sprInvader||(SpriteList[iSpriteLoop].SpriteType == sprLemmanoid&&SpriteList[iSpriteLoop].Direction == DIR_MUTANT))
+								if (SpriteList[iSpriteLoop].SpriteType == sprInvader||(SpriteList[iSpriteLoop].SpriteType == sprLemmanoid&&SpriteList[iSpriteLoop].Direction == DIR_MUTANOID))
 								{
 									if (CheckSpriteCollision(VectorList[iVectorLoop].Position,SpriteList[iSpriteLoop].Position))
 									{	
@@ -1229,9 +1260,10 @@ void DefenderoidsMain()
 									{
 										SpriteList[iSpriteLoop].Direction = DIR_SOUTH;
 										//Drop and mutate the Lemmanoid
-										SpriteList[SpriteList[iSpriteLoop].RelatedSpriteID].Direction=DIR_MUTANT;
+										SpriteList[SpriteList[iSpriteLoop].RelatedSpriteID].Direction=DIR_MUTANOID;
 										SpriteList[SpriteList[iSpriteLoop].RelatedSpriteID].RelatedSpriteID=99;
 										SpriteList[iSpriteLoop].RelatedSpriteID=99;
+										lvCurrent.LemmanoidCount--;
 									}
 								}
 								break;
@@ -1263,6 +1295,7 @@ void DefenderoidsMain()
 										SpriteList[iSpriteLoop].RelatedSpriteID=99;
 									}
 									SpriteList[iSpriteLoop].Direction=DIR_HOME;
+									SpriteList[iSpriteLoop].Frame=0;
 								}
 								break;
 							case DIR_NORTH:
@@ -1291,10 +1324,11 @@ void DefenderoidsMain()
 								// Check the frame and destroy the sprite after the animation has completed
 								if (SpriteList[iSpriteLoop].Frame==3) 
 								{
-									SpriteList[iSpriteLoop].SpriteType=sprMisc;if (SpriteList[iSpriteLoop].Frame>3) SpriteList[iSpriteLoop].Frame=0;
+									SpriteList[iSpriteLoop].SpriteType=sprMisc;
+									lvCurrent.Saved++;
 								}
 								break;
-							case DIR_MUTANT:
+							case DIR_MUTANOID:
 								// Hunt down the player?
 								// Vertical movement is fine, but horizontal isn't...
 								if(SpriteList[iSpriteLoop].Position.x<iHorizontalOffset<<SPRITE_SCALE)
@@ -1428,6 +1462,10 @@ void DefenderoidsMain()
 			{
 				PutTile(SCR_2_PLANE, iGaugePalette, 6+iEnergyLoop, 16, 0);
 			}
+
+			PrintString(SCR_2_PLANE,0,0,17,"Lemmanoids:  /");
+			PrintDecimal(SCR_2_PLANE,0,11,17,lvCurrent.Saved,2);
+			PrintDecimal(SCR_2_PLANE,0,14,17,lvCurrent.LemmanoidCount,2);
 			
 			/*
 			PrintString(SCR_2_PLANE,0,0,0,"PLAYER:(     ,     )");

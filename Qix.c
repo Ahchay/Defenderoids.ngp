@@ -27,7 +27,7 @@
 			// I have to draw the Qix with an "absolute" position within the bitmap, as the offset doesn't work?
 			// Presumably, because the position is (0,0) and does not move.
 			// Anyway, I'm keeping this in here because I like it - not really sure what it's going to do in terms of gameplay yet.
-			/*
+
 			DrawVectorObjectAbsolute((u16*)bmpPlayField,Qix);
 			// Overwrite the "oldest" point in the list with a new random point.
 			Qix.VectorList[iLoopQix].x = (((s16)QRandom())>>3)+(Qix.MovementVector.x>>5);
@@ -40,5 +40,5 @@
 			// Move the Qix towards the player
 			Qix.MovementVector.x++;
 			Qix.MovementVector.y++;
-			*/
 
+			
