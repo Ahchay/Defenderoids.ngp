@@ -500,23 +500,14 @@ void DrawGameScreen()
 
 	//Other window dressing (debug info and scorecard/lives count etc)
 	PrintString(SCR_1_PLANE, 0, 0, 16, "ENERGY:");
-
-	/*
-	PrintString(SCR_2_PLANE,0,1,1,"INVADERS");
-	PrintString(SCR_2_PLANE,0,1,2,"0:");
-	PrintString(SCR_2_PLANE,0,1,3,"1:");
-	PrintString(SCR_2_PLANE,0,1,4,"2:");
-	PrintString(SCR_2_PLANE,0,1,5,"3:");
-	PrintString(SCR_2_PLANE,0,1,6,"4:");
-	PrintString(SCR_2_PLANE,0,1,7,"5:");
-	PrintString(SCR_2_PLANE,0,1,8,"LEMMANOIDS");
-	PrintString(SCR_2_PLANE,0,1,9,"0:");
-	PrintString(SCR_2_PLANE,0,1,10,"1:");
-	PrintString(SCR_2_PLANE,0,1,11,"2:");
-	PrintString(SCR_2_PLANE,0,1,12,"3:");
-	PrintString(SCR_2_PLANE,0,1,13,"4:");
-	PrintString(SCR_2_PLANE,0,1,14,"5:");
-	*/
+	PrintString(SCR_1_PLANE, 0, 0, 17, "STATUS:");
+	// Use the unprintable char(10) through to char(30) for status bar updates
+	// Replace with the Lemmanoid animation or city status in the game loop
+	for(iLoopX=0;iLoopX<10;iLoopX++){
+		//Probably want different palettes for this...
+		PutTile(SCR_1_PLANE,1,iLoopX+7,17, iLoopX+10); //Lemmanoids Status
+		PutTile(SCR_1_PLANE,2,iLoopX+7,18, iLoopX+20); //City Status
+	}
 
 }
 
@@ -755,6 +746,8 @@ void DefenderoidsMain()
 	//SetPalette(SPRITE_PLANE, (u8)(PAL_LEMMANOID+3), RGB(0,0,0), RGB(0, 0, 15), RGB(0,0,15), RGB(0,0,15));
 
 	SetPalette(SCR_1_PLANE, 0, 0, RGB(15,15,15), RGB(0,0,15), RGB(15,0,0));
+	SetPalette(SCR_1_PLANE, 1, RGB(0,0,0), RGB(15, 11, 12), RGB(0,0,15), RGB(0,15,0));
+	SetPalette(SCR_1_PLANE, 2, RGB(0,0,0), RGB(0, 0, 15), RGB(15,0,0), RGB(0,15,0));
 	SetPalette(SCR_2_PLANE, 0, 0, RGB(15,15,15), RGB(8,8,8), RGB(4,4,4));
 	SetPalette(SCR_2_PLANE, 1, 0, RGB(15,0,0), RGB(8,8,8), RGB(4,4,4));
 
@@ -1463,9 +1456,24 @@ void DefenderoidsMain()
 				PutTile(SCR_2_PLANE, iGaugePalette, 6+iEnergyLoop, 16, 0);
 			}
 
-			PrintString(SCR_2_PLANE,0,0,17,"Lemmanoids:  /");
-			PrintDecimal(SCR_2_PLANE,0,11,17,lvCurrent.Saved,2);
-			PrintDecimal(SCR_2_PLANE,0,14,17,lvCurrent.LemmanoidCount,2);
+			// Lemmanoid status
+			// Use the unprintable CHAR(10) through to CHAR(20) for status bar
+			iLoopX=0;
+			iLoopY=0;
+			for(iLemmanoidLoop=0;iLemmanoidLoop<MAX_SPRITE;iLemmanoidLoop++)
+			{
+				switch(SpriteList[iLemmanoidLoop].SpriteType)
+				{
+					case sprLemmanoid:
+						CopyAnimationFrame(Sprites, 10+iLoopX++, 1, (SpriteList[iLemmanoidLoop].SpriteType) + (SpriteList[iLemmanoidLoop].Direction) + SpriteList[iLemmanoidLoop].Frame);
+						break;
+					case sprCity:
+						CopyAnimationFrame(Sprites, 20+iLoopY++, 1, (SpriteList[iLemmanoidLoop].SpriteType) + (SpriteList[iLemmanoidLoop].Direction) + SpriteList[iLemmanoidLoop].Frame);
+						break;
+				}
+			}
+
+			// City Status
 			
 			/*
 			PrintString(SCR_2_PLANE,0,0,0,"PLAYER:(     ,     )");
