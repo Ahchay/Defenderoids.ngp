@@ -507,9 +507,8 @@ void DrawGameScreen()
 	// Use the unprintable char(10) through to char(30) for status bar updates
 	// Replace with the Lemmanoid animation or city status in the game loop
 	for(iLoopX=0;iLoopX<10;iLoopX++){
-		//Probably want different palettes for this...
-		PutTile(SCR_1_PLANE,1,iLoopX+7,17, iLoopX+10); //Lemmanoids Status
-		PutTile(SCR_1_PLANE,2,iLoopX+7,18, iLoopX+20); //City Status
+		PutTile(SCR_1_PLANE,PAL_LEMMANOID,iLoopX+7,17, iLoopX+10); //Lemmanoids Status
+		PutTile(SCR_1_PLANE,PAL_CITY,iLoopX+7,18, iLoopX+20); //City Status
 	}
 
 }
@@ -749,8 +748,8 @@ void DefenderoidsMain()
 	//SetPalette(SPRITE_PLANE, (u8)(PAL_LEMMANOID+3), RGB(0,0,0), RGB(0, 0, 15), RGB(0,0,15), RGB(0,0,15));
 
 	SetPalette(SCR_1_PLANE, 0, 0, RGB(15,15,15), RGB(0,0,15), RGB(15,0,0));
-	SetPalette(SCR_1_PLANE, 1, RGB(0,0,0), RGB(15, 11, 12), RGB(0,0,15), RGB(0,15,0));
-	SetPalette(SCR_1_PLANE, 2, RGB(0,0,0), RGB(0, 0, 15), RGB(15,0,0), RGB(0,15,0));
+	SetPalette(SCR_1_PLANE, PAL_LEMMANOID, RGB(0,0,0), RGB(15, 11, 12), RGB(0,0,15), RGB(0,15,0));
+	SetPalette(SCR_1_PLANE, PAL_CITY, RGB(0,0,0), RGB(0, 0, 15), RGB(15,0,0), RGB(0,15,0));
 	SetPalette(SCR_2_PLANE, 0, 0, RGB(15,15,15), RGB(8,8,8), RGB(4,4,4));
 	SetPalette(SCR_2_PLANE, 1, 0, RGB(15,0,0), RGB(8,8,8), RGB(4,4,4));
 
@@ -1461,8 +1460,9 @@ void DefenderoidsMain()
 				PutTile(SCR_2_PLANE, iGaugePalette, 6+iEnergyLoop, 16, 0);
 			}
 
-			// Lemmanoid status
-			// Use the unprintable CHAR(10) through to CHAR(20) for status bar
+			// Lemmanoid and city status
+			// Use the unprintable CHAR(10) through to CHAR(19) for the Lemmanoid status
+			// Use CHAR(20) through to CHAR(30) for the city status (only actually need CHAR(20)-CHAR(23))
 			iLoopX=0;
 			iLoopY=0;
 			for(iLemmanoidLoop=0;iLemmanoidLoop<MAX_SPRITE;iLemmanoidLoop++)
@@ -1477,61 +1477,16 @@ void DefenderoidsMain()
 						break;
 				}
 			}
+			// Need different palettes for saved/dead Lemmanoids
+			for(iLemmanoidLoop=0;iLemmanoidLoop<lvCurrent.Saved;iLemmanoidLoop++)
+			{
+				CopyAnimationFrame(Sprites, 10+iLoopX++, 1, sprLemmanoid+DIR_SAFE);
+			}
 			for(;iLoopX<lvCurrent.LemmanoidCount;iLoopX++)
 			{
-				// Change the palette for dead Lemmanoids?
 				CopyAnimationFrame(Sprites, 10+iLoopX, 1, sprLemmanoid+DIR_HEADSTONE);
 			}
 
-			// City Status
-			
-			/*
-			PrintString(SCR_2_PLANE,0,0,0,"PLAYER:(     ,     )");
-			PrintDecimal(SCR_2_PLANE, 0, 8, 0, vShip.Position.x, 5);
-			PrintDecimal(SCR_2_PLANE, 0, 14, 0, vShip.Position.y, 5);
-			PrintString(SCR_2_PLANE,0,0,1,"SHOT 0:(     ,     )");
-			PrintString(SCR_2_PLANE,0,0,2,"SHOT 1:(     ,     )");
-			PrintString(SCR_2_PLANE,0,0,3,"SHOT 2:(     ,     )");
-			PrintString(SCR_2_PLANE,0,0,4,"SHOT 3:(     ,     )");
-			for(iLoopShot=0;iLoopShot<4;iLoopShot++) {
-				if (Shots[iLoopShot].Scale == 1)
-				{
-					PrintDecimal(SCR_2_PLANE, 0, 8, 1+iLoopShot,Shots[iLoopShot].Position.x, 5);
-					PrintDecimal(SCR_2_PLANE, 0, 14, 1+iLoopShot, Shots[iLoopShot].Position.y, 5);
-				}
-			}
-			PrintString(SCR_2_PLANE,0,0,5,"INVADR:(     ,     )");
-			PrintString(SCR_2_PLANE,0,0,6,"FRAME:( , , ,   )");
-			PrintDecimal(SCR_2_PLANE,0,8,5,SpriteList[0].Position.x,5);
-			PrintDecimal(SCR_2_PLANE,0,14,5,SpriteList[0].Position.y,5);
-			PrintDecimal(SCR_2_PLANE,0,7,6,SpriteList[0].SpriteType,1);
-			PrintDecimal(SCR_2_PLANE,0,9,6,SpriteList[0].Direction,1);
-			PrintDecimal(SCR_2_PLANE,0,11,6,SpriteList[0].Frame,1);
-			PrintDecimal(SCR_2_PLANE,0,13,6,(SpriteList[0].SpriteType << 4) + (SpriteList[0].Direction << 2) + SpriteList[0].Frame,3);
-			PrintString(SCR_2_PLANE,0,0,7,"LEMMNG:(     ,     )");
-			PrintString(SCR_2_PLANE,0,0,8,"FRAME:( , , ,   )");
-			PrintDecimal(SCR_2_PLANE,0,8,7,SpriteList[12].Position.x,5);
-			PrintDecimal(SCR_2_PLANE,0,14,7,SpriteList[12].Position.y,5);
-			PrintDecimal(SCR_2_PLANE,0,7,8,SpriteList[12].SpriteType,1);
-			PrintDecimal(SCR_2_PLANE,0,9,8,SpriteList[12].Direction,1);
-			PrintDecimal(SCR_2_PLANE,0,11,8,SpriteList[12].Frame,1);
-			for (iLoopAsteroid=0;iLoopAsteroid<DefenderoidsLevels[iCurrentLevel].AsteroidCount;iLoopAsteroid++)
-			{
-				PrintString(SCR_2_PLANE+iLoopAsteroid,0,0,10+iLoopAsteroid,"ASTER :(     ,     )");
-				PrintDecimal(SCR_2_PLANE+iLoopAsteroid,0,5,10+iLoopAsteroid,iLoopAsteroid,1);
-				PrintDecimal(SCR_2_PLANE, 0, 8, 10+iLoopAsteroid,Asteroid[iLoopAsteroid].Position.x, 5);
-				PrintDecimal(SCR_2_PLANE, 0, 14, 10+iLoopAsteroid, Asteroid[iLoopAsteroid].Position.y, 5);
-			}
-			*/
-
-			//Debug info
-			//Frame counter
-			//PrintDecimal(SCR_1_PLANE, 0, 4, 18, 60/(VBCounter-iStartFrame), 2);
-			//Current Horizontal Offset
-			//PrintDecimal(SCR_2_PLANE, 0, 4, 17, iHorizontalOffset, 3);
-			
-			// Slow it down so I can look at it...
-			//Sleep(60);
 
 		} // Level Loop
 
