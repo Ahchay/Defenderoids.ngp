@@ -22,7 +22,10 @@
  *  Asteroid drop pictcell - Done
  * 	Rejig Asteroid creation to get more variety - Done
  *  Asteroids can sometimes get weird shapes (flat lines, points, boxes etc) - Done
+ *   Still get occasional perfectly square asteroids
+ *   Still get occasional too small asteroids
  *  Asteroids sometimes don't move/rotate after splitting - Done
+ *   Still a bit prone to not moving, check for minimum vector sizes?
  *   Use the shot movement vector as a base for new asteroids vectors
  *  Asteroids always seem to rotate/move in the same direction? - Done
  * Add city - Done
@@ -1256,7 +1259,7 @@ void DefenderoidsMain()
 										SpriteList[SpriteList[iSpriteLoop].RelatedSpriteID].Direction=DIR_MUTANOID;
 										SpriteList[SpriteList[iSpriteLoop].RelatedSpriteID].RelatedSpriteID=99;
 										SpriteList[iSpriteLoop].RelatedSpriteID=99;
-										lvCurrent.LemmanoidCount--;
+										//lvCurrent.LemmanoidCount--;
 									}
 								}
 								break;
@@ -1471,6 +1474,11 @@ void DefenderoidsMain()
 						CopyAnimationFrame(Sprites, 20+iLoopY++, 1, (SpriteList[iLemmanoidLoop].SpriteType) + (SpriteList[iLemmanoidLoop].Direction) + SpriteList[iLemmanoidLoop].Frame);
 						break;
 				}
+			}
+			for(;iLoopX<lvCurrent.LemmanoidCount;iLoopX++)
+			{
+				// Change the palette for dead Lemmanoids?
+				CopyAnimationFrame(Sprites, 10+iLoopX, 1, sprLemmanoid+DIR_HEADSTONE);
 			}
 
 			// City Status

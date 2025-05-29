@@ -65,6 +65,7 @@ typedef struct Sprite
 #define DIR_NORTH 12
 #define DIR_HOME 16
 #define DIR_MUTANOID 20
+#define DIR_HEADSTONE 24
 
 // City block IDs (left-right)
 #define CITYBLOCK1 0
