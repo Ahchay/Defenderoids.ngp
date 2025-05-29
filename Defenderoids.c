@@ -59,7 +59,15 @@
  *    Pick up the pictcell and drag it to the Qix, sort of Sinistar-y I guess
  *    Each pictcell will destroy one vector of the Qix
  *    Reduce Qix to 2 vectors to destroy
+ *   NEW IDEA
+ *    Qix^2
+ *    Qix can only be harmed by ramming with the Defenderoid
+ *    Ramming will deplete ~50% of your energy guage over 2 seconds (or something)
+ *    Each 50% of energy will destroy one leg of the Qix
+ *    Shoot asteroids to release Pictcells as before
+ *    Pictcells will replenish energy
  * 	Capture Lemmanoids - Done
+ *   Need to refine the capture distance - Lemmanoids can be scooped up from too far
  *  Release Lemmanoids - Done
  *  Spawn on a timer
  *   If active invaders <= level invader count
@@ -841,7 +849,8 @@ void DefenderoidsMain()
 		bShoot=(JOYPAD & J_A);
 
 		// Main level loop
-		while ((!(JOYPAD & J_OPTION)) && iEnergyGauge>0 && lvCurrent.InvaderCount>0)
+		//PrintString(SCR_1_PLANE,0,20-((lvCurrent.LevelName)/2),0,lvCurrent.LevelName);
+		while (iEnergyGauge>0 && lvCurrent.LemmanoidCount!=(lvCurrent.Saved+lvCurrent.Died))
 		{
 
 			iStartFrame=VBCounter;
@@ -1463,6 +1472,9 @@ void DefenderoidsMain()
 			// Lemmanoid and city status
 			// Use the unprintable CHAR(10) through to CHAR(19) for the Lemmanoid status
 			// Use CHAR(20) through to CHAR(30) for the city status (only actually need CHAR(20)-CHAR(23))
+			// Can also use this to check for end of level conditions
+			// - All Lemmanoids Saved
+			// - All Lemmanoids Dead (possibly captured)
 			iLoopX=0;
 			iLoopY=0;
 			for(iLemmanoidLoop=0;iLemmanoidLoop<MAX_SPRITE;iLemmanoidLoop++)
@@ -1478,17 +1490,25 @@ void DefenderoidsMain()
 				}
 			}
 			// Need different palettes for saved/dead Lemmanoids
+			// Saved Lemmanoids get a little flag
 			for(iLemmanoidLoop=0;iLemmanoidLoop<lvCurrent.Saved;iLemmanoidLoop++)
 			{
 				CopyAnimationFrame(Sprites, 10+iLoopX++, 1, sprLemmanoid+DIR_SAFE);
 			}
+			// Dead ones get a tombstone
+			lvCurrent.Died=0;
 			for(;iLoopX<lvCurrent.LemmanoidCount;iLoopX++)
 			{
 				CopyAnimationFrame(Sprites, 10+iLoopX, 1, sprLemmanoid+DIR_HEADSTONE);
+				lvCurrent.Died++;
+
 			}
 
-
 		} // Level Loop
+
+		// Check for animation/transition
+		// Energy Gauge == 0 || lvCurrent.LemmanoidCount==LvCurrent.Died - Blow up planet
+		// lvCurrent.Saved>0 - warp to new planet
 
 		iCurrentLevel++;
 		lvCurrent=DefenderoidsLevels[iCurrentLevel];
@@ -1498,7 +1518,7 @@ void DefenderoidsMain()
 		{
 			SetSprite(iSpriteLoop, 0, 0, 0, 0, PAL_SPRITE);
 		}
-	} // Lives Loop
+	} // Player Energy Loop
 
 	VGM_StopBGM();
 

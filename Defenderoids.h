@@ -92,11 +92,16 @@ typedef struct Level
 	u8 AsteroidCount;
 	u8 CityStatus;
 	u8 Saved;
+	u8 Died;
 } LEVEL;
 
 const LEVEL DefenderoidsLevels[] = {
-	{"Start me up",5,5,4,0,0},
-	{"Getting Harder",12,12,3,0,0}
+	{"Start me up",4,6,4,0,0,0},
+	{"Getting Harder",10,6,3,0,0,0},
+	{"Level 3",12,6,2,0,0,0},
+	{"Level 4",14,8,3,0,0,0},
+	{"Level 5",14,1,4,0,0,0},
+	{"Level 6",10,6,3,0,0,0}
 };
 
 // Function templates
