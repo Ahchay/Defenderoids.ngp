@@ -1103,6 +1103,8 @@ void DefenderoidsMain()
 												VectorList[iLoopAsteroid].ObjectType=VEC_NONE;
 											}
 											iLoopAsteroid=MAX_VECTOR;
+											VectorList[iVectorLoop].ObjectType=VEC_NONE;
+
 										}
 									}
 								}

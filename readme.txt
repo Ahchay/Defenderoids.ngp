@@ -6,13 +6,13 @@ Not so much a Shoot'em Up as a Mash'em Up...
 A little bit of Defender, a little bit of Asteroids and a touch of Qix, Galaga and Lemmings for good measure.
 
 Plot:
-The Lemmanoids homeworld has been destroyed by the evil Attackeroids
+The Lemmanoids homeworld (Lemmeteroid) has been destroyed by the evil Attackeroids
 
 Only you, the last remaining Defenderoid can save them!
 
 The last Lemmanoids have crash-landed on an inhospitible alien world, bombarded by fragments of the Lemmanoid homeworld.
 
-It is up to you to mine the fragmented Lemmanoid homeworld for the mysterious Pictcells so they can rebuild their cities and escape the clutches of the evil Attackeroids
+It is up to you to mine the fragmented Lemmeteroid for the mysterious Pictcells so they can rebuild their cities and escape the clutches of the evil Attackeroids
 
 Gameplay:
 
