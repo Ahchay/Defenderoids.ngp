@@ -805,9 +805,9 @@ void DefenderoidsMain()
 		lvCurrent=DefenderoidsLevels[iCurrentLevel];
 
 		// City (need to create at end of sprite list so they end up at back of priority queue)
-		SpriteList[0] = CreateSprite(16<<SPRITE_SCALE,92<<SPRITE_SCALE,60,sprCity,CITYBLOCK2,0);
-		SpriteList[1] = CreateSprite(24<<SPRITE_SCALE,92<<SPRITE_SCALE,61,sprCity,CITYBLOCK3,0);
-		SpriteList[2] = CreateSprite(8<<SPRITE_SCALE,92<<SPRITE_SCALE,62,sprCity,CITYBLOCK1,0);
+		SpriteList[0] = CreateSprite(8<<SPRITE_SCALE,92<<SPRITE_SCALE,60,sprCity,CITYBLOCK1,0);
+		SpriteList[1] = CreateSprite(16<<SPRITE_SCALE,92<<SPRITE_SCALE,61,sprCity,CITYBLOCK2,0);
+		SpriteList[2] = CreateSprite(24<<SPRITE_SCALE,92<<SPRITE_SCALE,62,sprCity,CITYBLOCK3,0);
 		SpriteList[3] = CreateSprite(32<<SPRITE_SCALE,92<<SPRITE_SCALE,63,sprCity,CITYBLOCK4,0);
 
 		// Set up the player
