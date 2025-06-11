@@ -320,7 +320,7 @@ bool CheckSpriteCollision(POINT object1, SPRITEPOINT object2)
 
 	if ((iHorizontalDistance<=iCollisionDistance||iWrapDistance<=iCollisionDistance)&&iVerticalDistance<=iCollisionDistance)
 	{
-		// Our objects are within 1024 units (8 pixels give or take)
+		// Our objects are within 1024 units (8 pixels give or take) of centre
 		// Can now do finer detail checks if needed
 		bReturn=1;
 	}
@@ -1077,38 +1077,41 @@ void DefenderoidsMain()
 										if (CheckAsteroidCollision(VectorList[iVectorLoop].Position,VectorList[iLoopAsteroid].Position))
 										{
 											// Use the Asteroid Scale object to determine what happens next
-											if (VectorList[iLoopAsteroid].Scale!=0)
+											switch (VectorList[iLoopAsteroid].Scale)
 											{
-												//Split asteroid into smaller chunks
-												//First reduce the size of the current asteroid
-												VectorList[iLoopAsteroid]=CreateAsteroid(VectorList[iLoopAsteroid].Position.x,VectorList[iLoopAsteroid].Position.y,VectorList[iLoopAsteroid].Scale-1);
-												//Then spawn new ones (up to the MAX_ASTEROID limit)
-												// Find new asteroid id
-												for (iNewVectorLoop=1;iNewVectorLoop<MAX_VECTOR;iNewVectorLoop++)
-												{
-													if (VectorList[iNewVectorLoop].ObjectType==VEC_NONE)
+												case 0:
+													break;
+												case 1:
+													//Smallest size asteroid destroyed
+													//First create a Pictcell
+													for(iSpriteLoop=0;iSpriteLoop<=MAX_SPRITE;iSpriteLoop++)
 													{
-														VectorList[iNewVectorLoop]=CreateAsteroid(VectorList[iLoopAsteroid].Position.x,VectorList[iLoopAsteroid].Position.y,VectorList[iLoopAsteroid].Scale);
-														iNewVectorLoop=MAX_VECTOR;
+														//Search for the first "empty" sprite
+														if (SpriteList[iSpriteLoop].SpriteType==sprMisc)
+														{
+															SpriteList[iSpriteLoop]=CreateSprite(VectorList[iLoopAsteroid].Position.x,VectorList[iLoopAsteroid].Position.y,iSpriteLoop,sprPictcell,DIR_SOUTH,0);
+															iSpriteLoop=MAX_SPRITE+1;
+														}
 													}
-														
-												}
-											}
-											else
-											{
-												//Smallest size asteroid destroyed
-												//First create a Pictcell
-												for(iSpriteLoop=0;iSpriteLoop<=MAX_SPRITE;iSpriteLoop++)
-												{
-													//Search for the first "empty" sprite
-													if (SpriteList[iSpriteLoop].SpriteType==sprMisc)
+													//Then shuffle asteroids up to fill the gap and reduce lvCurrent.AsteroidCount
+													VectorList[iLoopAsteroid].ObjectType=VEC_NONE;
+													break;
+												default:
+													//Split asteroid into smaller chunks
+													//First reduce the size of the current asteroid
+													VectorList[iLoopAsteroid]=CreateAsteroid(VectorList[iLoopAsteroid].Position.x,VectorList[iLoopAsteroid].Position.y,VectorList[iLoopAsteroid].Scale-1);
+													//Then spawn new ones (up to the MAX_ASTEROID limit)
+													// Find new asteroid id
+													for (iNewVectorLoop=1;iNewVectorLoop<MAX_VECTOR;iNewVectorLoop++)
 													{
-														SpriteList[iSpriteLoop]=CreateSprite(VectorList[iLoopAsteroid].Position.x,VectorList[iLoopAsteroid].Position.y,iSpriteLoop,sprPictcell,DIR_SOUTH,0);
-														iSpriteLoop=MAX_SPRITE+1;
+														if (VectorList[iNewVectorLoop].ObjectType==VEC_NONE)
+														{
+															VectorList[iNewVectorLoop]=CreateAsteroid(VectorList[iLoopAsteroid].Position.x,VectorList[iLoopAsteroid].Position.y,VectorList[iLoopAsteroid].Scale);
+															iNewVectorLoop=MAX_VECTOR;
+														}
+															
 													}
-												}
-												//Then shuffle asteroids up to fill the gap and reduce lvCurrent.AsteroidCount
-												VectorList[iLoopAsteroid].ObjectType=VEC_NONE;
+													break;
 											}
 											iLoopAsteroid=MAX_VECTOR;
 											VectorList[iVectorLoop].ObjectType=VEC_NONE;

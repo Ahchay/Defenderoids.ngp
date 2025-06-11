@@ -73,11 +73,9 @@ We have five different types of object:
 -	Sprites
 -	Asteroids
 
-They each have their own co-ordinate systems, so I need something that translates each to the overall game co-ord system (which i haven't really decided on yet)
+They each have their own co-ordinate systems, everything has to be knocked down to a unified co-ordinate system
 
-Everything has to be knocked down to a unified co-ordinate system
-
-Game Co-ordintate:
+Game Co-ordinate:
     Unit: u16
     Width: 65535
     Height: 65535
