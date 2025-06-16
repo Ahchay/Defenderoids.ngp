@@ -1055,6 +1055,7 @@ void DefenderoidsMain()
 										{
 											SpriteList[iSpriteLoop].SpriteType = sprMisc;
 										}
+										lvCurrent.InvaderCount--;
 										// Destroy the shot object
 										VectorList[iVectorLoop].ObjectType=VEC_NONE;
 										// Stop checking for collisions
@@ -1216,7 +1217,7 @@ void DefenderoidsMain()
 											//PrintDecimal(SCR_2_PLANE,0,10,2+iSpriteLoop-4,WrapDistance(SpriteList[iSpriteLoop].Position.x,SpriteList[iLemmanoidLoop].Position.x,65535),5);
 											iCaptureDistance=WrapDistance(SpriteList[iSpriteLoop].Position.x>>SPRITE_SCALE,SpriteList[iLemmanoidLoop].Position.x>>SPRITE_SCALE,SPRITE_MAX_WIDTH);
 											
-											if (iCaptureDistance<64&&iCaptureHeight<8)
+											if (iCaptureDistance<8&&iCaptureHeight<8)
 											{
 													//Gotcha
 													//PrintString(SCR_2_PLANE,0,11,2+iSpriteLoop-4,"C");
@@ -1226,7 +1227,7 @@ void DefenderoidsMain()
 													SpriteList[iLemmanoidLoop].Direction=DIR_NORTH;
 													iLemmanoidLoop=MAX_SPRITE;
 											}
-											else if (iCaptureDistance<128)
+											else if (iCaptureDistance<64)
 											{
 													//PrintString(SCR_2_PLANE,0,14,2+iSpriteLoop-4,"H");
 													//PrintDecimal(SCR_2_PLANE,0,15,2+iSpriteLoop-4,iLemmanoidLoop,2);
@@ -1444,12 +1445,31 @@ void DefenderoidsMain()
 						SpriteList[iSpriteLoop].Frame++;
 						if (SpriteList[iSpriteLoop].Frame>3) SpriteList[iSpriteLoop].Frame=0;
 						break;
+					case sprMisc:
+						//////////////////////////////////////////////////////
+						// Spawn new invaders if invader count < default
+						//////////////////////////////////////////////////////
+						if(lvCurrent.InvaderCount<DefenderoidsLevels[iCurrentLevel].InvaderCount)
+						{
+							lvCurrent.InvaderCount++;
+							// Spawn invaders off screen, keep the player on their toes
+							if(iHorizontalOffset<255)
+							{
+								SpriteList[iSpriteLoop]=CreateSprite(((u16)iHorizontalOffset-255)<<SPRITE_SCALE,0,iSpriteLoop,sprInvader,DIR_SOUTH,(QRandom()>>6));
+							}
+							else
+							{
+								SpriteList[iSpriteLoop]=CreateSprite(((u16)iHorizontalOffset+255)<<SPRITE_SCALE,0,iSpriteLoop,sprInvader,DIR_SOUTH,(QRandom()>>6));
+							}	
+						}
 					default:
 						break;
 				}
 
 				DrawSprite(SpriteList[iSpriteLoop],iHorizontalOffset);
 			}
+
+
 
 			//////////////////////////////////////////////////////
 			// Score and other dressing
