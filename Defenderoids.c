@@ -692,7 +692,6 @@ void DefenderoidsMain()
 	u8 iCurrentLevel;
 	u8 iNewVectorLoop;
 	LEVEL lvCurrent;
-	u8 iLives;
 	u8 iLoopShot;
 	u8 iLoopExplosion;
 	u8 iLoopExplosionPoint;
@@ -790,8 +789,7 @@ void DefenderoidsMain()
 	/////////////////////////////////////////////////////////
 
 	iCurrentLevel=0;
-	iLives=3;
-
+	
 	VGM_PlayBGM_Loop((u8*)bgm1, bgm1_loop_point);
 
 	iEnergyGauge=96;
@@ -805,10 +803,11 @@ void DefenderoidsMain()
 		lvCurrent=DefenderoidsLevels[iCurrentLevel];
 
 		// City (need to create at end of sprite list so they end up at back of priority queue)
-		SpriteList[0] = CreateSprite(8<<SPRITE_SCALE,92<<SPRITE_SCALE,60,sprCity,CITYBLOCK1,0);
-		SpriteList[1] = CreateSprite(16<<SPRITE_SCALE,92<<SPRITE_SCALE,61,sprCity,CITYBLOCK2,0);
-		SpriteList[2] = CreateSprite(24<<SPRITE_SCALE,92<<SPRITE_SCALE,62,sprCity,CITYBLOCK3,0);
-		SpriteList[3] = CreateSprite(32<<SPRITE_SCALE,92<<SPRITE_SCALE,63,sprCity,CITYBLOCK4,0);
+		// Need to use the city age (0-12) to determine each individual block frame
+		SpriteList[0] = CreateSprite(8<<SPRITE_SCALE,92<<SPRITE_SCALE,60,sprCity,CITYBLOCK1,lvCurrent.CityStatus);
+		SpriteList[1] = CreateSprite(16<<SPRITE_SCALE,92<<SPRITE_SCALE,61,sprCity,CITYBLOCK2,lvCurrent.CityStatus);
+		SpriteList[2] = CreateSprite(24<<SPRITE_SCALE,92<<SPRITE_SCALE,62,sprCity,CITYBLOCK3,lvCurrent.CityStatus);
+		SpriteList[3] = CreateSprite(32<<SPRITE_SCALE,92<<SPRITE_SCALE,63,sprCity,CITYBLOCK4,lvCurrent.CityStatus);
 
 		// Set up the player
 		vShip = CreatePlayer();
@@ -1406,9 +1405,9 @@ void DefenderoidsMain()
 							SpriteList[iSpriteLoop].RelatedSpriteID=99;
 							// Add to city
 							// Find "first" city block with minimum age (frame)
-							// Start at city age 5/block 4 - so we don't keep adding once the city is complete
+							// Start at city age MAX/block 4 - so we don't keep adding once the city is complete
 							iCityBlock=4;
-							iMinAge=CITYAGE4;
+							iMinAge=CITY_COMPLETE;
 							for(iCityLoop=0;iCityLoop<4;iCityLoop++)
 							{
 								if(SpriteList[iCityLoop].Frame<iMinAge)
@@ -1422,7 +1421,7 @@ void DefenderoidsMain()
 								SpriteList[iCityBlock].Frame+=4;
 								lvCurrent.CityStatus++;
 							}
-							// else - City complete
+							// else - City already complete, don't need to do anything, just destroy the pictcell sprite and let the Lemmanoid go home
 						}
 						else
 						{
@@ -1534,6 +1533,7 @@ void DefenderoidsMain()
 		// lvCurrent.Saved>0 - warp to new planet
 
 		iCurrentLevel++;
+		if(iCurrentLevel>MAX_LEVEL) iCurrentLevel=0;
 		lvCurrent=DefenderoidsLevels[iCurrentLevel];
 
 		// Close down all sprites at end of level loop

@@ -86,7 +86,6 @@ typedef struct Sprite
 
 typedef struct Level
 {
-	char LevelName[30];
 	u8 InvaderCount;
 	u8 LemmanoidCount;
 	u8 AsteroidCount;
@@ -96,13 +95,15 @@ typedef struct Level
 } LEVEL;
 
 const LEVEL DefenderoidsLevels[] = {
-	{"Start me up",4,6,4,0,0,0},
-	{"Getting Harder",10,6,3,0,0,0},
-	{"Level 3",12,6,2,0,0,0},
-	{"Level 4",14,8,3,0,0,0},
-	{"Level 5",14,1,4,0,0,0},
-	{"Level 6",10,6,3,0,0,0}
+	{1,3,1,12,0,0},
+	{3,5,2,8,0,0},
+	{8,6,2,4,0,0},
+	{0,8,3,0,0,0},
+	{4,1,4,0,0,0},
+	{6,6,3,0,0,0}
 };
+
+#define MAX_LEVEL 5
 
 // Function templates
 u8 DefenderoidsLogo();
