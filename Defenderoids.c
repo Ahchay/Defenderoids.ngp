@@ -794,7 +794,7 @@ void DefenderoidsMain()
 
 	iEnergyGauge=96;
 
-	while ((!(JOYPAD & J_OPTION)) && iEnergyGauge>0)
+	while (iEnergyGauge>0)
 	{
 		////////////////////////////////////////////////////////////
 		// Level setup
