@@ -493,25 +493,25 @@ void DrawGameScreen()
 	//
 
 	//Corners
-	PutTile(SCR_1_PLANE,0,0,0,borderTilebase);
-	PutTile(SCR_1_PLANE,0,19,0,borderTilebase+2);
-	PutTile(SCR_1_PLANE,0,0,15,borderTilebase+6);
-	PutTile(SCR_1_PLANE,0,19,15,borderTilebase+8);
+	PutTile(SCR_1_PLANE,PAL_BORDER,0,0,borderTilebase);
+	PutTile(SCR_1_PLANE,PAL_BORDER,19,0,borderTilebase+2);
+	PutTile(SCR_1_PLANE,PAL_BORDER,0,15,borderTilebase+6);
+	PutTile(SCR_1_PLANE,PAL_BORDER,19,15,borderTilebase+8);
 
 	//Top/Bottom edges
 	for(iLoopX=1;iLoopX<=18;iLoopX++){
-		PutTile(SCR_1_PLANE,0,iLoopX,0,borderTilebase+1);
-		PutTile(SCR_1_PLANE,0,iLoopX,15,borderTilebase+7);
+		PutTile(SCR_1_PLANE,PAL_BORDER,iLoopX,0,borderTilebase+1);
+		PutTile(SCR_1_PLANE,PAL_BORDER,iLoopX,15,borderTilebase+7);
 	}
 	//Left/Right edges
 	for(iLoopY=1;iLoopY<15;iLoopY++){
-		PutTile(SCR_1_PLANE,0,0,iLoopY,borderTilebase+3);
-		PutTile(SCR_1_PLANE,0,19,iLoopY,borderTilebase+5);
+		PutTile(SCR_1_PLANE,PAL_BORDER,0,iLoopY,borderTilebase+3);
+		PutTile(SCR_1_PLANE,PAL_BORDER,19,iLoopY,borderTilebase+5);
 	}
 
 	//Other window dressing (debug info and scorecard/lives count etc)
-	PrintString(SCR_1_PLANE, 0, 0, 16, "ENERGY:");
-	PrintString(SCR_1_PLANE, 0, 0, 17, "STATUS:");
+	PrintString(SCR_1_PLANE, PAL_SCORE, 0, 16, "ENERGY:");
+	PrintString(SCR_1_PLANE, PAL_SCORE, 0, 17, "STATUS:");
 	// Use the unprintable char(10) through to char(30) for status bar updates
 	// Replace with the Lemmanoid animation or city status in the game loop
 	for(iLoopX=0;iLoopX<10;iLoopX++){
@@ -527,26 +527,26 @@ void DrawGameOverScreen()
 	u8 iLoopY;
 
 	//Corners
-	PutTile(SCR_1_PLANE,0,2,7,borderTilebase);
-	PutTile(SCR_1_PLANE,0,17,7,borderTilebase+2);
-	PutTile(SCR_1_PLANE,0,2,11,borderTilebase+6);
-	PutTile(SCR_1_PLANE,0,17,11,borderTilebase+8);
+	PutTile(SCR_1_PLANE,PAL_BORDER,2,7,borderTilebase);
+	PutTile(SCR_1_PLANE,PAL_BORDER,17,7,borderTilebase+2);
+	PutTile(SCR_1_PLANE,PAL_BORDER,2,11,borderTilebase+6);
+	PutTile(SCR_1_PLANE,PAL_BORDER,17,11,borderTilebase+8);
 
 	//Top/Bottom edges
 	for(iLoopX=3;iLoopX<=16;iLoopX++){
-		PutTile(SCR_1_PLANE,0,iLoopX,7,borderTilebase+1);
-		PutTile(SCR_1_PLANE,0,iLoopX,11,borderTilebase+7);
+		PutTile(SCR_1_PLANE,PAL_BORDER,iLoopX,7,borderTilebase+1);
+		PutTile(SCR_1_PLANE,PAL_BORDER,iLoopX,11,borderTilebase+7);
 	}
 	//Left/Right edges
 	for(iLoopY=8;iLoopY<=10;iLoopY++){
-		PutTile(SCR_1_PLANE,0,2,iLoopY,borderTilebase+3);
-		PutTile(SCR_1_PLANE,0,17,iLoopY,borderTilebase+5);
+		PutTile(SCR_1_PLANE,PAL_BORDER,2,iLoopY,borderTilebase+3);
+		PutTile(SCR_1_PLANE,PAL_BORDER,17,iLoopY,borderTilebase+5);
 	}
 
 	//Other window dressing (debug info and scorecard/lives count etc)
-	PrintString(SCR_1_PLANE, 0, 3, 8, "  GAME OVER");
-	PrintString(SCR_1_PLANE, 0, 3, 9, "The Lemmanoids");
-	PrintString(SCR_1_PLANE, 0, 3, 10, "  are doomed");
+	PrintString(SCR_1_PLANE, PAL_SCORE, 3, 8, "  GAME OVER");
+	PrintString(SCR_1_PLANE, PAL_SCORE, 3, 9, "The Lemmanoids");
+	PrintString(SCR_1_PLANE, PAL_SCORE, 3, 10, "  are doomed");
 
 	Sleep(120);
 
@@ -585,9 +585,8 @@ u8 DefenderoidsLogo()
 	ClearScreen(SCR_1_PLANE);
 	ClearScreen(SCR_2_PLANE);
 
-	SetPalette(SCR_1_PLANE, 0, 0, RGB(15,0,0), RGB(15,15,0), RGB(15,15,15));
-	SetPalette(SCR_1_PLANE, 1, 0, RGB(0,0,0), RGB(0,0,0), RGB(0,0,0));
-	SetPalette(SCR_2_PLANE, 0, 0, RGB(15,15,15), RGB(11,11,11), RGB(7,7,7));
+	SetPalette(SCR_1_PLANE, PAL_LOGO, 0, RGB(15,0,0), RGB(15,15,0), RGB(15,15,15));
+	SetPalette(SCR_1_PLANE, PAL_STARFIELD, 0, RGB(0,0,0), RGB(0,0,0), RGB(0,0,0));
 
 	//Also, clear the sprites....
 	for (iSpriteLoop=0;iSpriteLoop<64;iSpriteLoop++)
@@ -600,12 +599,12 @@ u8 DefenderoidsLogo()
 	//Paint the logo.
 	for (iLoopX=0;iLoopX<=19;iLoopX++)
 	{
-		iPalette=1;
+		iPalette=PAL_STARFIELD;
 		for (iLoopY=0;iLoopY<=9;iLoopY++)
 		{
 			//Top 2 and bottom 2 lines of the logo are the star field
-			if (iLoopY>=2) {iPalette=0;}
-			if (iLoopY>=8) {iPalette=1;}
+			if (iLoopY>=2) {iPalette=PAL_LOGO;}
+			if (iLoopY>=8) {iPalette=PAL_STARFIELD;}
 			PutTile(SCR_1_PLANE, iPalette, iLoopX, iLoopY+4, LogoTileBase +(iLoopY*20)+iLoopX);
 		}
 	}
@@ -632,16 +631,16 @@ u8 DefenderoidsLogo()
 		switch (iStar)
 		{
 			case 0:
-				SetPalette(SCR_1_PLANE, 1, 0, 0, 0, 0);
+				SetPalette(SCR_1_PLANE, PAL_STARFIELD, 0, 0, 0, 0);
 				break;
 			case 1:
-				SetPalette(SCR_1_PLANE, 1, 0, iStarColour, 0, 0);
+				SetPalette(SCR_1_PLANE, PAL_STARFIELD, 0, iStarColour, 0, 0);
 				break;
 			case 2:
-				SetPalette(SCR_1_PLANE, 1, 0, 0, iStarColour, 0);
+				SetPalette(SCR_1_PLANE, PAL_STARFIELD, 0, 0, iStarColour, 0);
 				break;
 			case 3:
-				SetPalette(SCR_1_PLANE, 1, 0, 0, 0, iStarColour);
+				SetPalette(SCR_1_PLANE, PAL_STARFIELD, 0, 0, 0, iStarColour);
 				break;
 		}
 		iStarColour--;
@@ -706,6 +705,8 @@ void DefenderoidsMain()
 	u8 iCaptureDistance;
 	u8 iCaptureHeight;
 	u8 iVectorLoop;
+	bool bProcessControls;
+	bool bLevelComplete;
 	
 	/////////////////////////////////////////////////////////
 	// Template vector/sprite arrays
@@ -754,11 +755,12 @@ void DefenderoidsMain()
 	//SetPalette(SPRITE_PLANE, (u8)(PAL_LEMMANOID+2), RGB(0,0,0), RGB(0, 15, 0), RGB(0, 15, 0), RGB(0, 15, 0));
 	//SetPalette(SPRITE_PLANE, (u8)(PAL_LEMMANOID+3), RGB(0,0,0), RGB(0, 0, 15), RGB(0,0,15), RGB(0,0,15));
 
-	SetPalette(SCR_1_PLANE, 0, 0, RGB(15,15,15), RGB(0,0,15), RGB(15,0,0));
+	SetPalette(SCR_1_PLANE, PAL_BITMAP, 0, RGB(15,15,15), RGB(0,0,15), RGB(15,0,0));
+	SetPalette(SCR_1_PLANE, PAL_BORDER, 0, RGB(15,15,15), RGB(0,0,15), RGB(15,0,0));
 	SetPalette(SCR_1_PLANE, PAL_LEMMANOID, RGB(0,0,0), RGB(15, 11, 12), RGB(0,0,15), RGB(0,15,0));
 	SetPalette(SCR_1_PLANE, PAL_CITY, RGB(0,0,0), RGB(0, 0, 15), RGB(15,0,0), RGB(0,15,0));
-	SetPalette(SCR_2_PLANE, 0, 0, RGB(15,15,15), RGB(8,8,8), RGB(4,4,4));
-	SetPalette(SCR_2_PLANE, 1, 0, RGB(15,0,0), RGB(8,8,8), RGB(4,4,4));
+	SetPalette(SCR_2_PLANE, PAL_DEBUG, 0, RGB(15,15,15), RGB(8,8,8), RGB(4,4,4));
+	SetPalette(SCR_2_PLANE, PAL_SCORE, 0, RGB(15,0,0), RGB(8,8,8), RGB(4,4,4));
 
 	////////////////////////////////////////////////////////////
 	//Create game screen
@@ -779,7 +781,7 @@ void DefenderoidsMain()
 	{
 		for (iLoopX=0;iLoopX<18;iLoopX++)
 		{
-			PutTile(SCR_1_PLANE, 0, 1 + iLoopX, 1 + iLoopY, bgTileBase+iTile);
+			PutTile(SCR_1_PLANE, PAL_BITMAP, 1 + iLoopX, 1 + iLoopY, bgTileBase+iTile);
 			iTile++;
 		}
 	}
@@ -846,10 +848,12 @@ void DefenderoidsMain()
 		iVelocityY=0;
 		bShoot=0;
 		bShoot=(JOYPAD & J_A);
+		bProcessControls=true;
+		bLevelComplete=false;
 
 		// Main level loop
 		//PrintString(SCR_1_PLANE,0,20-((lvCurrent.LevelName)/2),0,lvCurrent.LevelName);
-		while (iEnergyGauge>0 && lvCurrent.LemmanoidCount!=(lvCurrent.Saved+lvCurrent.Died))
+		while (!bLevelComplete)
 		{
 
 			iStartFrame=VBCounter;
@@ -865,72 +869,117 @@ void DefenderoidsMain()
 			// B button = Thrust
 			// A butotn = Fire (must be released between shots)
 
-			if (JOYPAD & J_LEFT) vShip.RotationAngle-=8;
-			if (JOYPAD & J_RIGHT) vShip.RotationAngle+=8;
-			if (JOYPAD & J_B)
+			// Don't process controls during transition phases
+			if (bProcessControls)
 			{
+				if (JOYPAD & J_LEFT) vShip.RotationAngle-=8;
+				if (JOYPAD & J_RIGHT) vShip.RotationAngle+=8;
+				if (JOYPAD & J_B)
+				{
 
-				// Movement vector should grow or shrink by +/- 127 in any given frame?
-				if (vShip.MovementVector.x + Cos(vShip.RotationAngle+192) < 0)
-				{
-					iVelocityX = (u16)((vShip.MovementVector.x + Cos(vShip.RotationAngle+192)) * -1)>>8;
-				}
-				else
-				{
-					iVelocityX = (u16)((vShip.MovementVector.x + Cos(vShip.RotationAngle+192)))>>8;
-				}
-
-				if (vShip.MovementVector.y + Sin(vShip.RotationAngle+192) < 0)
-				{
-					iVelocityY = (u16)((vShip.MovementVector.y + Sin(vShip.RotationAngle+192)) * -1)>>8;
-				}
-				else
-				{
-					iVelocityY = (u16)((vShip.MovementVector.y + Sin(vShip.RotationAngle+192)))>>8;
-				}
-
-				// Need to constrain the Movement Vector to a maximum velocity.
-				// We have separate max velocities for horizontal and vertical movement
-				if (iVelocityX<3)
-				{
-					// Modify the movement vector by the angle.
-					// Because "zero" degrees is at right angles to "up", we need to rotate this by 270 degrees
-					// which on a 256 byte sine table is 192.
-					vShip.MovementVector.x += (Cos(vShip.RotationAngle+192));
-				}
-				if (iVelocityY<2)
-				{
-					vShip.MovementVector.y += (Sin(vShip.RotationAngle+192));
-				}
-			}
-			if (JOYPAD & J_A && bShoot)
-			{
-				// Fire a shot.
-				// Find an "empty" shot in the array, and copy the template "shot" vector into it.
-				// MovementVector will be based on tr whe current ship vector with a multiplier to give the velocity. Hopefully one that never out-runs the ship.
-				// Set the shot flag so that we don't get continuous fire. Got to make the player work for it...
-				// Find the first "empty" shot - scale will be set to zero if it's not valid.
-				for (iVectorLoop=1;iVectorLoop<(MAX_VECTOR);iVectorLoop++)
-				{
-					if (VectorList[iVectorLoop].ObjectType == 0)
+					// Movement vector should grow or shrink by +/- 127 in any given frame?
+					if (vShip.MovementVector.x + Cos(vShip.RotationAngle+192) < 0)
 					{
-						
-						VGM_PlaySFX((u8*)zap,1);
+						iVelocityX = (u16)((vShip.MovementVector.x + Cos(vShip.RotationAngle+192)) * -1)>>8;
+					}
+					else
+					{
+						iVelocityX = (u16)((vShip.MovementVector.x + Cos(vShip.RotationAngle+192)))>>8;
+					}
 
-						bShotType=!bShotType;
-						VectorList[iVectorLoop]=CreateShot(iHorizontalOffset,vShip,bShotType);
-						
-						//Terminate the loop so that only one shot is created
-						iVectorLoop = MAX_VECTOR;
+					if (vShip.MovementVector.y + Sin(vShip.RotationAngle+192) < 0)
+					{
+						iVelocityY = (u16)((vShip.MovementVector.y + Sin(vShip.RotationAngle+192)) * -1)>>8;
+					}
+					else
+					{
+						iVelocityY = (u16)((vShip.MovementVector.y + Sin(vShip.RotationAngle+192)))>>8;
+					}
+
+					// Need to constrain the Movement Vector to a maximum velocity.
+					// We have separate max velocities for horizontal and vertical movement
+					if (iVelocityX<3)
+					{
+						// Modify the movement vector by the angle.
+						// Because "zero" degrees is at right angles to "up", we need to rotate this by 270 degrees
+						// which on a 256 byte sine table is 192.
+						vShip.MovementVector.x += (Cos(vShip.RotationAngle+192));
+					}
+					if (iVelocityY<2)
+					{
+						vShip.MovementVector.y += (Sin(vShip.RotationAngle+192));
 					}
 				}
-				// Reset the shoot flag to force the player to press the button again
-				bShoot=0;
+				if (JOYPAD & J_A && bShoot)
+				{
+					// Fire a shot.
+					// Find an "empty" shot in the array, and copy the template "shot" vector into it.
+					// MovementVector will be based on tr whe current ship vector with a multiplier to give the velocity. Hopefully one that never out-runs the ship.
+					// Set the shot flag so that we don't get continuous fire. Got to make the player work for it...
+					// Find the first "empty" shot - scale will be set to zero if it's not valid.
+					for (iVectorLoop=1;iVectorLoop<(MAX_VECTOR);iVectorLoop++)
+					{
+						if (VectorList[iVectorLoop].ObjectType == 0)
+						{
+							
+							VGM_PlaySFX((u8*)zap,1);
+
+							bShotType=!bShotType;
+							VectorList[iVectorLoop]=CreateShot(iHorizontalOffset,vShip,bShotType);
+							
+							//Terminate the loop so that only one shot is created
+							iVectorLoop = MAX_VECTOR;
+						}
+					}
+					// Reset the shoot flag to force the player to press the button again
+					bShoot=0;
+				}
+				if (!(JOYPAD & J_A))
+				{
+					//Set the shoot flag to zero (they've let go of the button)
+					bShoot=1;
+				}
 			}
-			if (!(JOYPAD & J_A))
+			else 
 			{
-				//Set the shoot flag to zero (they've let go of the button)
-				bShoot=1;
+				// Hands off mode engaged
+
+				// lvCurrent.LemmanoidCount==lvCurrent.Died
+				// No Lemmanoids saved - planet blows up!
+				// Palette shift on the bitmap plane - colour 1 flash red/white for a couple of seconds and
+				// the ground colour fading to black. Maybe a bunch of asteroids or something in the ground colour?
+				if (lvCurrent.LemmanoidCount==lvCurrent.Died)
+				{
+					PrintString(SCR_1_PLANE,PAL_SCORE,0,18,"Oh No! ");
+					Sleep(60);
+				}
+
+				// Theoretically possible to run out of Pictcell's and therefore to not be able to completely build
+				// the city and save any Lemmanoids? Do I need to trap this as an end-of-level condition?
+				
+				// Energy Gauge==0
+				// Player ship explodees
+				// Pallete shift the white elements of the bitmap to red/white and fade to black
+				// Add a bunch of particle explosions
+				// Will then fall out of the loop to the Game Over screen
+				if (iEnergyGauge==0)
+				{
+					PrintString(SCR_1_PLANE,PAL_SCORE,0,18,"Uh Oh!");
+					Sleep(60);
+				}
+
+				// lvCurrent.Saved>0 - warp to new planet
+				// Autopilot the ship back to the city and then warp vertically up the screen
+				// Fire off a bunch of firework sprites as we go (can clear down any pictcell or invader sprites that are still lurking)
+				if (lvCurrent.Saved>0)
+				{
+					PrintString(SCR_1_PLANE,PAL_SCORE,0,18,"Hoorah!");
+					Sleep(60);
+				}
+
+				// When animation is complete, set the Level Complete flag...
+				bLevelComplete=true;
+
 			}
 
 			//////////////////////////////////////////////////////
@@ -1476,7 +1525,7 @@ void DefenderoidsMain()
 			//////////////////////////////////////////////////////
 
 			// Energy gauge
-			iGaugePalette=1;
+			iGaugePalette=PAL_SCORE;
 			for(iEnergyLoop=1;iEnergyLoop<=(iEnergyGauge>>3);iEnergyLoop++)
 			{
 				PutTile(SCR_2_PLANE, iGaugePalette, 6+iEnergyLoop, 16, 8);
@@ -1526,21 +1575,30 @@ void DefenderoidsMain()
 
 			}
 
+			// Switch to hands-off mode if end of level reached for any reason
+			if (iEnergyGauge==0 || lvCurrent.LemmanoidCount==(lvCurrent.Saved+lvCurrent.Died))
+			{
+				bProcessControls=false;
+			}
+
 		} // Level Loop
 
-		// Check for animation/transition
-		// Energy Gauge == 0 || lvCurrent.LemmanoidCount==LvCurrent.Died - Blow up planet
-		// lvCurrent.Saved>0 - warp to new planet
+		// Clear all sprites
+		for (iSpriteLoop=0;iSpriteLoop<MAX_SPRITE;iSpriteLoop++)
+		{
+			SpriteList[iSpriteLoop].SpriteID=99;
+			SpriteList[iSpriteLoop].RelatedSpriteID=99;
+			SpriteList[iSpriteLoop].SpriteType=sprMisc;
+			SetSprite(iSpriteLoop, 0, 0, 0, 0, PAL_SPRITE);
+		}
 
+		// Reset the Lemmanoid count and City status tiles too
+
+		// Setup next level
 		iCurrentLevel++;
 		if(iCurrentLevel>MAX_LEVEL) iCurrentLevel=0;
 		lvCurrent=DefenderoidsLevels[iCurrentLevel];
 
-		// Close down all sprites at end of level loop
-		for (iSpriteLoop=0;iSpriteLoop<MAX_SPRITE;iSpriteLoop++)
-		{
-			SetSprite(iSpriteLoop, 0, 0, 0, 0, PAL_SPRITE);
-		}
 	} // Player Energy Loop
 
 	VGM_StopBGM();

@@ -97,6 +97,8 @@ void CopyAnimationFrame(const u16 AnimTiles[][8], u16 TileNumber, u16 TileCount,
  */
 extern volatile u8 VBCounter;
 
+#define true 1
+#define false 0
 
 #endif
 

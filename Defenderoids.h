@@ -8,6 +8,17 @@
 #define LogoTileBase 256
 
 // Palette constants
+// SCR_1_PLANE
+#define PAL_BITMAP 0
+#define PAL_LOGO 1
+#define PAL_STARFIELD 2
+#define PAL_BORDER 4
+
+// SCR_2_PLANE
+#define PAL_DEBUG 0
+#define PAL_SCORE 1
+
+// SPR_PLANE
 #define PAL_SPRITE 0
 #define PAL_INVADER 1
 #define PAL_LEMMANOID 2
