@@ -10,15 +10,15 @@
 // Palette constants
 // SCR_1_PLANE
 #define PAL_BITMAP 0
-#define PAL_LOGO 1
-#define PAL_STARFIELD 2
+#define PAL_LOGO 0
+#define PAL_STARFIELD 1
 #define PAL_BORDER 4
 
 // SCR_2_PLANE
 #define PAL_DEBUG 0
 #define PAL_SCORE 1
 
-// SPR_PLANE
+// SPR_PLANE/SCR1_PLANE (Lemmanoid/City)
 #define PAL_SPRITE 0
 #define PAL_INVADER 1
 #define PAL_LEMMANOID 2
@@ -97,6 +97,7 @@ typedef struct Sprite
 
 typedef struct Level
 {
+	char LevelName[30];
 	u8 InvaderCount;
 	u8 LemmanoidCount;
 	u8 AsteroidCount;
@@ -106,12 +107,12 @@ typedef struct Level
 } LEVEL;
 
 const LEVEL DefenderoidsLevels[] = {
-	{1,3,1,12,0,0},
-	{3,5,2,8,0,0},
-	{8,6,2,4,0,0},
-	{0,8,3,0,0,0},
-	{4,1,4,0,0,0},
-	{6,6,3,0,0,0}
+	{"Protect the Lemmanoids",1,3,1,12,0,0},
+	{"Collect Pictcells",3,5,2,8,0,0},
+	{"Build Lemmanopolis",8,6,2,4,0,0},
+	{"Mined out",0,8,3,0,0,0},
+	{"The last Lemmanoid?",4,1,4,0,0,0},
+	{"Who defends the Defenderoid?",6,6,3,0,0,0}
 };
 
 #define MAX_LEVEL 5

@@ -67,7 +67,7 @@
  *    Shoot asteroids to release Pictcells as before
  *    Pictcells will replenish energy
  * 	Capture Lemmanoids - Done
- *   Need to refine the capture distance - Lemmanoids can be scooped up from too far
+ *   Need to refine the capture distance - Lemmanoids can be scooped up from too far - Done
  *  Release Lemmanoids - Done
  *  Spawn on a timer
  *   If active invaders <= level invader count
@@ -81,8 +81,8 @@
  *  Proximity collision - Done
  *  Fine tune collision
  * Level success/failure modes
- * 	Success: City built, Lemmanoids rescued
- *  Failure: Lemmanoids destroyed/captured (Qix space level)
+ * 	Success: City built, Lemmanoids rescued - Done
+ *  Failure: Lemmanoids destroyed/captured (Qix space level) - Done
  *  Both:
  *   If LemmanoidCount==0
  *    Test for *any* Lemmanoids in city - then success
@@ -106,7 +106,7 @@
 /////////////////////////////////////////////////////
 // Create a unique asteroid object
 /////////////////////////////////////////////////////
-SMALLVECTOROBJECT CreateAsteroid(s16 x, s16 y, u8 Scale)
+SMALLVECTOROBJECT CreateAsteroid(s16 x, s16 y, u8 Scale, u8 Colour)
 {
 	SMALLVECTOROBJECT vReturn;
 	u8 iLoopAsteroidPoint;
@@ -134,6 +134,7 @@ SMALLVECTOROBJECT CreateAsteroid(s16 x, s16 y, u8 Scale)
 		}
 		vReturn.PointList[iLoopAsteroidPoint].x=vReturn.PointList[iLoopAsteroidPoint].x<<iScale;
 		vReturn.PointList[iLoopAsteroidPoint].y=vReturn.PointList[iLoopAsteroidPoint].y<<iScale;
+		vReturn.PointList[iLoopAsteroidPoint].colour=Colour;
 	}
 	// First and Last points in the asteroid have to be the same
 	vReturn.PointList[vReturn.Points-1].x=vReturn.PointList[0].x;
@@ -707,6 +708,9 @@ void DefenderoidsMain()
 	u8 iVectorLoop;
 	bool bProcessControls;
 	bool bLevelComplete;
+	u8 iTransitionCounter;
+	u8 iTransitionFrame;
+	u8 iTransitionPalette;
 	
 	/////////////////////////////////////////////////////////
 	// Template vector/sprite arrays
@@ -796,6 +800,7 @@ void DefenderoidsMain()
 
 	iEnergyGauge=96;
 
+	// Overall game loop
 	while (iEnergyGauge>0)
 	{
 		////////////////////////////////////////////////////////////
@@ -835,7 +840,7 @@ void DefenderoidsMain()
 		// Asteroids
 		for (iVectorLoop=1;iVectorLoop<=lvCurrent.AsteroidCount;iVectorLoop++)
 		{
-			VectorList[iVectorLoop] = CreateAsteroid(((u16)QRandom())<<8,((u16)QRandom())<<5,4);
+			VectorList[iVectorLoop] = CreateAsteroid(((u16)QRandom())<<8,((u16)QRandom())<<5,4,1);
 		}
 
 		// Set the horizontal offset.
@@ -851,8 +856,10 @@ void DefenderoidsMain()
 		bProcessControls=true;
 		bLevelComplete=false;
 
-		// Main level loop
-		//PrintString(SCR_1_PLANE,0,20-((lvCurrent.LevelName)/2),0,lvCurrent.LevelName);
+		iTransitionCounter=0;
+		iTransitionFrame=0;
+
+		// Level loop
 		while (!bLevelComplete)
 		{
 
@@ -950,8 +957,21 @@ void DefenderoidsMain()
 				// the ground colour fading to black. Maybe a bunch of asteroids or something in the ground colour?
 				if (lvCurrent.LemmanoidCount==lvCurrent.Died)
 				{
-					PrintString(SCR_1_PLANE,PAL_SCORE,0,18,"Oh No! ");
-					Sleep(60);
+					iTransitionPalette=PAL_BITMAP;
+					switch (iTransitionCounter)
+					{
+						case 0:
+							PrintString(SCR_1_PLANE,PAL_SCORE,0,18,"OH NO!");
+							Sleep(60);
+							iTransitionCounter++;
+							break;
+						case 1:
+							bLevelComplete=true;
+							break;
+						default:
+							break;
+					// When animation is complete, set the Level Complete flag...
+					}
 				}
 
 				// Theoretically possible to run out of Pictcell's and therefore to not be able to completely build
@@ -964,21 +984,119 @@ void DefenderoidsMain()
 				// Will then fall out of the loop to the Game Over screen
 				if (iEnergyGauge==0)
 				{
-					PrintString(SCR_1_PLANE,PAL_SCORE,0,18,"Uh Oh!");
-					Sleep(60);
+					iTransitionPalette=PAL_BITMAP;
+					switch (iTransitionCounter)
+					{
+						case 0:
+							PrintString(SCR_1_PLANE,PAL_SCORE,0,18,"Uh Oh!");
+							Sleep(60);
+							iTransitionCounter++;
+							break;
+						case 1:
+							bLevelComplete=true;
+							break;
+						default:
+							break;
+					// When animation is complete, set the Level Complete flag...
+					}
 				}
 
 				// lvCurrent.Saved>0 - warp to new planet
 				// Autopilot the ship back to the city and then warp vertically up the screen
 				// Fire off a bunch of firework sprites as we go (can clear down any pictcell or invader sprites that are still lurking)
+				// Use iTransitionCounter
+				// 0 - Display "Auto-pilot engaged"
+				// 1 - Navigate towards home (firework type 1 every few frames)
+				// 2 - Rotate to north
+				// 3 - Kick off a bunch of firework type 2
+				// 4 - Thrust north off the screen
+				// Could do with going a bit quicker
 				if (lvCurrent.Saved>0)
 				{
-					PrintString(SCR_1_PLANE,PAL_SCORE,0,18,"Hoorah!");
-					Sleep(60);
+					// Display autopilot message
+					iTransitionPalette=PAL_SCORE;
+					if (iTransitionFrame++%2==0) iTransitionPalette=PAL_DEBUG;
+					PrintString(SCR_2_PLANE,iTransitionPalette,6,7,"AUTOPILOT");
+					PrintString(SCR_2_PLANE,iTransitionPalette,7,8,"ENGAGED");
+					switch (iTransitionCounter)
+					{
+						case 0:
+							// Start by disabling any movement velocity
+							vShip.MovementVector.x=0;
+							vShip.MovementVector.y=0;
+							iTransitionCounter++;
+							break;
+						case 1:
+							// Rotate the ship towards home (always faces right for now)
+							if (iHorizontalOffset>456||iHorizontalOffset<200)
+							{
+								if (vShip.RotationAngle>192|vShip.RotationAngle<=64)
+									vShip.RotationAngle--;
+								else
+									vShip.RotationAngle++;
+								if (vShip.RotationAngle==192)
+								{
+									//Rotate the ship to Horizontal (angle=195)
+									iTransitionCounter++;
+								}
+							}
+							else
+							{
+								if (vShip.RotationAngle>192|vShip.RotationAngle<=64)
+									vShip.RotationAngle++;
+								else
+									vShip.RotationAngle--;
+								if (vShip.RotationAngle==64)
+								{
+									//Rotate the ship to Horizontal (angle=64)
+									iTransitionCounter++;
+								}
+							}
+							break;
+						case 2:
+							// Apply thrust and kick off a firework every 8 frames or so
+							// Until ship is directly over the city
+							// Adjust vertical thrust as well to drag it into the centre of the screen
+							if (vShip.RotationAngle==64)
+								vShip.MovementVector.x=256;
+							else
+								vShip.MovementVector.x=-256;
+							if (iHorizontalOffset>=455&&iHorizontalOffset<=457)
+							{
+								iHorizontalOffset=456;
+								iTransitionCounter++;
+								vShip.MovementVector.x=0;
+							}
+							break;
+						case 3:
+							// Rotate to vertical (angle=0)
+							if (vShip.RotationAngle>=192)
+								vShip.RotationAngle++;
+							else
+								vShip.RotationAngle--;
+
+							if (vShip.RotationAngle==0)
+							{
+								iTransitionCounter++;
+							}
+							break;
+						case 4:
+							// Apply thrust until ship is off the screen
+							vShip.MovementVector.y=-256;
+							// Bounds checking will bounce the ship at y=4, so we need to finish before then...
+							if (vShip.Position.y<=6)
+							{
+								iTransitionCounter++;
+							}
+							break;
+						default:
+							PrintString(SCR_2_PLANE,PAL_DEBUG,6,7,"         ");
+							PrintString(SCR_2_PLANE,PAL_DEBUG,7,8,"       ");
+							bLevelComplete=true;
+							break;
+					}
 				}
 
-				// When animation is complete, set the Level Complete flag...
-				bLevelComplete=true;
 
 			}
 
@@ -1148,14 +1266,14 @@ void DefenderoidsMain()
 												default:
 													//Split asteroid into smaller chunks
 													//First reduce the size of the current asteroid
-													VectorList[iLoopAsteroid]=CreateAsteroid(VectorList[iLoopAsteroid].Position.x,VectorList[iLoopAsteroid].Position.y,VectorList[iLoopAsteroid].Scale-1);
+													VectorList[iLoopAsteroid]=CreateAsteroid(VectorList[iLoopAsteroid].Position.x,VectorList[iLoopAsteroid].Position.y,VectorList[iLoopAsteroid].Scale-1,1);
 													//Then spawn new ones (up to the MAX_ASTEROID limit)
 													// Find new asteroid id
 													for (iNewVectorLoop=1;iNewVectorLoop<MAX_VECTOR;iNewVectorLoop++)
 													{
 														if (VectorList[iNewVectorLoop].ObjectType==VEC_NONE)
 														{
-															VectorList[iNewVectorLoop]=CreateAsteroid(VectorList[iLoopAsteroid].Position.x,VectorList[iLoopAsteroid].Position.y,VectorList[iLoopAsteroid].Scale);
+															VectorList[iNewVectorLoop]=CreateAsteroid(VectorList[iLoopAsteroid].Position.x,VectorList[iLoopAsteroid].Position.y,VectorList[iLoopAsteroid].Scale,1);
 															iNewVectorLoop=MAX_VECTOR;
 														}
 															
@@ -1523,7 +1641,7 @@ void DefenderoidsMain()
 			// Score and other dressing
 			// Mostly debug information at the moment
 			//////////////////////////////////////////////////////
-
+			PrintDecimal(SCR_1_PLANE,PAL_SCORE,0,18,iHorizontalOffset,3);
 			// Energy gauge
 			iGaugePalette=PAL_SCORE;
 			for(iEnergyLoop=1;iEnergyLoop<=(iEnergyGauge>>3);iEnergyLoop++)

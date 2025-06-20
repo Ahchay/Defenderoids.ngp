@@ -13,7 +13,7 @@ void main()
 
 	InstallTileSetAt(Alphabet,sizeof(Alphabet),0);
 
-	SetBackgroundColour(RGB(0,0,4));
+	SetBackgroundColour(RGB(0,0,0));
 
 	InitialiseQRandom();
 
