@@ -760,6 +760,7 @@ void DefenderoidsMain()
 	//SetPalette(SPRITE_PLANE, (u8)(PAL_LEMMANOID+3), RGB(0,0,0), RGB(0, 0, 15), RGB(0,0,15), RGB(0,0,15));
 
 	SetPalette(SCR_1_PLANE, PAL_BITMAP, 0, RGB(15,15,15), RGB(0,0,15), RGB(15,0,0));
+	SetPalette(SCR_1_PLANE, PAL_SCORE, 0, RGB(15,0,0), RGB(8,8,8), RGB(4,4,4));
 	SetPalette(SCR_1_PLANE, PAL_BORDER, 0, RGB(15,15,15), RGB(0,0,15), RGB(15,0,0));
 	SetPalette(SCR_1_PLANE, PAL_LEMMANOID, RGB(0,0,0), RGB(15, 11, 12), RGB(0,0,15), RGB(0,15,0));
 	SetPalette(SCR_1_PLANE, PAL_CITY, RGB(0,0,0), RGB(0, 0, 15), RGB(15,0,0), RGB(0,15,0));
@@ -1639,8 +1640,9 @@ void DefenderoidsMain()
 
 			//////////////////////////////////////////////////////
 			// Score and other dressing
-			// Mostly debug information at the moment
 			//////////////////////////////////////////////////////
+
+			// For debug purposes - show current horizontal offset
 			PrintDecimal(SCR_1_PLANE,PAL_SCORE,0,18,iHorizontalOffset,3);
 			// Energy gauge
 			iGaugePalette=PAL_SCORE;
