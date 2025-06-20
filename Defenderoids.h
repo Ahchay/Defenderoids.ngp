@@ -107,6 +107,7 @@ typedef struct Level
 } LEVEL;
 
 const LEVEL DefenderoidsLevels[] = {
+	{"Gotta catch 'em all",16,1,1,0,0,0},
 	{"Protect the Lemmanoids",1,3,1,12,0,0},
 	{"Collect Pictcells",3,5,2,8,0,0},
 	{"Build Lemmanopolis",8,6,2,4,0,0},

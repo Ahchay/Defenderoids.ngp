@@ -759,7 +759,6 @@ void DefenderoidsMain()
 	//SetPalette(SPRITE_PLANE, (u8)(PAL_LEMMANOID+2), RGB(0,0,0), RGB(0, 15, 0), RGB(0, 15, 0), RGB(0, 15, 0));
 	//SetPalette(SPRITE_PLANE, (u8)(PAL_LEMMANOID+3), RGB(0,0,0), RGB(0, 0, 15), RGB(0,0,15), RGB(0,0,15));
 
-	SetPalette(SCR_1_PLANE, PAL_BITMAP, 0, RGB(15,15,15), RGB(0,0,15), RGB(15,0,0));
 	SetPalette(SCR_1_PLANE, PAL_SCORE, 0, RGB(15,0,0), RGB(8,8,8), RGB(4,4,4));
 	SetPalette(SCR_1_PLANE, PAL_BORDER, 0, RGB(15,15,15), RGB(0,0,15), RGB(15,0,0));
 	SetPalette(SCR_1_PLANE, PAL_LEMMANOID, RGB(0,0,0), RGB(15, 11, 12), RGB(0,0,15), RGB(0,15,0));
@@ -808,6 +807,8 @@ void DefenderoidsMain()
 		// Level setup
 		////////////////////////////////////////////////////////////
 
+		SetPalette(SCR_1_PLANE, PAL_BITMAP, 0, RGB(15,15,15), RGB(0,0,15), RGB(15,0,0));
+
 		lvCurrent=DefenderoidsLevels[iCurrentLevel];
 
 		// City (need to create at end of sprite list so they end up at back of priority queue)
@@ -838,10 +839,22 @@ void DefenderoidsMain()
 			SpriteList[iSpriteLoop] = CreateSprite(((u16)QRandom())<<8,100<<8,iSpriteLoop,sprLemmanoid,DIR_EAST + ((QRandom()>>7)*DIR_WEST),(QRandom()>>5));
 		}
 
+		// Clear any other sprites
+		for (;iSpriteLoop<MAX_SPRITE-4;iSpriteLoop++)
+		{
+			SpriteList[iSpriteLoop] = CreateSprite(0,0,iSpriteLoop,sprMisc,0,0);
+		}
+
 		// Asteroids
 		for (iVectorLoop=1;iVectorLoop<=lvCurrent.AsteroidCount;iVectorLoop++)
 		{
 			VectorList[iVectorLoop] = CreateAsteroid(((u16)QRandom())<<8,((u16)QRandom())<<5,4,1);
+		}
+
+		// Clear all other vector objects!
+		for (;iVectorLoop<=MAX_VECTOR;iVectorLoop++)
+		{
+			VectorList[iVectorLoop].ObjectType=VEC_NONE;
 		}
 
 		// Set the horizontal offset.
@@ -958,18 +971,47 @@ void DefenderoidsMain()
 				// the ground colour fading to black. Maybe a bunch of asteroids or something in the ground colour?
 				if (lvCurrent.LemmanoidCount==lvCurrent.Died)
 				{
-					iTransitionPalette=PAL_BITMAP;
+
+					iTransitionPalette=PAL_SCORE;
+					if (iTransitionFrame++%2==0) iTransitionPalette=PAL_DEBUG;
+					PrintString(SCR_2_PLANE,iTransitionPalette,7,7,"MISSION");
+					PrintString(SCR_2_PLANE,iTransitionPalette,7,8,"FAILED!");
+					if (iTransitionPalette==PAL_DEBUG)
+					{
+						SetPalette(SCR_1_PLANE, PAL_BITMAP, 0, RGB(15,0,0), RGB(15,0,0), RGB(15,0,0));
+					}
+					else
+					{
+						SetPalette(SCR_1_PLANE,PAL_BITMAP,RGB(15,0,0),RGB(15,15,15),RGB(15,15,15),RGB(15,15,15));
+					}
 					switch (iTransitionCounter)
 					{
 						case 0:
-							PrintString(SCR_1_PLANE,PAL_SCORE,0,18,"OH NO!");
-							Sleep(60);
-							iTransitionCounter++;
+							PrintString(SCR_2_PLANE,PAL_SCORE,8,7,"OH NO!");
+							if(iTransitionFrame>=4)
+							{
+								iTransitionCounter++;
+							}
 							break;
 						case 1:
-							bLevelComplete=true;
+							if (iTransitionFrame%2==0)
+							{
+								for (iNewVectorLoop=1;iNewVectorLoop<MAX_VECTOR;iNewVectorLoop++)
+								{
+									if (VectorList[iNewVectorLoop].ObjectType==VEC_NONE)
+									{
+										VectorList[iNewVectorLoop]=CreateAsteroid(((u16)QRandom())<<8,80+((u16)QRandom())<<6,2,3);
+										iNewVectorLoop=MAX_VECTOR;
+									}
+										
+								}
+							}
+							if (iTransitionFrame>=64) iTransitionCounter++;
 							break;
 						default:
+							bLevelComplete=true;
+							PrintString(SCR_2_PLANE,iTransitionPalette,7,7,"       ");
+							PrintString(SCR_2_PLANE,iTransitionPalette,7,8,"       ");
 							break;
 					// When animation is complete, set the Level Complete flag...
 					}
@@ -989,14 +1031,14 @@ void DefenderoidsMain()
 					switch (iTransitionCounter)
 					{
 						case 0:
-							PrintString(SCR_1_PLANE,PAL_SCORE,0,18,"Uh Oh!");
+							PrintString(SCR_1_PLANE,PAL_SCORE,8,7,"Uh Oh!");
 							Sleep(60);
-							iTransitionCounter++;
 							break;
 						case 1:
 							bLevelComplete=true;
 							break;
 						default:
+							PrintString(SCR_1_PLANE,PAL_SCORE,8,7,"      ");
 							break;
 					// When animation is complete, set the Level Complete flag...
 					}
@@ -1032,24 +1074,26 @@ void DefenderoidsMain()
 							if (iHorizontalOffset>456||iHorizontalOffset<200)
 							{
 								if (vShip.RotationAngle>192|vShip.RotationAngle<=64)
-									vShip.RotationAngle--;
+									vShip.RotationAngle-=4;
 								else
-									vShip.RotationAngle++;
-								if (vShip.RotationAngle==192)
+									vShip.RotationAngle+=4;
+								if (vShip.RotationAngle>188&&vShip.RotationAngle<196)
 								{
 									//Rotate the ship to Horizontal (angle=195)
+									vShip.RotationAngle=196;
 									iTransitionCounter++;
 								}
 							}
 							else
 							{
 								if (vShip.RotationAngle>192|vShip.RotationAngle<=64)
-									vShip.RotationAngle++;
+									vShip.RotationAngle+=4;
 								else
-									vShip.RotationAngle--;
-								if (vShip.RotationAngle==64)
+									vShip.RotationAngle-=4;
+								if (vShip.RotationAngle>60&&vShip.RotationAngle<68)
 								{
 									//Rotate the ship to Horizontal (angle=64)
+									vShip.RotationAngle=64;
 									iTransitionCounter++;
 								}
 							}
@@ -1059,10 +1103,10 @@ void DefenderoidsMain()
 							// Until ship is directly over the city
 							// Adjust vertical thrust as well to drag it into the centre of the screen
 							if (vShip.RotationAngle==64)
-								vShip.MovementVector.x=256;
+								vShip.MovementVector.x=512;
 							else
-								vShip.MovementVector.x=-256;
-							if (iHorizontalOffset>=455&&iHorizontalOffset<=457)
+								vShip.MovementVector.x=-512;
+							if (iHorizontalOffset>=453&&iHorizontalOffset<=459)
 							{
 								iHorizontalOffset=456;
 								iTransitionCounter++;
@@ -1072,12 +1116,13 @@ void DefenderoidsMain()
 						case 3:
 							// Rotate to vertical (angle=0)
 							if (vShip.RotationAngle>=192)
-								vShip.RotationAngle++;
+								vShip.RotationAngle+=4;
 							else
-								vShip.RotationAngle--;
+								vShip.RotationAngle-=4;
 
-							if (vShip.RotationAngle==0)
+							if (vShip.RotationAngle<4||vShip.RotationAngle>252)
 							{
+								vShip.RotationAngle=0;
 								iTransitionCounter++;
 							}
 							break;
@@ -1642,7 +1687,7 @@ void DefenderoidsMain()
 			// Score and other dressing
 			//////////////////////////////////////////////////////
 
-			// For debug purposes - show current horizontal offset
+			// Debug info
 			PrintDecimal(SCR_1_PLANE,PAL_SCORE,0,18,iHorizontalOffset,3);
 			// Energy gauge
 			iGaugePalette=PAL_SCORE;
