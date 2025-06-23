@@ -97,7 +97,7 @@ typedef struct Sprite
 
 typedef struct Level
 {
-	char LevelName[30];
+	char LevelName[20];
 	u8 InvaderCount;
 	u8 LemmanoidCount;
 	u8 AsteroidCount;
@@ -107,13 +107,13 @@ typedef struct Level
 } LEVEL;
 
 const LEVEL DefenderoidsLevels[] = {
-	{"Gotta catch 'em all",16,1,1,0,0,0},
-	{"Protect the Lemmanoids",1,3,1,12,0,0},
-	{"Collect Pictcells",3,5,2,8,0,0},
-	{"Build Lemmanopolis",8,6,2,4,0,0},
-	{"Mined out",0,8,3,0,0,0},
-	{"The last Lemmanoid?",4,1,4,0,0,0},
-	{"Who defends the Defenderoid?",6,6,3,0,0,0}
+	{"THE FALL OF LEMMAN",16,1,1,0,0,0},
+	{" THE LAST OF THEM ",1,3,1,12,0,0},
+	{"COLLECT PICTCELLS ",3,5,2,8,0,0},
+	{"BUILD LEMMANOPOLIS",8,6,2,4,0,0},
+	{"    MINED OUT!    ",0,8,3,0,0,0},
+	{"THE LAST LEMMANOID",4,1,4,0,0,0},
+	{" WHO DEFENDS WHO? ",6,6,3,0,0,0}
 };
 
 #define MAX_LEVEL 5
