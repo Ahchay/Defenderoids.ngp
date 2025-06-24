@@ -15,18 +15,50 @@
 
 /*************************************************
  * TODO List
+ *  Mutanoid behaviour - Chase player or bomb city?
+ *   Needs to be a bit more aggressive
+ *   And actually home in on the player rather than horizontal offset
+ *   Alien shots maybe?
+ *  Different enemy types
+ *   Bomber (attack the city)
+ *    Want to try and get a missile command-y vibe
+ *   Qix
+ *    Qix can only be harmed by ramming with the Defenderoid
+ *    Ramming will deplete ~50% of your energy guage over 2 seconds (or something)
+ *    Each 50% of energy will destroy one leg of the Qix
+ *    Shoot asteroids to release Pictcells as before
+ *    Pictcells will replenish energy
+ * Ship collisions
+ * 	Asteroids
+ *  Invaders
+ * 	Pictcells
+ * All collisions
+ *  Fine tune collision
+ * Pause Mode
+ *  Option to bring up a menu
+ *  - Resume
+ *  - Quit game
+ *  - Other options?
+ *    - Enable/Disable music
+ *    - Help
+ *    - About
+ *    - How to play
+ * Transitions
+ * 	Needs more pizazz - fireworks/explosions/sortathing
  * 
+ * DONE List
+ * QRandom() eventually tends towards zero? - Done
  * Asteroids
+ *  Sizing etc -- Might have been sorted with the QRandom() fix -- Done
+ *   Still get occasional perfectly square asteroids
+ *   Still get occasional too small asteroids
+ *   Still a bit prone to not moving, check for minimum vector sizes?
  * 	Asteroid collision - Done
  *  Asteroid split into smaller - Done
  *  Asteroid drop pictcell - Done
  * 	Rejig Asteroid creation to get more variety - Done
  *  Asteroids can sometimes get weird shapes (flat lines, points, boxes etc) - Done
- *   Still get occasional perfectly square asteroids
- *   Still get occasional too small asteroids
  *  Asteroids sometimes don't move/rotate after splitting - Done
- *   Still a bit prone to not moving, check for minimum vector sizes?
- *   Use the shot movement vector as a base for new asteroids vectors
  *  Asteroids always seem to rotate/move in the same direction? - Done
  * Add city - Done
  * Collect resources
@@ -46,26 +78,7 @@
  *   And actually home in on the player rather than horizontal offset
  * Aliens
  *  Different enemy types
- *   Bomber (attack the city)
- *    Want to try and get a missile command-y vibe
  *   Rammer (attack the player) - use the Mutanoid - Done
- *   Qix
- *    No Invaders or Lemmanoids on Qix levels
- *    Spawn at (0,0)
- *    Qix will slop about doing Qix things over the planet surface
- *    Qix is impervious to your lasers
- *    Collision with the Qix is instantly fatal
- *    No idea if this will work, but Shoot asteroids for pictcells as normal
- *    Pick up the pictcell and drag it to the Qix, sort of Sinistar-y I guess
- *    Each pictcell will destroy one vector of the Qix
- *    Reduce Qix to 2 vectors to destroy
- *   NEW IDEA
- *    Qix^2
- *    Qix can only be harmed by ramming with the Defenderoid
- *    Ramming will deplete ~50% of your energy guage over 2 seconds (or something)
- *    Each 50% of energy will destroy one leg of the Qix
- *    Shoot asteroids to release Pictcells as before
- *    Pictcells will replenish energy
  * 	Capture Lemmanoids - Done
  *   Need to refine the capture distance - Lemmanoids can be scooped up from too far - Done
  *  Release Lemmanoids - Done
@@ -73,13 +86,10 @@
  *   If active invaders <= level invader count
  *    x% chance of creating an invader
  *    always create invaders off screen (so player position - 256)
- * Ship collisions
- * 	Asteroids
- *  Invaders
- * 	Pictcells
  * Shot collisions
  *  Proximity collision - Done
- *  Fine tune collision
+ *  Explosions
+ * 		Still a bit rubbish really. Often not at the right place either - Done.
  * Level success/failure modes
  * 	Success: City built, Lemmanoids rescued - Done
  *  Failure: Lemmanoids destroyed/captured (Qix space level) - Done
@@ -90,14 +100,6 @@
  *  On failure:
  *   Next level will be a Qix Level
  *  Game Over: Energy gauge goes to zero
- * Pause Mode
- *  Option to bring up a menu rather than generate a game over condition
- *  - Quit game
- *  - Other options?
- *    - Enable/Disable music
- *    - Help
- *    - About
- *    - How to play
  * 
  ************************************************/
 
@@ -371,13 +373,13 @@ bool CheckAsteroidCollision(POINT object1, POINT object2)
 /////////////////////////////////////////////////////
 // Create an explosion object
 ////////////////////////////////////////////////////
-SMALLVECTOROBJECT CreateExplosion(SPRITEPOINT spPosition, u8 iDirection)
+SMALLVECTOROBJECT CreateExplosion(SPRITEPOINT spPosition, POINT spDirection)
 {
 	SMALLVECTOROBJECT voReturn;
 	u8 iPointLoop;
 
 	voReturn.ObjectType = VEC_EXPLOSION;
-	voReturn.Scale = 1;
+	voReturn.Scale = 2;
 	// Copy the Explosion object from the template
 	voReturn.Points = 8;
 	iPointLoop=0;
@@ -389,14 +391,13 @@ SMALLVECTOROBJECT CreateExplosion(SPRITEPOINT spPosition, u8 iDirection)
 	}
 	voReturn.Origin.x = 0;
 	voReturn.Origin.y = 0;
-	voReturn.MovementVector.x = 0;
-	voReturn.MovementVector.y = 0;
+	voReturn.MovementVector = spDirection;
 	voReturn.Position.x = spPosition.x>>SPRITE_SCALE;
 	voReturn.Position.y = spPosition.y>>SPRITE_SCALE;
-	voReturn.RotationAngle = iDirection+128;
+	voReturn.RotationAngle = QRandom();
 
 	// We'll use RotationSpeed to control the life of the Explosion. Kill it when it hits a limit...
-	voReturn.RotationSpeed=0;
+	voReturn.RotationSpeed=7;
 
 	return voReturn;
 }
@@ -715,7 +716,6 @@ void DefenderoidsMain()
 	/////////////////////////////////////////////////////////
 	// Template vector/sprite arrays
 	/////////////////////////////////////////////////////////
-
 	// Vector objects
 	//	- Origin;
 	//	- Position;
@@ -725,13 +725,6 @@ void DefenderoidsMain()
 	//	- Scale;
 	//	- RotationAngle;
 	//	- RotationSpeed;
-
-	//VECTOROBJECT Asteroid[MAX_ASTEROID];
-
-	//VECTOROBJECT Shots[MAX_SHOT];
-
-	//VECTOROBJECT Explosions[MAX_EXPLOSION];
-
 	SMALLVECTOROBJECT VectorList[MAX_VECTOR + 1];
 
 	VECTOROBJECT vShip;
@@ -1279,7 +1272,7 @@ void DefenderoidsMain()
 										{
 											if (VectorList[iLoopExplosion].ObjectType==VEC_NONE)
 											{
-												VectorList[iLoopExplosion]=CreateExplosion(SpriteList[iSpriteLoop].Position, VectorList[iVectorLoop].RotationAngle);
+												VectorList[iLoopExplosion]=CreateExplosion(SpriteList[iSpriteLoop].Position, VectorList[iVectorLoop].MovementVector);
 
 												// Need a better 'splode noise
 												//VGM_PlaySFX((u8*)noise,1);
@@ -1386,18 +1379,19 @@ void DefenderoidsMain()
 						//////////////////////////////////////////////////////
 						//Increase the scale for later frames
 
-						VectorList[iVectorLoop].Scale+=(VectorList[iVectorLoop].RotationSpeed>>2);
+						//VectorList[iVectorLoop].Scale+=(VectorList[iVectorLoop].RotationSpeed>>2);
 						for (iLoopExplosionPoint=0;iLoopExplosionPoint<VectorList[iVectorLoop].Points;iLoopExplosionPoint++)
 						{
 							// Why not just a few QRandom() calls within the rotation speed area?
-							// Looks ace. Need to figure out the rotation angle to get the direction right is all
-							VectorList[iVectorLoop].PointList[iLoopExplosionPoint].x +=(QRandom()>>(8-VectorList[iVectorLoop].RotationSpeed));
-							VectorList[iVectorLoop].PointList[iLoopExplosionPoint].y +=(QRandom()>>(8-VectorList[iVectorLoop].RotationSpeed));
+							//VectorList[iVectorLoop].PointList[iLoopExplosionPoint].x +=1-(QRandom()>>6);
+							//VectorList[iVectorLoop].PointList[iLoopExplosionPoint].y +=1-(QRandom()>>6);
+							VectorList[iVectorLoop].PointList[iLoopExplosionPoint].x +=1-iLoopExplosionPoint%3;
+							VectorList[iVectorLoop].PointList[iLoopExplosionPoint].y +=2-iLoopExplosionPoint%5;
 						}
 
 						// Destroy the Explosion after a few frames
-						VectorList[iVectorLoop].RotationSpeed++;
-						if (VectorList[iVectorLoop].RotationSpeed == 7)
+						VectorList[iVectorLoop].RotationSpeed--;
+						if (VectorList[iVectorLoop].RotationSpeed == 0)
 						{
 							VectorList[iVectorLoop].ObjectType = VEC_NONE;
 						}
@@ -1424,6 +1418,7 @@ void DefenderoidsMain()
 						break;
 					case VEC_EXPLOSION:
 						DrawSmallVectorSprite((u16*)bmpPlayField, VectorList[iVectorLoop], iHorizontalOffset);
+						//DrawVectorObject((u16*)bmpPlayField, VectorList[iVectorLoop], iHorizontalOffset);
 						break;
 				}
 

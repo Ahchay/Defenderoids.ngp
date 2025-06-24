@@ -597,6 +597,10 @@ unsigned char QRandom()
 {
 	u8 iRandom;
 	iRandom=QuickRandomNumbers[RandomNumberCounter++];
+	if (RandomNumberCounter>sizeof(QuickRandomNumbers))
+	{
+		RandomNumberCounter=0;
+	}
 	return iRandom;
 }
 
