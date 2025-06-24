@@ -650,7 +650,7 @@ u16 WrapDistance(u16 First, u16 Second, u16 Wrap)
 	}
 
 	//Return the smaller of the two distances
-	if (iDistance<iWrapDistance)
+	if (iDistance<=iWrapDistance)
 		retval=iDistance;
 	else
 		retval=iWrapDistance;

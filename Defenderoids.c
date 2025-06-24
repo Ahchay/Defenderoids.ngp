@@ -81,6 +81,7 @@
  *   Rammer (attack the player) - use the Mutanoid - Done
  * 	Capture Lemmanoids - Done
  *   Need to refine the capture distance - Lemmanoids can be scooped up from too far - Done
+ *   Seems to be triggering at opposite end of the map (spr.x - 256?) - Done (I think)
  *  Release Lemmanoids - Done
  *  Spawn on a timer
  *   If active invaders <= level invader count
@@ -704,7 +705,7 @@ void DefenderoidsMain()
 	u8 iGaugePalette;
 	u8 iCityBlock;
 	u8 iMinAge;
-	u8 iCaptureDistance;
+	u16 iCaptureDistance;
 	u8 iCaptureHeight;
 	u8 iVectorLoop;
 	bool bProcessControls;
