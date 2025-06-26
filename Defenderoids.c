@@ -20,6 +20,8 @@
  *   And actually home in on the player rather than horizontal offset
  *   Alien shots maybe?
  *  Different enemy types
+ *   Other attackeroid types?
+ *    Might just mix up the sprites for the standard type, make it look a bit varied at least
  *   Bomber (attack the city)
  *    Want to try and get a missile command-y vibe
  *   Qix
@@ -33,7 +35,7 @@
  *  Invaders
  * 	Pictcells
  * All collisions
- *  Fine tune collision
+ *  Fine tune collision - Might actually leave this alone
  * Pause Mode
  *  Option to bring up a menu
  *  - Resume
