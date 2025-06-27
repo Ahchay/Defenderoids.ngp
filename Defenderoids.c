@@ -183,6 +183,7 @@ SMALLVECTOROBJECT CreateAsteroid(s16 x, s16 y, u8 Scale, u8 Colour)
 SPRITE CreateSprite(u16 x, u16 y, u8 ID, u8 Type, u8 Direction, u8 Frame)
 {
 	u8 iPalette;
+	u8 iChain;
 
 	SPRITE sprReturn;
 	sprReturn.Position.x = x;
@@ -195,11 +196,19 @@ SPRITE CreateSprite(u16 x, u16 y, u8 ID, u8 Type, u8 Direction, u8 Frame)
 	sprReturn.RelatedSpriteID = 99;
 	sprReturn.Initiated = 1;
 
+	iChain=0;
+
 	// map the sprites to their selected Palette
 	switch (sprReturn.SpriteType)
 	{
 		case sprInvader:
 			iPalette=(u8)(PAL_INVADER);
+			break;
+		case sprBomber+1:
+			// Bomber sprites are chained...
+			iChain=1;
+		case sprBomber:
+			iPalette=(u8)(PAL_BOMBER);
 			break;
 		case sprLemmanoid:
 			iPalette=(u8)(PAL_LEMMANOID);
@@ -220,7 +229,7 @@ SPRITE CreateSprite(u16 x, u16 y, u8 ID, u8 Type, u8 Direction, u8 Frame)
 	// sprite animation loop which checks to see if the sprite is visible etc
 
 	CopyAnimationFrame(Sprites, sprReturn.BaseTile, 1, sprMisc);
-	SetSprite(sprReturn.SpriteID, sprReturn.BaseTile , 0, 0, 0, iPalette);
+	SetSprite(sprReturn.SpriteID, sprReturn.BaseTile , iChain, 0, 0, iPalette);
 
 	return sprReturn;
 }
@@ -257,22 +266,25 @@ DrawSprite(SPRITE sprSprite, u16 iHorizontalOffset)
 		}
 		else {
 			//Sprite Tile selection will differ depending on SpriteType
-			//Sprite Misc -- sprMisc + type (Empty, Umbrella, Builders Hat, Hod, etc)
-			//Invader -- sprInvader + 4 frames
-			//Lemmanoid -- sprLemmanoid + Direction + 4 frames
 			//Spacie -- sprSpacie + Type + 4 frames
-			//Pictcell -- sprPictCell + 4 frames
-			//City -- sprCity + blockid + age
-			//Default -- No animation
 			switch (sprSprite.SpriteType)
 			{
 				case sprInvader:
+					//Invader -- sprInvader + 4 frames
 					CopyAnimationFrame(Sprites, sprSprite.BaseTile, 1, (sprSprite.SpriteType) + sprSprite.Frame);
 					break;
+				case sprBomber:
+				case sprBomber+1:
+					// Two frames, left or right tile depending on type
+					// SpriteType (60 or 61) + Frame*2 (0 or 2)
+					CopyAnimationFrame(Sprites, sprSprite.BaseTile, 1, (sprSprite.SpriteType) + (sprSprite.Frame<<1));
+					break;
 				case sprPictcell:
+					//Pictcell -- sprPictCell + 4 frames
 					CopyAnimationFrame(Sprites, sprSprite.BaseTile, 1, (sprSprite.SpriteType) + sprSprite.Frame);
 					break;
 				case sprLemmanoid:
+					//Lemmanoid -- sprLemmanoid + Direction + 4 frames
 					// Flipped sprites behave weirdly - are their x/y positions also flipped?
 					//if(sprSprite.Direction==DIR_WEST) {
 					//	FlipSprite(sprSprite.SpriteID,1,0);
@@ -280,11 +292,14 @@ DrawSprite(SPRITE sprSprite, u16 iHorizontalOffset)
 					CopyAnimationFrame(Sprites, sprSprite.BaseTile, 1, (sprSprite.SpriteType) + (sprSprite.Direction) + sprSprite.Frame);
 					break;
 				case sprCity:
+					//City -- sprCity + blockid + age
 					// Use Direction as BlockID (0-3)
 					// Use Frame as age (0,4,18,12)
 					CopyAnimationFrame(Sprites, sprSprite.BaseTile, 1, (sprSprite.SpriteType) + (sprSprite.Direction) + sprSprite.Frame);
 					break;
 				default:
+					//Sprite Misc -- sprMisc + type (Empty, Umbrella, Builders Hat, Hod, etc)
+					//Default -- No animation
 					CopyAnimationFrame(Sprites, sprSprite.BaseTile, 1, (sprSprite.SpriteType));
 					break;
 			}
@@ -739,6 +754,7 @@ void DefenderoidsMain()
 	// Set up the palettes
 	SetPalette(SPRITE_PLANE, (u8)(PAL_SPRITE), RGB(0,0,0), RGB(15,15,15), RGB(11,11,11), RGB(5,5,5));
 	SetPalette(SPRITE_PLANE, (u8)(PAL_INVADER), RGB(0,0,0), RGB(0,15,0), RGB(15,15,0), RGB(15,0,0));
+	SetPalette(SPRITE_PLANE, (u8)(PAL_BOMBER), RGB(0,0,0), RGB(0,15,0), RGB(15,15,0), RGB(15,0,0));
 	SetPalette(SPRITE_PLANE, (u8)(PAL_ANGRYINVADER), RGB(0,0,0), RGB(15,0,0), RGB(15,15,0), RGB(0,0,15));
 	SetPalette(SPRITE_PLANE, (u8)(PAL_LEMMANOID), RGB(0,0,0), RGB(15, 11, 12), RGB(0,0,15), RGB(0,15,0));
 	SetPalette(SPRITE_PLANE, (u8)(PAL_PICTSEL), RGB(0,0,0), RGB(9, 9, 9), RGB(15,0,0), RGB(0,0,15));

@@ -26,6 +26,7 @@
 #define PAL_PICTSEL 4
 #define PAL_ANGRYINVADER 5
 #define PAL_UMBRELLA 6
+#define PAL_BOMBER 7
 
 //Global consts
 const u8 SPRITE_SCALE=7;
