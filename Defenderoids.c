@@ -46,7 +46,10 @@
  *    - About
  *    - How to play
  * Transitions
- * 	Needs more pizazz - fireworks/explosions/sortathing
+ * 	Needs more pizazz - fireworks/explosions/sortathing 
+ *   Level Success - fireworks + explosion objects
+ *   All Lemmanoids destroyed - spawn asteroids along heightmap - Done
+ *   Ship destroyed - Explosions everywhere
  * 
  * DONE List
  * QRandom() eventually tends towards zero? - Done
@@ -219,6 +222,10 @@ SPRITE CreateSprite(u16 x, u16 y, u8 ID, u8 Type, u8 Direction, u8 Frame)
 		case sprPictcell:
 			iPalette=(u8)(PAL_PICTSEL);
 			break;
+		case sprFirework:
+		case sprFirework+4:
+			iPalette=(u8)(PAL_FIREWORK);
+			break;
 		default:
 			iPalette=(u8)(PAL_SPRITE);
 			break;
@@ -296,6 +303,11 @@ DrawSprite(SPRITE sprSprite, u16 iHorizontalOffset)
 					// Use Direction as BlockID (0-3)
 					// Use Frame as age (0,4,18,12)
 					CopyAnimationFrame(Sprites, sprSprite.BaseTile, 1, (sprSprite.SpriteType) + (sprSprite.Direction) + sprSprite.Frame);
+					break;
+				case sprFirework:
+				case sprFirework+4:
+					// Firework - cycle through the frames
+					CopyAnimationFrame(Sprites, sprSprite.BaseTile, 1, (sprSprite.SpriteType) + sprSprite.Frame);
 					break;
 				default:
 					//Sprite Misc -- sprMisc + type (Empty, Umbrella, Builders Hat, Hod, etc)
@@ -760,16 +772,7 @@ void DefenderoidsMain()
 	SetPalette(SPRITE_PLANE, (u8)(PAL_PICTSEL), RGB(0,0,0), RGB(9, 9, 9), RGB(15,0,0), RGB(0,0,15));
 	SetPalette(SPRITE_PLANE, (u8)(PAL_CITY), RGB(0,0,0), RGB(0, 0, 15), RGB(15,0,0), RGB(0,15,0));
 	SetPalette(SPRITE_PLANE, (u8)(PAL_UMBRELLA), RGB(0,0,0), RGB(15, 0, 0), RGB(15,15,15), RGB(10,5,0));
-	// Lemmanoid palettes for debugging if I need to distinguish between individuals
-	// SpriteID:
-	// 	4 = White
-	//	5 = Red
-	//	6 = Green
-	//	7 = Blue			
-	//SetPalette(SPRITE_PLANE, (u8)(PAL_LEMMANOID), RGB(0,0,0), RGB(15, 15, 15), RGB(15,15,15), RGB(15,15,15));
-	//SetPalette(SPRITE_PLANE, (u8)(PAL_LEMMANOID+1), RGB(0,0,0), RGB(15, 0, 0), RGB(15, 0, 0), RGB(15, 0, 0));
-	//SetPalette(SPRITE_PLANE, (u8)(PAL_LEMMANOID+2), RGB(0,0,0), RGB(0, 15, 0), RGB(0, 15, 0), RGB(0, 15, 0));
-	//SetPalette(SPRITE_PLANE, (u8)(PAL_LEMMANOID+3), RGB(0,0,0), RGB(0, 0, 15), RGB(0,0,15), RGB(0,0,15));
+	SetPalette(SPRITE_PLANE, (u8)(PAL_FIREWORK), RGB(0,0,0), RGB(15, 15, 15), RGB(15,15,0), RGB(15,15,15));
 
 	SetPalette(SCR_1_PLANE, PAL_SCORE, 0, RGB(15,0,0), RGB(8,8,8), RGB(4,4,4));
 	SetPalette(SCR_1_PLANE, PAL_BORDER, 0, RGB(15,15,15), RGB(0,0,15), RGB(15,0,0));
@@ -1068,7 +1071,8 @@ void DefenderoidsMain()
 				// Theoretically possible to run out of Pictcell's and therefore to not be able to completely build
 				// the city and save any Lemmanoids? Do I need to trap this as an end-of-level condition?
 				// - Decided not too, in this scenario it's only a matter of time before all Lemmanoids are
-				// captured - so, leave it up to the player when to let that happen
+				// captured - so, leave it up to the player when to let that happen - at the moment, it's a bit too easy to
+				// just coast along forever and shoot the aliens down before they manage to capture anything
 				
 				// Energy Gauge==0
 				// Player ship explodees
@@ -1078,7 +1082,7 @@ void DefenderoidsMain()
 				if (iEnergyGauge==0)
 				{
 					iTransitionPalette=PAL_BITMAP;
-					switch (iTransitionCounter)
+					switch (iTransitionCounter++)
 					{
 						case 0:
 							PrintString(SCR_1_PLANE,PAL_SCORE,8,7,"Uh Oh!");
@@ -1120,6 +1124,7 @@ void DefenderoidsMain()
 							iTransitionCounter++;
 							break;
 						case 1:
+							//Then shuffle asteroids up to fill the gap and reduce lvCurrent.AsteroidCount
 							// Rotate the ship towards home (always faces right for now)
 							if (iHorizontalOffset>456||iHorizontalOffset<200)
 							{
@@ -1149,6 +1154,16 @@ void DefenderoidsMain()
 							}
 							break;
 						case 2:
+							// Create Firework sprite
+							for(iSpriteLoop=0;iSpriteLoop<=MAX_SPRITE;iSpriteLoop++)
+							{
+								//Search for the first "empty" sprite
+								if (SpriteList[iSpriteLoop].SpriteType==sprMisc)
+								{
+									SpriteList[iSpriteLoop]=CreateSprite(((u16)iHorizontalOffset<<SPRITE_SCALE)+((vShip.Position.x)<<SPRITE_SCALE),(u16)(100)<<SPRITE_SCALE,iSpriteLoop,sprFirework,DIR_NORTH,0);
+									iSpriteLoop=MAX_SPRITE+1;
+								}
+							}
 							// Apply thrust and kick off a firework every 8 frames or so
 							// Until ship is directly over the city
 							// Adjust vertical thrust as well to drag it into the centre of the screen
@@ -1454,6 +1469,8 @@ void DefenderoidsMain()
 			for (iSpriteLoop=0;iSpriteLoop<MAX_SPRITE;iSpriteLoop++)
 			{
 				// Only process sprite movement, collision etc while controls are active
+				// Stops Lemmanoids triggering their Go Home behaviour or Mutanoids capturing before
+				// the level actuall starts
 				if(bProcessControls)
 				{
 					switch(SpriteList[iSpriteLoop].SpriteType)
@@ -1733,8 +1750,55 @@ void DefenderoidsMain()
 							break;
 					}
 				}
-
+					
 				DrawSprite(SpriteList[iSpriteLoop],iHorizontalOffset);
+
+				// For sprites that I do want to process during the hands-off mode (fireworks etc)
+				switch(SpriteList[iSpriteLoop].SpriteType)
+				{
+					case sprFirework:
+					case sprFirework+4:
+						switch(SpriteList[iSpriteLoop].Direction)
+						{
+							case DIR_NORTH:
+								// Wobble up the screen a bit...
+								SpriteList[iSpriteLoop].Position.x+=(s16)(QRandom()-128);
+								SpriteList[iSpriteLoop].Position.y-=2048;
+								if(SpriteList[iSpriteLoop].Position.y<(32<<SPRITE_SCALE)-(((u16)QRandom()-128)<<4))
+								{
+									// Trigger the final sprite animation
+									SpriteList[iSpriteLoop].Direction=DIR_SOUTH;
+									// Create an explosion object as well
+									for (iLoopExplosion=1;iLoopExplosion<MAX_VECTOR;iLoopExplosion++)
+									{
+										if (VectorList[iLoopExplosion].ObjectType==VEC_NONE)
+										{
+											VectorList[iLoopExplosion]=CreateExplosion(SpriteList[iSpriteLoop].Position, VectorList[iVectorLoop].MovementVector);
+
+											// Need a better 'splode noise
+											//VGM_PlaySFX((u8*)noise,1);
+
+											iLoopExplosion = MAX_VECTOR;
+										}
+									} 
+
+								}
+								
+								break;
+							case DIR_SOUTH:
+								// And then explode
+								SpriteList[iSpriteLoop].Frame++;
+								break;
+						}
+						if (SpriteList[iSpriteLoop].Frame>3)
+						{
+							// Reset the sprite after four frames
+							SpriteList[iSpriteLoop].SpriteType=sprMisc;
+						}
+						break;
+					default:
+						break;
+				}
 			}
 
 			//////////////////////////////////////////////////////

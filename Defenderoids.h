@@ -27,6 +27,7 @@
 #define PAL_ANGRYINVADER 5
 #define PAL_UMBRELLA 6
 #define PAL_BOMBER 7
+#define PAL_FIREWORK 8
 
 //Global consts
 const u8 SPRITE_SCALE=7;
@@ -108,8 +109,8 @@ typedef struct Level
 } LEVEL;
 
 const LEVEL DefenderoidsLevels[] = {
-	{"THE FALL OF LEMMAN",16,1,1,0,0,0},
 	{" THE LAST OF THEM ",1,3,1,12,0,0},
+	{"THE FALL OF LEMMAN",16,1,1,0,0,0},
 	{"COLLECT PICTCELLS ",3,5,2,8,0,0},
 	{"BUILD LEMMANOPOLIS",8,6,2,4,0,0},
 	{"    MINED OUT!    ",0,8,3,0,0,0},

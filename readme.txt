@@ -26,7 +26,7 @@ Invaders will warp in and try to catch the Lemmanoids. Shoot them and the Lemmon
 
 Shoot asteroids to split them up into smaller and smaller parts until they are destroyed completely.
 
-Idea: City builder... Mine the asteroids for City Parts! 
+City builder... Mine the asteroids for City Parts! 
 Three different coloured asteroids (my bitmap is Red/White/Blue, so Iron/Rock/Glass or something?) 
 Collect $foo of each for one city.
 Lemmanoids will collect the parts as they are dropped and schlep them to the city site.
