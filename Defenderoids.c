@@ -224,7 +224,7 @@ SPRITE CreateSprite(u16 x, u16 y, u8 ID, u8 Type, u8 Direction, u8 Frame)
 			break;
 		case sprFirework:
 		case sprFirework+4:
-			iPalette=(u8)(PAL_FIREWORK);
+			iPalette=(u8)(PAL_FIREWORK+(QRandom()>>6));
 			break;
 		default:
 			iPalette=(u8)(PAL_SPRITE);
@@ -772,7 +772,10 @@ void DefenderoidsMain()
 	SetPalette(SPRITE_PLANE, (u8)(PAL_PICTSEL), RGB(0,0,0), RGB(9, 9, 9), RGB(15,0,0), RGB(0,0,15));
 	SetPalette(SPRITE_PLANE, (u8)(PAL_CITY), RGB(0,0,0), RGB(0, 0, 15), RGB(15,0,0), RGB(0,15,0));
 	SetPalette(SPRITE_PLANE, (u8)(PAL_UMBRELLA), RGB(0,0,0), RGB(15, 0, 0), RGB(15,15,15), RGB(10,5,0));
-	SetPalette(SPRITE_PLANE, (u8)(PAL_FIREWORK), RGB(0,0,0), RGB(15, 15, 15), RGB(15,15,0), RGB(15,15,15));
+	SetPalette(SPRITE_PLANE, (u8)(PAL_FIREWORK), RGB(0,0,0), RGB(15, 15, 15), RGB(15,15,0), RGB(15,0,0));
+	SetPalette(SPRITE_PLANE, (u8)(PAL_FIREWORK+1), RGB(0,0,0), RGB(7, 15, 3), RGB(15,7,0), RGB(0,0,15));
+	SetPalette(SPRITE_PLANE, (u8)(PAL_FIREWORK+2), RGB(0,0,0), RGB(3, 15, 7), RGB(7,15,0), RGB(0,15,0));
+	SetPalette(SPRITE_PLANE, (u8)(PAL_FIREWORK+3), RGB(0,0,0), RGB(15, 3, 7), RGB(0,7,15), RGB(15,15,15));
 
 	SetPalette(SCR_1_PLANE, PAL_SCORE, 0, RGB(15,0,0), RGB(8,8,8), RGB(4,4,4));
 	SetPalette(SCR_1_PLANE, PAL_BORDER, 0, RGB(15,15,15), RGB(0,0,15), RGB(15,0,0));
@@ -1122,6 +1125,7 @@ void DefenderoidsMain()
 							vShip.MovementVector.x=0;
 							vShip.MovementVector.y=0;
 							iTransitionCounter++;
+							iTransitionFrame=0;
 							break;
 						case 1:
 							//Then shuffle asteroids up to fill the gap and reduce lvCurrent.AsteroidCount
@@ -1160,7 +1164,15 @@ void DefenderoidsMain()
 								//Search for the first "empty" sprite
 								if (SpriteList[iSpriteLoop].SpriteType==sprMisc)
 								{
-									SpriteList[iSpriteLoop]=CreateSprite(((u16)iHorizontalOffset<<SPRITE_SCALE)+((vShip.Position.x)<<SPRITE_SCALE),(u16)(100)<<SPRITE_SCALE,iSpriteLoop,sprFirework,DIR_NORTH,0);
+									if(iTransitionFrame%2==0)
+									{
+										SpriteList[iSpriteLoop]=CreateSprite(((u16)iHorizontalOffset<<SPRITE_SCALE)+((vShip.Position.x)<<SPRITE_SCALE),(u16)(100)<<SPRITE_SCALE,iSpriteLoop,sprFirework,DIR_NORTH,0);
+									}
+									else
+									{
+										SpriteList[iSpriteLoop]=CreateSprite(((u16)iHorizontalOffset<<SPRITE_SCALE)+((vShip.Position.x)<<SPRITE_SCALE),(u16)(100)<<SPRITE_SCALE,iSpriteLoop,sprFirework+4,DIR_NORTH,0);
+									}
+
 									iSpriteLoop=MAX_SPRITE+1;
 								}
 							}
