@@ -224,7 +224,7 @@ SPRITE CreateSprite(u16 x, u16 y, u8 ID, u8 Type, u8 Direction, u8 Frame)
 			break;
 		case sprFirework:
 		case sprFirework+4:
-			iPalette=(u8)(PAL_FIREWORK+(QRandom()>>6));
+			iPalette=(u8)(PAL_FIREWORK+(ID%4));
 			break;
 		default:
 			iPalette=(u8)(PAL_SPRITE);
@@ -1118,6 +1118,24 @@ void DefenderoidsMain()
 					if (iTransitionFrame++%2==0) iTransitionPalette=PAL_DEBUG;
 					PrintString(SCR_2_PLANE,iTransitionPalette,6,7,"AUTOPILOT");
 					PrintString(SCR_2_PLANE,iTransitionPalette,7,8,"ENGAGED");
+					// Create Firework sprite
+					for(iSpriteLoop=0;iSpriteLoop<=MAX_SPRITE;iSpriteLoop++)
+					{
+						//Search for the first "empty" sprite
+						if (SpriteList[iSpriteLoop].SpriteType==sprMisc)
+						{
+							if(iTransitionFrame%2==0)
+							{
+								SpriteList[iSpriteLoop]=CreateSprite(((u16)iHorizontalOffset<<SPRITE_SCALE)+((vShip.Position.x)<<SPRITE_SCALE),(u16)(100)<<SPRITE_SCALE,iSpriteLoop,sprFirework,DIR_NORTH,0);
+							}
+							else
+							{
+								SpriteList[iSpriteLoop]=CreateSprite(((u16)iHorizontalOffset<<SPRITE_SCALE)+((vShip.Position.x)<<SPRITE_SCALE),(u16)(100)<<SPRITE_SCALE,iSpriteLoop,sprFirework+4,DIR_NORTH,0);
+							}
+
+							iSpriteLoop=MAX_SPRITE+1;
+						}
+					}
 					switch (iTransitionCounter)
 					{
 						case 0:
@@ -1158,24 +1176,6 @@ void DefenderoidsMain()
 							}
 							break;
 						case 2:
-							// Create Firework sprite
-							for(iSpriteLoop=0;iSpriteLoop<=MAX_SPRITE;iSpriteLoop++)
-							{
-								//Search for the first "empty" sprite
-								if (SpriteList[iSpriteLoop].SpriteType==sprMisc)
-								{
-									if(iTransitionFrame%2==0)
-									{
-										SpriteList[iSpriteLoop]=CreateSprite(((u16)iHorizontalOffset<<SPRITE_SCALE)+((vShip.Position.x)<<SPRITE_SCALE),(u16)(100)<<SPRITE_SCALE,iSpriteLoop,sprFirework,DIR_NORTH,0);
-									}
-									else
-									{
-										SpriteList[iSpriteLoop]=CreateSprite(((u16)iHorizontalOffset<<SPRITE_SCALE)+((vShip.Position.x)<<SPRITE_SCALE),(u16)(100)<<SPRITE_SCALE,iSpriteLoop,sprFirework+4,DIR_NORTH,0);
-									}
-
-									iSpriteLoop=MAX_SPRITE+1;
-								}
-							}
 							// Apply thrust and kick off a firework every 8 frames or so
 							// Until ship is directly over the city
 							// Adjust vertical thrust as well to drag it into the centre of the screen
