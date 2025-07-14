@@ -8,17 +8,11 @@
 #define LogoTileBase 256
 
 // Palette constants
-// SCR_1_PLANE
-#define PAL_BITMAP 0
-#define PAL_LOGO 0
-#define PAL_STARFIELD 1
-#define PAL_BORDER 4
 
 // SCR_2_PLANE
-#define PAL_DEBUG 0
-#define PAL_SCORE 1
+#define PAL_BITMAP 0
 
-// SPR_PLANE/SCR1_PLANE (Lemmanoid/City)
+// SPR_PLANE
 #define PAL_SPRITE 0
 #define PAL_INVADER 1
 #define PAL_LEMMANOID 2
@@ -28,6 +22,17 @@
 #define PAL_UMBRELLA 6
 #define PAL_BOMBER 7
 #define PAL_FIREWORK 8 // Actually 8-11 for firework palettes
+
+
+// SPR_PLANE/SCR1_PLANE (Lemmanoid/City)
+// SCR_1_PLANE
+#define PAL_LOGO 0
+#define PAL_STARFIELD 1
+#define PAL_CITY_STATUS 2
+#define PAL_DEBUG 1
+#define PAL_SCORE 2
+#define PAL_BORDER 3
+#define PAL_STATUS 4 // Actually 4-14 for individual Lemmanoid status tiles
 
 //Global consts
 const u8 SPRITE_SCALE=7;

@@ -547,8 +547,9 @@ void DrawGameScreen()
 	// Use the unprintable char(10) through to char(30) for status bar updates
 	// Replace with the Lemmanoid animation or city status in the game loop
 	for(iLoopX=0;iLoopX<10;iLoopX++){
-		PutTile(SCR_1_PLANE,PAL_LEMMANOID,iLoopX+7,17, iLoopX+10); //Lemmanoids Status
-		PutTile(SCR_1_PLANE,PAL_CITY,iLoopX+7,18, iLoopX+20); //City Status
+		SetPalette(SCR_1_PLANE,PAL_STATUS+iLoopX, RGB(0,0,0), RGB(15, 11, 12), RGB(0,0,15), RGB(0,15,0));
+		PutTile(SCR_1_PLANE,PAL_STATUS+iLoopX,iLoopX+7,17, iLoopX+10); //Lemmanoids Status
+		PutTile(SCR_1_PLANE,PAL_CITY_STATUS,iLoopX+7,18, iLoopX+20); //City Status
 	}
 
 }
@@ -777,12 +778,10 @@ void DefenderoidsMain()
 	SetPalette(SPRITE_PLANE, (u8)(PAL_FIREWORK+2), RGB(0,0,0), RGB(3, 15, 7), RGB(7,15,0), RGB(0,15,0));
 	SetPalette(SPRITE_PLANE, (u8)(PAL_FIREWORK+3), RGB(0,0,0), RGB(15, 3, 7), RGB(0,7,15), RGB(15,15,15));
 
-	SetPalette(SCR_1_PLANE, PAL_SCORE, 0, RGB(15,0,0), RGB(8,8,8), RGB(4,4,4));
+	SetPalette(SCR_1_PLANE, PAL_SCORE, 0, RGB(15,15,15), RGB(8,8,8), RGB(4,4,4));
 	SetPalette(SCR_1_PLANE, PAL_BORDER, 0, RGB(15,15,15), RGB(0,0,15), RGB(15,0,0));
-	SetPalette(SCR_1_PLANE, PAL_LEMMANOID, RGB(0,0,0), RGB(15, 11, 12), RGB(0,0,15), RGB(0,15,0));
-	SetPalette(SCR_1_PLANE, PAL_CITY, RGB(0,0,0), RGB(0, 0, 15), RGB(15,0,0), RGB(0,15,0));
-	SetPalette(SCR_2_PLANE, PAL_DEBUG, 0, RGB(15,15,15), RGB(8,8,8), RGB(4,4,4));
-	SetPalette(SCR_2_PLANE, PAL_SCORE, 0, RGB(15,0,0), RGB(8,8,8), RGB(4,4,4));
+	SetPalette(SCR_1_PLANE, PAL_CITY_STATUS, RGB(0,0,0), RGB(0, 0, 15), RGB(15,0,0), RGB(0,15,0));
+	SetPalette(SCR_1_PLANE, PAL_DEBUG, 0, RGB(15,15,15), RGB(8,8,8), RGB(4,4,4));
 
 	////////////////////////////////////////////////////////////
 	//Create game screen
@@ -803,7 +802,7 @@ void DefenderoidsMain()
 	{
 		for (iLoopX=0;iLoopX<18;iLoopX++)
 		{
-			PutTile(SCR_1_PLANE, PAL_BITMAP, 1 + iLoopX, 1 + iLoopY, bgTileBase+iTile);
+			PutTile(SCR_2_PLANE, PAL_BITMAP, 1 + iLoopX, 1 + iLoopY, bgTileBase+iTile);
 			iTile++;
 		}
 	}
@@ -825,7 +824,7 @@ void DefenderoidsMain()
 		// Level setup
 		////////////////////////////////////////////////////////////
 
-		SetPalette(SCR_1_PLANE, PAL_BITMAP, 0, RGB(15,15,15), RGB(0,0,15), RGB(15,0,0));
+		SetPalette(SCR_2_PLANE, PAL_BITMAP, 0, RGB(15,15,15), RGB(0,0,15), RGB(15,0,0));
 
 		lvCurrent=DefenderoidsLevels[iCurrentLevel];
 
@@ -988,8 +987,8 @@ void DefenderoidsMain()
 				// Display the objective at least
 				if (lvCurrent.Died==0&&iEnergyGauge!=0&&lvCurrent.Saved==0)
 				{
-					PrintString(SCR_2_PLANE,PAL_SCORE,5,2,"DEFEND THE");
-					PrintString(SCR_2_PLANE,PAL_SCORE,5,3,"LEMMANOIDS");
+					PrintString(SCR_1_PLANE,PAL_SCORE,5,2,"DEFEND THE");
+					PrintString(SCR_1_PLANE,PAL_SCORE,5,3,"LEMMANOIDS");
 					switch (iTransitionCounter)
 					{
 						case 0:
@@ -999,9 +998,9 @@ void DefenderoidsMain()
 							}
 							break;
 						case 1:
-							PrintString(SCR_2_PLANE,PAL_SCORE,6,5,"LEVEL ");
-							PrintDecimal(SCR_2_PLANE,PAL_SCORE,12,5,iCurrentLevel+1,1);
-							PrintString(SCR_2_PLANE,PAL_SCORE,1,6,lvCurrent.LevelName);
+							PrintString(SCR_1_PLANE,PAL_SCORE,6,5,"LEVEL ");
+							PrintDecimal(SCR_1_PLANE,PAL_SCORE,12,5,iCurrentLevel+1,1);
+							PrintString(SCR_1_PLANE,PAL_SCORE,1,6,lvCurrent.LevelName);
 							if(iTransitionFrame++>=64)
 							{
 								iTransitionCounter++;
@@ -1011,7 +1010,10 @@ void DefenderoidsMain()
 							bProcessControls=true;
 							iTransitionCounter=0;
 							iTransitionFrame=0;
-							ClearScreen(SCR_2_PLANE);
+							PrintString(SCR_1_PLANE,PAL_SCORE,5,2,"          ");
+							PrintString(SCR_1_PLANE,PAL_SCORE,5,3,"          ");
+							PrintString(SCR_1_PLANE,PAL_SCORE,6,5,"          ");
+							PrintString(SCR_1_PLANE,PAL_SCORE,1,6,"                  ");
 							break;
 					// When animation is complete, set the Level Complete flag...
 					}
@@ -1026,15 +1028,19 @@ void DefenderoidsMain()
 
 					iTransitionPalette=PAL_SCORE;
 					if (iTransitionFrame++%2==0) iTransitionPalette=PAL_DEBUG;
-					PrintString(SCR_2_PLANE,iTransitionPalette,7,7,"MISSION");
-					PrintString(SCR_2_PLANE,iTransitionPalette,7,8,"FAILED!");
+					PrintString(SCR_1_PLANE,iTransitionPalette,7,7,"MISSION");
+					PrintString(SCR_1_PLANE,iTransitionPalette,7,8,"FAILED!");
+					// Add a screen shake by moving SCR_1_PLANE around a bit
+					// Would work better if the bitmap was on SCR_2_PLANE - also, only seems to go in one direction...
+					//SCR1_X+=((s8)(128-QRandom())>>6);
+					//SCR1_Y+=((s8)(128-QRandom())>>6);
 					if (iTransitionPalette==PAL_DEBUG)
 					{
-						SetPalette(SCR_1_PLANE, PAL_BITMAP, 0, RGB(15,0,0), RGB(15,0,0), RGB(15,0,0));
+						SetPalette(SCR_2_PLANE, PAL_BITMAP, 0, RGB(15,0,0), RGB(15,0,0), RGB(15,0,0));
 					}
 					else
 					{
-						SetPalette(SCR_1_PLANE,PAL_BITMAP,RGB(15,0,0),RGB(15,15,15),RGB(15,15,15),RGB(15,15,15));
+						SetPalette(SCR_2_PLANE,PAL_BITMAP,RGB(15,0,0),RGB(15,15,15),RGB(15,15,15),RGB(15,15,15));
 					}
 					switch (iTransitionCounter)
 					{
@@ -1064,8 +1070,8 @@ void DefenderoidsMain()
 							break;
 						default:
 							bLevelComplete=true;
-							PrintString(SCR_2_PLANE,iTransitionPalette,7,7,"       ");
-							PrintString(SCR_2_PLANE,iTransitionPalette,7,8,"       ");
+							PrintString(SCR_1_PLANE,iTransitionPalette,7,7,"       ");
+							PrintString(SCR_1_PLANE,iTransitionPalette,7,8,"       ");
 							break;
 					// When animation is complete, set the Level Complete flag...
 					}
@@ -1116,8 +1122,8 @@ void DefenderoidsMain()
 					// Display autopilot message
 					iTransitionPalette=PAL_SCORE;
 					if (iTransitionFrame++%2==0) iTransitionPalette=PAL_DEBUG;
-					PrintString(SCR_2_PLANE,iTransitionPalette,6,7,"AUTOPILOT");
-					PrintString(SCR_2_PLANE,iTransitionPalette,7,8,"ENGAGED");
+					PrintString(SCR_1_PLANE,iTransitionPalette,6,7,"AUTOPILOT");
+					PrintString(SCR_1_PLANE,iTransitionPalette,7,8,"ENGAGED");
 					// Create Firework sprite
 					for(iSpriteLoop=0;iSpriteLoop<=MAX_SPRITE;iSpriteLoop++)
 					{
@@ -1213,8 +1219,8 @@ void DefenderoidsMain()
 							}
 							break;
 						default:
-							PrintString(SCR_2_PLANE,PAL_DEBUG,6,7,"         ");
-							PrintString(SCR_2_PLANE,PAL_DEBUG,7,8,"       ");
+							PrintString(SCR_1_PLANE,PAL_DEBUG,6,7,"         ");
+							PrintString(SCR_1_PLANE,PAL_DEBUG,7,8,"       ");
 							bLevelComplete=true;
 							break;
 					}
@@ -1823,16 +1829,16 @@ void DefenderoidsMain()
 			iGaugePalette=PAL_SCORE;
 			for(iEnergyLoop=1;iEnergyLoop<=(iEnergyGauge>>3);iEnergyLoop++)
 			{
-				PutTile(SCR_2_PLANE, iGaugePalette, 6+iEnergyLoop, 16, 8);
+				PutTile(SCR_1_PLANE, iGaugePalette, 6+iEnergyLoop, 16, 8);
 				if(iEnergyLoop==3) iGaugePalette=0;
 			}
-			PutTile(SCR_2_PLANE,iGaugePalette,6+iEnergyLoop,16,(iEnergyGauge%8));
+			PutTile(SCR_1_PLANE,iGaugePalette,6+iEnergyLoop,16,(iEnergyGauge%8));
 			//iEnergyGauge--;
 			//Need to add some spaces after the last tile just in case energy has reduced by more than 8 units
 			//Also, remember to put bounds checking in when reducing the Energy level so that it doesn't wrap
 			for(iEnergyLoop++;iEnergyLoop<=12;iEnergyLoop++)
 			{
-				PutTile(SCR_2_PLANE, iGaugePalette, 6+iEnergyLoop, 16, 0);
+				PutTile(SCR_1_PLANE, iGaugePalette, 6+iEnergyLoop, 16, 0);
 			}
 
 			// Lemmanoid and city status
@@ -1848,26 +1854,35 @@ void DefenderoidsMain()
 				switch(SpriteList[iLemmanoidLoop].SpriteType)
 				{
 					case sprLemmanoid:
+						SetPalette(SCR_1_PLANE,PAL_STATUS+iLoopX, RGB(0,0,0), RGB(15, 11, 12), RGB(0,0,15), RGB(0,15,0));
 						CopyAnimationFrame(Sprites, 10+iLoopX++, 1, (SpriteList[iLemmanoidLoop].SpriteType) + (SpriteList[iLemmanoidLoop].Direction) + SpriteList[iLemmanoidLoop].Frame);
 						break;
+								
 					case sprCity:
 						CopyAnimationFrame(Sprites, 20+iLoopY++, 1, (SpriteList[iLemmanoidLoop].SpriteType) + (SpriteList[iLemmanoidLoop].Direction) + SpriteList[iLemmanoidLoop].Frame);
 						break;
 				}
 			}
 			// Need different palettes for saved/dead Lemmanoids
-			// Saved Lemmanoids get a little flag
+			// Saved Lemmanoids get a little house
 			for(iLemmanoidLoop=0;iLemmanoidLoop<lvCurrent.Saved;iLemmanoidLoop++)
 			{
+				SetPalette(SCR_1_PLANE,PAL_STATUS+iLoopX,RGB(0,0,0),RGB(15,15,15),RGB(15,0,0),RGB(0,15,0));
 				CopyAnimationFrame(Sprites, 10+iLoopX++, 1, sprLemmanoid+DIR_SAFE);
 			}
 			// Dead ones get a tombstone
 			lvCurrent.Died=0;
 			for(;iLoopX<lvCurrent.LemmanoidCount;iLoopX++)
 			{
+				SetPalette(SCR_1_PLANE,PAL_STATUS+iLoopX,RGB(0,0,0),RGB(15,15,15),RGB(3,3,3),RGB(0,15,0));
 				CopyAnimationFrame(Sprites, 10+iLoopX, 1, sprLemmanoid+DIR_HEADSTONE);
 				lvCurrent.Died++;
 
+			}
+			// Everything else gets a null sprite
+			for(;iLoopX<10;iLoopX++)
+			{
+				CopyAnimationFrame(Sprites, 10+iLoopX, 1, sprMisc);
 			}
 
 			// Switch to hands-off mode if end of level reached for any reason
