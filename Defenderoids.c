@@ -1032,7 +1032,14 @@ void DefenderoidsMain()
 					PrintString(SCR_1_PLANE,iTransitionPalette,7,8,"FAILED!");
 					// Add a screen shake by moving SCR_1_PLANE around a bit
 					// Would work better if the bitmap was on SCR_2_PLANE - also, only seems to go in one direction...
-					//SCR1_X+=((s8)(128-QRandom())>>6);
+					if (iTransitionFrame%4==0)
+						SCR2_X++;
+					else if (iTransitionFrame%3==0)
+						SCR2_X--;
+					else if (iTransitionFrame%2==0)
+						SCR2_Y++;
+					else
+						SCR2_Y--;
 					//SCR1_Y+=((s8)(128-QRandom())>>6);
 					if (iTransitionPalette==PAL_DEBUG)
 					{
