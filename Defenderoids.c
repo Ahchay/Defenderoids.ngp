@@ -47,7 +47,7 @@
  *    - How to play
  * Transitions
  * 	Needs more pizazz - fireworks/explosions/sortathing 
- *   Level Success - fireworks + explosion objects
+ *   Level Success - fireworks + explosion objects - Done
  *   All Lemmanoids destroyed - spawn asteroids along heightmap - Done
  *   Ship destroyed - Explosions everywhere
  * 
@@ -1028,10 +1028,9 @@ void DefenderoidsMain()
 
 					iTransitionPalette=PAL_SCORE;
 					if (iTransitionFrame++%2==0) iTransitionPalette=PAL_DEBUG;
-					PrintString(SCR_1_PLANE,iTransitionPalette,7,7,"MISSION");
-					PrintString(SCR_1_PLANE,iTransitionPalette,7,8,"FAILED!");
-					// Add a screen shake by moving SCR_1_PLANE around a bit
-					// Would work better if the bitmap was on SCR_2_PLANE - also, only seems to go in one direction...
+					PrintString(SCR_1_PLANE,iTransitionPalette,7,3,"MISSION");
+					PrintString(SCR_1_PLANE,iTransitionPalette,7,4,"FAILED!");
+					// Add a screen shake by moving SCR_2_PLANE around a bit
 					if (iTransitionFrame%4==0)
 						SCR2_X++;
 					else if (iTransitionFrame%3==0)
@@ -1077,8 +1076,10 @@ void DefenderoidsMain()
 							break;
 						default:
 							bLevelComplete=true;
-							PrintString(SCR_1_PLANE,iTransitionPalette,7,7,"       ");
-							PrintString(SCR_1_PLANE,iTransitionPalette,7,8,"       ");
+							SCR2_X=0;
+							SCR2_Y=0;
+							PrintString(SCR_1_PLANE,iTransitionPalette,7,3,"       ");
+							PrintString(SCR_1_PLANE,iTransitionPalette,7,4,"       ");
 							break;
 					// When animation is complete, set the Level Complete flag...
 					}
@@ -1088,7 +1089,8 @@ void DefenderoidsMain()
 				// the city and save any Lemmanoids? Do I need to trap this as an end-of-level condition?
 				// - Decided not too, in this scenario it's only a matter of time before all Lemmanoids are
 				// captured - so, leave it up to the player when to let that happen - at the moment, it's a bit too easy to
-				// just coast along forever and shoot the aliens down before they manage to capture anything
+				// just coast along forever and shoot the aliens down before they manage to capture anything, but I'll get
+				// to the game balancing when I've run out of other stuff to do
 				
 				// Energy Gauge==0
 				// Player ship explodees
@@ -1129,21 +1131,22 @@ void DefenderoidsMain()
 					// Display autopilot message
 					iTransitionPalette=PAL_SCORE;
 					if (iTransitionFrame++%2==0) iTransitionPalette=PAL_DEBUG;
-					PrintString(SCR_1_PLANE,iTransitionPalette,6,7,"AUTOPILOT");
-					PrintString(SCR_1_PLANE,iTransitionPalette,7,8,"ENGAGED");
+					PrintString(SCR_1_PLANE,iTransitionPalette,6,3,"AUTOPILOT");
+					PrintString(SCR_1_PLANE,iTransitionPalette,7,4,"ENGAGED");
 					// Create Firework sprite
 					for(iSpriteLoop=0;iSpriteLoop<=MAX_SPRITE;iSpriteLoop++)
 					{
 						//Search for the first "empty" sprite
 						if (SpriteList[iSpriteLoop].SpriteType==sprMisc)
 						{
+							// Create one of two firework types
 							if(iTransitionFrame%2==0)
 							{
-								SpriteList[iSpriteLoop]=CreateSprite(((u16)iHorizontalOffset<<SPRITE_SCALE)+((vShip.Position.x)<<SPRITE_SCALE),(u16)(100)<<SPRITE_SCALE,iSpriteLoop,sprFirework,DIR_NORTH,0);
+								SpriteList[iSpriteLoop]=CreateSprite(((u16)iHorizontalOffset<<SPRITE_SCALE)+((vShip.Position.x+QRandom()-QRandom())<<SPRITE_SCALE),(u16)(100)<<SPRITE_SCALE,iSpriteLoop,sprFirework,DIR_NORTH,0);
 							}
 							else
 							{
-								SpriteList[iSpriteLoop]=CreateSprite(((u16)iHorizontalOffset<<SPRITE_SCALE)+((vShip.Position.x)<<SPRITE_SCALE),(u16)(100)<<SPRITE_SCALE,iSpriteLoop,sprFirework+4,DIR_NORTH,0);
+								SpriteList[iSpriteLoop]=CreateSprite(((u16)iHorizontalOffset<<SPRITE_SCALE)+((vShip.Position.x+QRandom()-QRandom())<<SPRITE_SCALE),(u16)(100)<<SPRITE_SCALE,iSpriteLoop,sprFirework+4,DIR_NORTH,0);
 							}
 
 							iSpriteLoop=MAX_SPRITE+1;
@@ -1226,8 +1229,8 @@ void DefenderoidsMain()
 							}
 							break;
 						default:
-							PrintString(SCR_1_PLANE,PAL_DEBUG,6,7,"         ");
-							PrintString(SCR_1_PLANE,PAL_DEBUG,7,8,"       ");
+							PrintString(SCR_1_PLANE,PAL_DEBUG,6,3,"         ");
+							PrintString(SCR_1_PLANE,PAL_DEBUG,7,4,"       ");
 							bLevelComplete=true;
 							break;
 					}
