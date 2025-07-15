@@ -34,6 +34,10 @@
 #define PAL_BORDER 3
 #define PAL_STATUS 4 // Actually 4-14 for individual Lemmanoid status tiles
 
+// Macro to translate Player position+Horizontal Offset to the sprite position
+// Needs to cater for the wrap point I think?
+#define PLAYER_X ((u16)iHorizontalOffset<<SPRITE_SCALE)+((vShip.Position.x)<<SPRITE_SCALE)
+
 //Global consts
 const u8 SPRITE_SCALE=7;
 const u8 BITMAP_WIDTH=144;

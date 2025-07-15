@@ -1653,7 +1653,7 @@ void DefenderoidsMain()
 								case DIR_MUTANOID:
 									// Hunt down the player?
 									// Vertical movement is fine, but horizontal isn't...
-									if(SpriteList[iSpriteLoop].Position.x<iHorizontalOffset<<SPRITE_SCALE)
+									if(SpriteList[iSpriteLoop].Position.x<PLAYER_X)
 									{
 										SpriteList[iSpriteLoop].Position.x+=64;
 									}
