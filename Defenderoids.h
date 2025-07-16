@@ -26,17 +26,19 @@
 
 // SPR_PLANE/SCR1_PLANE (Lemmanoid/City)
 // SCR_1_PLANE
+// Logo palettes
 #define PAL_LOGO 0
 #define PAL_STARFIELD 1
-#define PAL_CITY_STATUS 2
+// Main game palettes
+#define PAL_SCORE 0
 #define PAL_DEBUG 1
-#define PAL_SCORE 2
+#define PAL_CITY_STATUS 2
 #define PAL_BORDER 3
 #define PAL_STATUS 4 // Actually 4-14 for individual Lemmanoid status tiles
 
 // Macro to translate Player position+Horizontal Offset to the sprite position
 // Needs to cater for the wrap point I think?
-#define PLAYER_X ((u16)iHorizontalOffset<<SPRITE_SCALE)+((vShip.Position.x)<<SPRITE_SCALE)
+#define PLAYER_X ((u16)iHorizontalOffset<<SPRITE_SCALE)+((vShip.Position.x+vShip.Origin.x)<<SPRITE_SCALE)
 
 //Global consts
 const u8 SPRITE_SCALE=7;
@@ -112,22 +114,24 @@ typedef struct Level
 	u8 InvaderCount;
 	u8 LemmanoidCount;
 	u8 AsteroidCount;
+	u8 QixCount;
 	u8 CityStatus;
 	u8 Saved;
 	u8 Died;
 } LEVEL;
 
 const LEVEL DefenderoidsLevels[] = {
-	{" THE LAST OF THEM ",1,3,1,12,0,0},
-	{"THE FALL OF LEMMAN",16,1,1,0,0,0},
-	{"COLLECT PICTCELLS ",3,5,2,8,0,0},
-	{"BUILD LEMMANOPOLIS",8,6,2,4,0,0},
-	{"    MINED OUT!    ",0,8,3,0,0,0},
-	{"THE LAST LEMMANOID",4,1,4,0,0,0},
-	{" WHO DEFENDS WHO? ",6,6,3,0,0,0}
+	{"ERADICATE EVIL QIX",0,0,0,1,0,0,0},
+	{"THE FALL OF LEMMAN",16,1,1,0,0,0,0},
+	{" THE LAST OF THEM ",1,3,1,0,12,0,0},
+	{"COLLECT PICTCELLS ",3,5,2,0,8,0,0},
+	{"BUILD LEMMANOPOLIS",8,6,2,0,4,0,0},
+	{"    MINED OUT!    ",0,8,3,0,0,0,0},
+	{"THE LAST LEMMANOID",4,1,4,0,0,0,0},
+	{"WHOS DEFENDING WHO",6,6,3,0,0,0,0}
 };
 
-#define MAX_LEVEL 5
+#define MAX_LEVEL 7
 
 // Function templates
 u8 DefenderoidsLogo();

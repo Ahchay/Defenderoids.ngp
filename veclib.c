@@ -110,7 +110,7 @@ void DrawVectorSprite(u16 * BitmapAddress, VECTOROBJECT VectorObject, u16 iHoriz
 	s8 cCos;
 	u8 iLoopX;
 	u8 iLoopY;
-	u8 iPositionX;
+	s16 iPositionX;
 
 	cSin = Sin(VectorObject.RotationAngle);
 	cCos = Cos(VectorObject.RotationAngle);
@@ -158,7 +158,7 @@ void DrawSmallVectorSprite(u16 * BitmapAddress, SMALLVECTOROBJECT VectorObject, 
 	s8 cCos;
 	u8 iLoopX;
 	u8 iLoopY;
-	u8 iPositionX;
+	s16 iPositionX;
 
 	cSin = Sin(VectorObject.RotationAngle);
 	cCos = Cos(VectorObject.RotationAngle);

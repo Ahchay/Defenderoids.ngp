@@ -164,6 +164,36 @@ SMALLVECTOROBJECT CreateAsteroid(s16 x, s16 y, u8 Scale, u8 Colour)
 }
 
 /////////////////////////////////////////////////////
+// Create the Qix object
+/////////////////////////////////////////////////////
+SMALLVECTOROBJECT CreateQix()
+{
+	SMALLVECTOROBJECT vReturn;
+	u8 iPointLoop;
+
+	//Qix will start as a point.
+	vReturn.ObjectType = VEC_QIX;
+	vReturn.Origin.x = 16;
+	vReturn.Origin.y = 16;
+	vReturn.Position.x = (u16)16<<SPRITE_SCALE;
+	vReturn.Position.y = (u16)64<<SPRITE_SCALE;
+	vReturn.MovementVector.x = 0;
+	vReturn.MovementVector.y = 0;
+	vReturn.Points=9;
+	for(iPointLoop=0;iPointLoop<vReturn.Points;iPointLoop++)
+	{
+		vReturn.PointList[iPointLoop].x = 16;
+		vReturn.PointList[iPointLoop].y = 16;
+		vReturn.PointList[iPointLoop].colour = 1;
+	}
+	vReturn.Scale=1;
+	vReturn.RotationAngle=0;
+	vReturn.RotationSpeed=0;
+	return vReturn;
+}
+
+
+/////////////////////////////////////////////////////
 // Sprite creator function
 //
 // Creates an extended sprite type includes:
@@ -446,8 +476,8 @@ VECTOROBJECT CreatePlayer()
 	PlayerOne.MovementVector.x = 0; // Use 256 to set up an initial drift...;
 	PlayerOne.MovementVector.y = 0;
 	PlayerOne.Scale = 1;
-	PlayerOne.Origin.x = 3;
-	PlayerOne.Origin.y = 8;
+	PlayerOne.Origin.x = 4;
+	PlayerOne.Origin.y = 9;
 	PlayerOne.Points = 50;
 	PlayerOne.RotationAngle = 64;
 	PlayerOne.RotationSpeed = 0;
@@ -500,6 +530,37 @@ SMALLVECTOROBJECT CreateShot(u16 iHorizontalOffset,VECTOROBJECT PlayerOne, bool 
 	vecShot.RotationSpeed=0;
 
 	return vecShot;
+
+}
+
+/////////////////////////////////////////////////////
+// Set up the palettes for us in the game
+/////////////////////////////////////////////////////
+void DefinePalettes()
+{
+	//Sprite palettes
+	SetPalette(SPRITE_PLANE, (u8)(PAL_SPRITE), RGB(0,0,0), RGB(15,15,15), RGB(11,11,11), RGB(5,5,5));
+	SetPalette(SPRITE_PLANE, (u8)(PAL_INVADER), RGB(0,0,0), RGB(0,15,0), RGB(15,15,0), RGB(15,0,0));
+	SetPalette(SPRITE_PLANE, (u8)(PAL_LEMMANOID), RGB(0,0,0), RGB(15, 11, 12), RGB(0,0,15), RGB(0,15,0));
+	SetPalette(SPRITE_PLANE, (u8)(PAL_CITY), RGB(0,0,0), RGB(0, 0, 15), RGB(15,0,0), RGB(0,15,0));
+	SetPalette(SPRITE_PLANE, (u8)(PAL_PICTSEL), RGB(0,0,0), RGB(9, 9, 9), RGB(15,0,0), RGB(0,0,15));
+	SetPalette(SPRITE_PLANE, (u8)(PAL_ANGRYINVADER), RGB(0,0,0), RGB(15,0,0), RGB(15,15,0), RGB(0,0,15));
+	SetPalette(SPRITE_PLANE, (u8)(PAL_UMBRELLA), RGB(0,0,0), RGB(15, 0, 0), RGB(15,15,15), RGB(10,5,0));
+	SetPalette(SPRITE_PLANE, (u8)(PAL_BOMBER), RGB(0,0,0), RGB(0,15,0), RGB(15,15,0), RGB(15,0,0));
+	SetPalette(SPRITE_PLANE, (u8)(PAL_FIREWORK), RGB(0,0,0), RGB(15, 15, 15), RGB(15,15,0), RGB(15,0,0));
+	SetPalette(SPRITE_PLANE, (u8)(PAL_FIREWORK+1), RGB(0,0,0), RGB(7, 15, 3), RGB(15,7,0), RGB(0,0,15));
+	SetPalette(SPRITE_PLANE, (u8)(PAL_FIREWORK+2), RGB(0,0,0), RGB(3, 15, 7), RGB(7,15,0), RGB(0,15,0));
+	SetPalette(SPRITE_PLANE, (u8)(PAL_FIREWORK+3), RGB(0,0,0), RGB(15, 3, 7), RGB(0,7,15), RGB(15,15,15));
+
+	// Scroll Plane 1 palettes (PAL_STATUS set in game loop)
+	SetPalette(SCR_1_PLANE, PAL_SCORE, 0, RGB(15,15,15), RGB(8,8,8), RGB(4,4,4));
+	SetPalette(SCR_1_PLANE, PAL_DEBUG, 0, RGB(15,0,0), RGB(8,8,8), RGB(4,4,4));
+	SetPalette(SCR_1_PLANE, PAL_BORDER, 0, RGB(15,15,15), RGB(0,0,15), RGB(15,0,0));
+	SetPalette(SCR_1_PLANE, PAL_CITY_STATUS, RGB(0,0,0), RGB(0, 0, 15), RGB(15,0,0), RGB(0,15,0));
+
+	// Scroll Plane 2 palette
+	SetPalette(SCR_2_PLANE, PAL_BITMAP, 0, RGB(15,15,15), RGB(0,0,15), RGB(15,0,0));
+	
 
 }
 
@@ -709,24 +770,22 @@ void DefenderoidsMain()
 	u8 iLoopY;
 	u16 iTile;
 	u16 bmpPlayField[2032];
-	u16 iStartFrame;
-	u16 iCounter;
 	u8 iLoopAsteroid;
 	u8 iSpriteLoop;
 	u8 iPictcellLoop;
 	u8 iEngineLoop;
 	u8 iCityLoop;
 	u8 iLemmanoidLoop;
+	u8 iNewVectorLoop;
+	u8 iLoopShot;
+	u8 iLoopExplosion;
+	u8 iPointLoop;
 	s16 iVelocityX;
 	s16 iVelocityY;
 	u16 iHeightMapLoop;
 	u16 iHorizontalOffset;
 	u8 iCurrentLevel;
-	u8 iNewVectorLoop;
 	LEVEL lvCurrent;
-	u8 iLoopShot;
-	u8 iLoopExplosion;
-	u8 iLoopExplosionPoint;
 	u8 iEngineNoise;
 	bool bShotType;
 	bool bShoot;
@@ -740,48 +799,23 @@ void DefenderoidsMain()
 	u8 iVectorLoop;
 	bool bProcessControls;
 	bool bLevelComplete;
+	bool bQixLevel;
 	u8 iTransitionCounter;
 	u8 iTransitionFrame;
 	u8 iTransitionPalette;
 	
 	/////////////////////////////////////////////////////////
-	// Template vector/sprite arrays
+	// Vector/sprite arrays
 	/////////////////////////////////////////////////////////
-	// Vector objects
-	//	- Origin;
-	//	- Position;
-	//	- MovementVector;
-	//	- Points;
-	//	- PointList[64];
-	//	- Scale;
-	//	- RotationAngle;
-	//	- RotationSpeed;
-	SMALLVECTOROBJECT VectorList[MAX_VECTOR + 1];
-
 	VECTOROBJECT vShip;
-
+	SMALLVECTOROBJECT VectorList[MAX_VECTOR + 1];
 	SPRITE SpriteList[MAX_SPRITE];
 
+	// Set up the random number generator
 	InitialiseQRandom();
 
 	// Set up the palettes
-	SetPalette(SPRITE_PLANE, (u8)(PAL_SPRITE), RGB(0,0,0), RGB(15,15,15), RGB(11,11,11), RGB(5,5,5));
-	SetPalette(SPRITE_PLANE, (u8)(PAL_INVADER), RGB(0,0,0), RGB(0,15,0), RGB(15,15,0), RGB(15,0,0));
-	SetPalette(SPRITE_PLANE, (u8)(PAL_BOMBER), RGB(0,0,0), RGB(0,15,0), RGB(15,15,0), RGB(15,0,0));
-	SetPalette(SPRITE_PLANE, (u8)(PAL_ANGRYINVADER), RGB(0,0,0), RGB(15,0,0), RGB(15,15,0), RGB(0,0,15));
-	SetPalette(SPRITE_PLANE, (u8)(PAL_LEMMANOID), RGB(0,0,0), RGB(15, 11, 12), RGB(0,0,15), RGB(0,15,0));
-	SetPalette(SPRITE_PLANE, (u8)(PAL_PICTSEL), RGB(0,0,0), RGB(9, 9, 9), RGB(15,0,0), RGB(0,0,15));
-	SetPalette(SPRITE_PLANE, (u8)(PAL_CITY), RGB(0,0,0), RGB(0, 0, 15), RGB(15,0,0), RGB(0,15,0));
-	SetPalette(SPRITE_PLANE, (u8)(PAL_UMBRELLA), RGB(0,0,0), RGB(15, 0, 0), RGB(15,15,15), RGB(10,5,0));
-	SetPalette(SPRITE_PLANE, (u8)(PAL_FIREWORK), RGB(0,0,0), RGB(15, 15, 15), RGB(15,15,0), RGB(15,0,0));
-	SetPalette(SPRITE_PLANE, (u8)(PAL_FIREWORK+1), RGB(0,0,0), RGB(7, 15, 3), RGB(15,7,0), RGB(0,0,15));
-	SetPalette(SPRITE_PLANE, (u8)(PAL_FIREWORK+2), RGB(0,0,0), RGB(3, 15, 7), RGB(7,15,0), RGB(0,15,0));
-	SetPalette(SPRITE_PLANE, (u8)(PAL_FIREWORK+3), RGB(0,0,0), RGB(15, 3, 7), RGB(0,7,15), RGB(15,15,15));
-
-	SetPalette(SCR_1_PLANE, PAL_SCORE, 0, RGB(15,15,15), RGB(8,8,8), RGB(4,4,4));
-	SetPalette(SCR_1_PLANE, PAL_BORDER, 0, RGB(15,15,15), RGB(0,0,15), RGB(15,0,0));
-	SetPalette(SCR_1_PLANE, PAL_CITY_STATUS, RGB(0,0,0), RGB(0, 0, 15), RGB(15,0,0), RGB(0,15,0));
-	SetPalette(SCR_1_PLANE, PAL_DEBUG, 0, RGB(15,15,15), RGB(8,8,8), RGB(4,4,4));
+	DefinePalettes();
 
 	////////////////////////////////////////////////////////////
 	//Create game screen
@@ -796,7 +830,7 @@ void DefenderoidsMain()
 	CopyBitmap((u16*)bmpPlayField, bgTileBase);
 
 	iTile=0;
-	//Copy the bitmap to SCR_1_PLANE
+	//Copy the bitmap to SCR_2_PLANE
 	// Watch the order...
 	for (iLoopY=0;iLoopY<14;iLoopY++)
 	{
@@ -809,13 +843,15 @@ void DefenderoidsMain()
 
 	/////////////////////////////////////////////////////////
 	// Main lives/game loop
+	// Level zero is the "planet destroyed" Qix level and not normally
+	// accessible in the main game loop
 	/////////////////////////////////////////////////////////
-
-	iCurrentLevel=0;
+	iCurrentLevel=1;
 	
 	VGM_PlayBGM_Loop((u8*)bgm1, bgm1_loop_point);
 
 	iEnergyGauge=96;
+	bQixLevel=true;
 
 	// Overall game loop
 	while (iEnergyGauge>0)
@@ -824,9 +860,10 @@ void DefenderoidsMain()
 		// Level setup
 		////////////////////////////////////////////////////////////
 
-		SetPalette(SCR_2_PLANE, PAL_BITMAP, 0, RGB(15,15,15), RGB(0,0,15), RGB(15,0,0));
-
-		lvCurrent=DefenderoidsLevels[iCurrentLevel];
+		if (bQixLevel)
+			lvCurrent=DefenderoidsLevels[0];
+		else
+			lvCurrent=DefenderoidsLevels[iCurrentLevel];
 
 		// City (need to create at end of sprite list so they end up at back of priority queue)
 		// Need to use the city age (0-12) to determine each individual block frame
@@ -843,7 +880,6 @@ void DefenderoidsMain()
 		{
 			//x, y, ID, Type, Direction, Frame
 			//Invaders always move south on creation
-			//Eventually, we'll spawn these on a timer rather than just dumping them all in at the outset of the level
 			SpriteList[iSpriteLoop] = CreateSprite(((u16)QRandom())<<8,((u16)QRandom())<<4,iSpriteLoop,sprInvader,DIR_SOUTH,(QRandom()>>6));
 		}
 
@@ -868,6 +904,12 @@ void DefenderoidsMain()
 			VectorList[iVectorLoop] = CreateAsteroid(((u16)QRandom())<<8,((u16)QRandom())<<5,4,1);
 		}
 
+		// Qix
+		for (;iVectorLoop<=lvCurrent.AsteroidCount+lvCurrent.QixCount;iVectorLoop++)
+		{
+			VectorList[iVectorLoop] = CreateQix();
+		}
+
 		// Clear all other vector objects!
 		for (;iVectorLoop<=MAX_VECTOR;iVectorLoop++)
 		{
@@ -879,7 +921,6 @@ void DefenderoidsMain()
 
 		iLoopX=0;
 		iLoopY=0;
-		iCounter=0;
 		iVelocityX=0;
 		iVelocityY=0;
 		bShoot=0;
@@ -890,11 +931,13 @@ void DefenderoidsMain()
 		iTransitionCounter=0;
 		iTransitionFrame=0;
 
+		//Reset game palettes
+		DefinePalettes();
+
 		// Level loop
 		while (!bLevelComplete)
 		{
 
-			iStartFrame=VBCounter;
 
 			//Reset the bitmap for every frame.
 			CreateBitmap((u16*)bmpPlayField, BITMAP_WIDTH, BITMAP_HEIGHT);
@@ -987,8 +1030,16 @@ void DefenderoidsMain()
 				// Display the objective at least
 				if (lvCurrent.Died==0&&iEnergyGauge!=0&&lvCurrent.Saved==0)
 				{
-					PrintString(SCR_1_PLANE,PAL_SCORE,5,2,"DEFEND THE");
-					PrintString(SCR_1_PLANE,PAL_SCORE,5,3,"LEMMANOIDS");
+					if(bQixLevel)
+					{
+						PrintString(SCR_1_PLANE,PAL_DEBUG,5,2,"RESCUE THE");
+						PrintString(SCR_1_PLANE,PAL_DEBUG,5,3,"LEMMANOIDS");
+					}
+					else
+					{
+						PrintString(SCR_1_PLANE,PAL_SCORE,5,2,"DEFEND THE");
+						PrintString(SCR_1_PLANE,PAL_SCORE,5,3,"LEMMANOIDS");
+					}
 					switch (iTransitionCounter)
 					{
 						case 0:
@@ -998,8 +1049,11 @@ void DefenderoidsMain()
 							}
 							break;
 						case 1:
-							PrintString(SCR_1_PLANE,PAL_SCORE,6,5,"LEVEL ");
-							PrintDecimal(SCR_1_PLANE,PAL_SCORE,12,5,iCurrentLevel+1,1);
+							if (!bQixLevel)
+							{
+								PrintString(SCR_1_PLANE,PAL_SCORE,6,5,"LEVEL ");
+								PrintDecimal(SCR_1_PLANE,PAL_SCORE,12,5,iCurrentLevel,1);
+							}
 							PrintString(SCR_1_PLANE,PAL_SCORE,1,6,lvCurrent.LevelName);
 							if(iTransitionFrame++>=64)
 							{
@@ -1023,68 +1077,191 @@ void DefenderoidsMain()
 				// No Lemmanoids saved - planet blows up!
 				// Palette shift on the bitmap plane - colour 1 flash red/white for a couple of seconds and
 				// the ground colour fading to black. Maybe a bunch of asteroids or something in the ground colour?
-				if (lvCurrent.LemmanoidCount==lvCurrent.Died)
+				if(!bQixLevel)
 				{
+					//Normal level complete conditions don't apply on Qix levels
+					if (lvCurrent.LemmanoidCount==lvCurrent.Died)
+					{
 
-					iTransitionPalette=PAL_SCORE;
-					if (iTransitionFrame++%2==0) iTransitionPalette=PAL_DEBUG;
-					PrintString(SCR_1_PLANE,iTransitionPalette,7,3,"MISSION");
-					PrintString(SCR_1_PLANE,iTransitionPalette,7,4,"FAILED!");
-					// Add a screen shake by moving SCR_2_PLANE around a bit
-					if (iTransitionFrame%4==0)
-						SCR2_X++;
-					else if (iTransitionFrame%3==0)
-						SCR2_X--;
-					else if (iTransitionFrame%2==0)
-						SCR2_Y++;
-					else
-						SCR2_Y--;
-					//SCR1_Y+=((s8)(128-QRandom())>>6);
-					if (iTransitionPalette==PAL_DEBUG)
-					{
-						SetPalette(SCR_2_PLANE, PAL_BITMAP, 0, RGB(15,0,0), RGB(15,0,0), RGB(15,0,0));
-					}
-					else
-					{
-						SetPalette(SCR_2_PLANE,PAL_BITMAP,RGB(15,0,0),RGB(15,15,15),RGB(15,15,15),RGB(15,15,15));
-					}
-					switch (iTransitionCounter)
-					{
-						case 0:
-							if(iTransitionFrame>=4)
-							{
-								iTransitionCounter++;
-							}
-							break;
-						case 1:
-							if(iTransitionFrame%4==0)
-							{
-								for (iNewVectorLoop=1;iNewVectorLoop<MAX_VECTOR;iNewVectorLoop++)
+						iTransitionPalette=PAL_SCORE;
+						if (iTransitionFrame++%2==0) iTransitionPalette=PAL_DEBUG;
+						PrintString(SCR_1_PLANE,iTransitionPalette,7,3,"MISSION");
+						PrintString(SCR_1_PLANE,iTransitionPalette,7,4,"FAILED!");
+						// Add a screen shake by moving SCR_2_PLANE around a bit
+						if (iTransitionFrame%4==0)
+							SCR2_X++;
+						else if (iTransitionFrame%3==0)
+							SCR2_X--;
+						else if (iTransitionFrame%2==0)
+							SCR2_Y++;
+						else
+							SCR2_Y--;
+						//SCR1_Y+=((s8)(128-QRandom())>>6);
+						if (iTransitionPalette==PAL_DEBUG)
+						{
+							SetPalette(SCR_2_PLANE, PAL_BITMAP, 0, RGB(15,0,0), RGB(15,0,0), RGB(15,0,0));
+						}
+						else
+						{
+							SetPalette(SCR_2_PLANE,PAL_BITMAP,RGB(15,0,0),RGB(15,15,15),RGB(15,15,15),RGB(15,15,15));
+						}
+						switch (iTransitionCounter)
+						{
+							case 0:
+								if(iTransitionFrame>=4)
 								{
-									if (VectorList[iNewVectorLoop].ObjectType==VEC_NONE)
-									{
-										// Limit asteroid creation to current horizontal offset+8 to offset+136
-										iHeightMapLoop=QRandom()>>1;
-										iHeightMapLoop+=iHorizontalOffset+8;
-										VectorList[iNewVectorLoop]=CreateAsteroid((iHeightMapLoop)<<7,((u16)HeightMap[iHeightMapLoop])<<7,3,3);
-										iNewVectorLoop=MAX_VECTOR;
-									}
-										
+									iTransitionCounter++;
 								}
+								break;
+							case 1:
+								if(iTransitionFrame%4==0)
+								{
+									for (iNewVectorLoop=1;iNewVectorLoop<MAX_VECTOR;iNewVectorLoop++)
+									{
+										if (VectorList[iNewVectorLoop].ObjectType==VEC_NONE)
+										{
+											// Limit asteroid creation to current horizontal offset+8 to offset+136
+											iHeightMapLoop=QRandom()>>1;
+											iHeightMapLoop+=iHorizontalOffset+8;
+											VectorList[iNewVectorLoop]=CreateAsteroid((iHeightMapLoop)<<7,((u16)HeightMap[iHeightMapLoop])<<7,3,3);
+											iNewVectorLoop=MAX_VECTOR;
+										}
+											
+									}
+								}
+								if (iTransitionFrame==64) iTransitionCounter++;
+								break;
+							default:
+								bLevelComplete=true;
+								bQixLevel=true;
+								SCR2_X=0;
+								SCR2_Y=0;
+								PrintString(SCR_1_PLANE,iTransitionPalette,7,3,"       ");
+								PrintString(SCR_1_PLANE,iTransitionPalette,7,4,"       ");
+								break;
+						// When animation is complete, set the Level Complete flag...
+						}
+					}
+					// lvCurrent.Saved>0 - warp to new planet
+					// Autopilot the ship back to the city and then warp vertically up the screen
+					// Fire off a bunch of firework sprites as we go (can clear down any pictcell or invader sprites that are still lurking)
+					// Use iTransitionCounter
+					// 0 - Display "Auto-pilot engaged"
+					// 1 - Navigate towards home (firework type 1 every few frames)
+					// 2 - Rotate to north
+					// 3 - Kick off a bunch of firework type 2
+					// 4 - Thrust north off the screen
+					// Could do with going a bit quicker
+					if (lvCurrent.Saved>0&&lvCurrent.LemmanoidCount==lvCurrent.Died+lvCurrent.Saved)
+					{
+						// Display autopilot message
+						iTransitionPalette=PAL_SCORE;
+						if (iTransitionFrame++%2==0) iTransitionPalette=PAL_DEBUG;
+						PrintString(SCR_1_PLANE,iTransitionPalette,6,3,"AUTOPILOT");
+						PrintString(SCR_1_PLANE,iTransitionPalette,7,4,"ENGAGED");
+						// Create Firework sprite
+						for(iSpriteLoop=0;iSpriteLoop<=MAX_SPRITE;iSpriteLoop++)
+						{
+							//Search for the first "empty" sprite
+							if (SpriteList[iSpriteLoop].SpriteType==sprMisc)
+							{
+								// Create one of two firework types
+								if(iTransitionFrame%2==0)
+								{
+									SpriteList[iSpriteLoop]=CreateSprite(((u16)iHorizontalOffset<<SPRITE_SCALE)+((vShip.Position.x+QRandom()-QRandom())<<SPRITE_SCALE),(u16)(100)<<SPRITE_SCALE,iSpriteLoop,sprFirework,DIR_NORTH,0);
+								}
+								else
+								{
+									SpriteList[iSpriteLoop]=CreateSprite(((u16)iHorizontalOffset<<SPRITE_SCALE)+((vShip.Position.x+QRandom()-QRandom())<<SPRITE_SCALE),(u16)(100)<<SPRITE_SCALE,iSpriteLoop,sprFirework+4,DIR_NORTH,0);
+								}
+
+								iSpriteLoop=MAX_SPRITE+1;
 							}
-							if (iTransitionFrame==64) iTransitionCounter++;
-							break;
-						default:
-							bLevelComplete=true;
-							SCR2_X=0;
-							SCR2_Y=0;
-							PrintString(SCR_1_PLANE,iTransitionPalette,7,3,"       ");
-							PrintString(SCR_1_PLANE,iTransitionPalette,7,4,"       ");
-							break;
-					// When animation is complete, set the Level Complete flag...
+						}
+						switch (iTransitionCounter)
+						{
+							case 0:
+								// Start by disabling any movement velocity
+								vShip.MovementVector.x=0;
+								vShip.MovementVector.y=0;
+								iTransitionCounter++;
+								iTransitionFrame=0;
+								break;
+							case 1:
+								//Then shuffle asteroids up to fill the gap and reduce lvCurrent.AsteroidCount
+								// Rotate the ship towards home (always faces right for now)
+								if (iHorizontalOffset>456||iHorizontalOffset<200)
+								{
+									if (vShip.RotationAngle>192|vShip.RotationAngle<=64)
+										vShip.RotationAngle-=4;
+									else
+										vShip.RotationAngle+=4;
+									if (vShip.RotationAngle>188&&vShip.RotationAngle<196)
+									{
+										//Rotate the ship to Horizontal (angle=195)
+										vShip.RotationAngle=192;
+										iTransitionCounter++;
+									}
+								}
+								else
+								{
+									if (vShip.RotationAngle>192|vShip.RotationAngle<=64)
+										vShip.RotationAngle+=4;
+									else
+										vShip.RotationAngle-=4;
+									if (vShip.RotationAngle>60&&vShip.RotationAngle<68)
+									{
+										//Rotate the ship to Horizontal (angle=64)
+										vShip.RotationAngle=64;
+										iTransitionCounter++;
+									}
+								}
+								break;
+							case 2:
+								// Apply thrust and kick off a firework every 8 frames or so
+								// Until ship is directly over the city
+								// Adjust vertical thrust as well to drag it into the centre of the screen
+								if (vShip.RotationAngle==64)
+									vShip.MovementVector.x=512;
+								else
+									vShip.MovementVector.x=-512;
+								if (iHorizontalOffset>=453&&iHorizontalOffset<=459)
+								{
+									iHorizontalOffset=456;
+									iTransitionCounter++;
+									vShip.MovementVector.x=0;
+								}
+								break;
+							case 3:
+								// Rotate to vertical (angle=0)
+								if (vShip.RotationAngle>=192)
+									vShip.RotationAngle+=4;
+								else
+									vShip.RotationAngle-=4;
+
+								if (vShip.RotationAngle<4||vShip.RotationAngle>252)
+								{
+									vShip.RotationAngle=0;
+									iTransitionCounter++;
+								}
+								break;
+							case 4:
+								// Apply thrust until ship is off the screen
+								vShip.MovementVector.y=-256;
+								// Bounds checking will bounce the ship at y=4, so we need to finish before then...
+								if (vShip.Position.y<=6)
+								{
+									iTransitionCounter++;
+								}
+								break;
+							default:
+								PrintString(SCR_1_PLANE,PAL_DEBUG,6,3,"         ");
+								PrintString(SCR_1_PLANE,PAL_DEBUG,7,4,"       ");
+								bLevelComplete=true;
+								break;
+						}
 					}
 				}
-
 				// Theoretically possible to run out of Pictcell's and therefore to not be able to completely build
 				// the city and save any Lemmanoids? Do I need to trap this as an end-of-level condition?
 				// - Decided not too, in this scenario it's only a matter of time before all Lemmanoids are
@@ -1107,134 +1284,13 @@ void DefenderoidsMain()
 							Sleep(60);
 							break;
 						case 1:
-							bLevelComplete=true;
-							break;
-						default:
 							PrintString(SCR_1_PLANE,PAL_SCORE,8,7,"      ");
+							bLevelComplete=true;
 							break;
 					// When animation is complete, set the Level Complete flag...
 					}
 				}
 
-				// lvCurrent.Saved>0 - warp to new planet
-				// Autopilot the ship back to the city and then warp vertically up the screen
-				// Fire off a bunch of firework sprites as we go (can clear down any pictcell or invader sprites that are still lurking)
-				// Use iTransitionCounter
-				// 0 - Display "Auto-pilot engaged"
-				// 1 - Navigate towards home (firework type 1 every few frames)
-				// 2 - Rotate to north
-				// 3 - Kick off a bunch of firework type 2
-				// 4 - Thrust north off the screen
-				// Could do with going a bit quicker
-				if (lvCurrent.Saved>0&&lvCurrent.LemmanoidCount==lvCurrent.Died+lvCurrent.Saved)
-				{
-					// Display autopilot message
-					iTransitionPalette=PAL_SCORE;
-					if (iTransitionFrame++%2==0) iTransitionPalette=PAL_DEBUG;
-					PrintString(SCR_1_PLANE,iTransitionPalette,6,3,"AUTOPILOT");
-					PrintString(SCR_1_PLANE,iTransitionPalette,7,4,"ENGAGED");
-					// Create Firework sprite
-					for(iSpriteLoop=0;iSpriteLoop<=MAX_SPRITE;iSpriteLoop++)
-					{
-						//Search for the first "empty" sprite
-						if (SpriteList[iSpriteLoop].SpriteType==sprMisc)
-						{
-							// Create one of two firework types
-							if(iTransitionFrame%2==0)
-							{
-								SpriteList[iSpriteLoop]=CreateSprite(((u16)iHorizontalOffset<<SPRITE_SCALE)+((vShip.Position.x+QRandom()-QRandom())<<SPRITE_SCALE),(u16)(100)<<SPRITE_SCALE,iSpriteLoop,sprFirework,DIR_NORTH,0);
-							}
-							else
-							{
-								SpriteList[iSpriteLoop]=CreateSprite(((u16)iHorizontalOffset<<SPRITE_SCALE)+((vShip.Position.x+QRandom()-QRandom())<<SPRITE_SCALE),(u16)(100)<<SPRITE_SCALE,iSpriteLoop,sprFirework+4,DIR_NORTH,0);
-							}
-
-							iSpriteLoop=MAX_SPRITE+1;
-						}
-					}
-					switch (iTransitionCounter)
-					{
-						case 0:
-							// Start by disabling any movement velocity
-							vShip.MovementVector.x=0;
-							vShip.MovementVector.y=0;
-							iTransitionCounter++;
-							iTransitionFrame=0;
-							break;
-						case 1:
-							//Then shuffle asteroids up to fill the gap and reduce lvCurrent.AsteroidCount
-							// Rotate the ship towards home (always faces right for now)
-							if (iHorizontalOffset>456||iHorizontalOffset<200)
-							{
-								if (vShip.RotationAngle>192|vShip.RotationAngle<=64)
-									vShip.RotationAngle-=4;
-								else
-									vShip.RotationAngle+=4;
-								if (vShip.RotationAngle>188&&vShip.RotationAngle<196)
-								{
-									//Rotate the ship to Horizontal (angle=195)
-									vShip.RotationAngle=192;
-									iTransitionCounter++;
-								}
-							}
-							else
-							{
-								if (vShip.RotationAngle>192|vShip.RotationAngle<=64)
-									vShip.RotationAngle+=4;
-								else
-									vShip.RotationAngle-=4;
-								if (vShip.RotationAngle>60&&vShip.RotationAngle<68)
-								{
-									//Rotate the ship to Horizontal (angle=64)
-									vShip.RotationAngle=64;
-									iTransitionCounter++;
-								}
-							}
-							break;
-						case 2:
-							// Apply thrust and kick off a firework every 8 frames or so
-							// Until ship is directly over the city
-							// Adjust vertical thrust as well to drag it into the centre of the screen
-							if (vShip.RotationAngle==64)
-								vShip.MovementVector.x=512;
-							else
-								vShip.MovementVector.x=-512;
-							if (iHorizontalOffset>=453&&iHorizontalOffset<=459)
-							{
-								iHorizontalOffset=456;
-								iTransitionCounter++;
-								vShip.MovementVector.x=0;
-							}
-							break;
-						case 3:
-							// Rotate to vertical (angle=0)
-							if (vShip.RotationAngle>=192)
-								vShip.RotationAngle+=4;
-							else
-								vShip.RotationAngle-=4;
-
-							if (vShip.RotationAngle<4||vShip.RotationAngle>252)
-							{
-								vShip.RotationAngle=0;
-								iTransitionCounter++;
-							}
-							break;
-						case 4:
-							// Apply thrust until ship is off the screen
-							vShip.MovementVector.y=-256;
-							// Bounds checking will bounce the ship at y=4, so we need to finish before then...
-							if (vShip.Position.y<=6)
-							{
-								iTransitionCounter++;
-							}
-							break;
-						default:
-							PrintString(SCR_1_PLANE,PAL_DEBUG,6,3,"         ");
-							PrintString(SCR_1_PLANE,PAL_DEBUG,7,4,"       ");
-							bLevelComplete=true;
-							break;
-					}
-				}
 
 
 			}
@@ -1442,13 +1498,11 @@ void DefenderoidsMain()
 						//Increase the scale for later frames
 
 						//VectorList[iVectorLoop].Scale+=(VectorList[iVectorLoop].RotationSpeed>>2);
-						for (iLoopExplosionPoint=0;iLoopExplosionPoint<VectorList[iVectorLoop].Points;iLoopExplosionPoint++)
+						for (iPointLoop=0;iPointLoop<VectorList[iVectorLoop].Points;iPointLoop++)
 						{
 							// Why not just a few QRandom() calls within the rotation speed area?
-							//VectorList[iVectorLoop].PointList[iLoopExplosionPoint].x +=1-(QRandom()>>6);
-							//VectorList[iVectorLoop].PointList[iLoopExplosionPoint].y +=1-(QRandom()>>6);
-							VectorList[iVectorLoop].PointList[iLoopExplosionPoint].x +=1-iLoopExplosionPoint%3;
-							VectorList[iVectorLoop].PointList[iLoopExplosionPoint].y +=2-iLoopExplosionPoint%5;
+							VectorList[iVectorLoop].PointList[iPointLoop].x +=1-iPointLoop%3;
+							VectorList[iVectorLoop].PointList[iPointLoop].y +=2-iPointLoop%5;
 						}
 
 						// Destroy the Explosion after a few frames
@@ -1470,12 +1524,24 @@ void DefenderoidsMain()
 						}
 						VectorList[iVectorLoop].Position.x += VectorList[iVectorLoop].MovementVector.x;
 						VectorList[iVectorLoop].Position.y += VectorList[iVectorLoop].MovementVector.y;
+						break;
+					case VEC_QIX:
+						//Shuffle the points up the list
+						for(iPointLoop=0;iPointLoop<VectorList[iVectorLoop].Points-1;iPointLoop++)
+						{
+							VectorList[iVectorLoop].PointList[iPointLoop] = VectorList[iVectorLoop].PointList[iPointLoop+1];
+						}
+						// Randomise the last point on the list
+						VectorList[iVectorLoop].PointList[VectorList[iVectorLoop].Points-1].x = (s16)(QRandom()>>3)-(s16)(QRandom()>>3);
+						VectorList[iVectorLoop].PointList[VectorList[iVectorLoop].Points-1].y = (s16)(QRandom()>>3)-(s16)(QRandom()>>3);
+						break;
 				}
 					
 				switch (VectorList[iVectorLoop].ObjectType)
 				{
 					case VEC_ASTEROID:
 					case VEC_SHOT:
+					case VEC_QIX:
 						DrawVectorObject((u16*)bmpPlayField, VectorList[iVectorLoop], iHorizontalOffset);
 						break;
 					case VEC_EXPLOSION:
@@ -1761,7 +1827,7 @@ void DefenderoidsMain()
 							//////////////////////////////////////////////////////
 							// Spawn new invaders if invader count < default
 							//////////////////////////////////////////////////////
-							if(lvCurrent.InvaderCount<DefenderoidsLevels[iCurrentLevel].InvaderCount)
+							if(lvCurrent.InvaderCount<DefenderoidsLevels[iCurrentLevel].InvaderCount&&!bQixLevel)
 							{
 								lvCurrent.InvaderCount++;
 								// Spawn invaders off screen, keep the player on their toes
@@ -1834,7 +1900,6 @@ void DefenderoidsMain()
 			//////////////////////////////////////////////////////
 
 			// Debug info
-			PrintDecimal(SCR_1_PLANE,PAL_SCORE,0,18,iHorizontalOffset,3);
 			// Energy gauge
 			iGaugePalette=PAL_SCORE;
 			for(iEnergyLoop=1;iEnergyLoop<=(iEnergyGauge>>3);iEnergyLoop++)
@@ -1896,7 +1961,7 @@ void DefenderoidsMain()
 			}
 
 			// Switch to hands-off mode if end of level reached for any reason
-			if (iEnergyGauge==0 || lvCurrent.LemmanoidCount==(lvCurrent.Saved+lvCurrent.Died))
+			if (iEnergyGauge==0 || ((lvCurrent.LemmanoidCount==(lvCurrent.Saved+lvCurrent.Died))&&!bQixLevel))
 			{
 				bProcessControls=false;
 			}
@@ -1915,8 +1980,8 @@ void DefenderoidsMain()
 		// Reset the Lemmanoid count and City status tiles too
 
 		// Setup next level
-		iCurrentLevel++;
-		if(iCurrentLevel>MAX_LEVEL) iCurrentLevel=0;
+		if (!bQixLevel) iCurrentLevel++;
+		if(iCurrentLevel>MAX_LEVEL) iCurrentLevel=1;
 		lvCurrent=DefenderoidsLevels[iCurrentLevel];
 
 	} // Player Energy Loop
