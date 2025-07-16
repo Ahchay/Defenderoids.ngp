@@ -121,7 +121,7 @@ typedef struct Level
 } LEVEL;
 
 const LEVEL DefenderoidsLevels[] = {
-	{"ERADICATE EVIL QIX",0,0,0,1,0,0,0},
+	{"ERADICATE EVIL QIX",0,0,2,1,0,0,0},
 	{"THE FALL OF LEMMAN",16,1,1,0,0,0,0},
 	{" THE LAST OF THEM ",1,3,1,0,12,0,0},
 	{"COLLECT PICTCELLS ",3,5,2,0,8,0,0},

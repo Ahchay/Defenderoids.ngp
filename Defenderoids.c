@@ -25,6 +25,7 @@
  *   Bomber (attack the city)
  *    Want to try and get a missile command-y vibe
  *   Qix
+ * 	  Implement Qix object - Done
  *    Qix can only be harmed by ramming with the Defenderoid
  *    Ramming will deplete ~50% of your energy guage over 2 seconds (or something)
  *    Each 50% of energy will destroy one leg of the Qix
@@ -34,6 +35,7 @@
  * 	Asteroids
  *  Invaders
  * 	Pictcells
+ *  Qix
  * All collisions
  *  Fine tune collision - Might actually leave this alone
  * Pause Mode
@@ -173,18 +175,40 @@ SMALLVECTOROBJECT CreateQix()
 
 	//Qix will start as a point.
 	vReturn.ObjectType = VEC_QIX;
-	vReturn.Origin.x = 16;
-	vReturn.Origin.y = 16;
-	vReturn.Position.x = (u16)16<<SPRITE_SCALE;
+	vReturn.Origin.x = 8;
+	vReturn.Origin.y = 8;
+	vReturn.Position.x = (u16)32<<SPRITE_SCALE;
 	vReturn.Position.y = (u16)64<<SPRITE_SCALE;
-	vReturn.MovementVector.x = 0;
-	vReturn.MovementVector.y = 0;
+	switch(QRandom()>>6)
+	{
+		case 0:
+			vReturn.MovementVector.x=-256;
+			break;
+		case 1:
+			vReturn.MovementVector.x=-128;
+			break;
+		case 2:
+			vReturn.MovementVector.x=-128;
+			break;
+		case 3:
+			vReturn.MovementVector.x=256;
+			break;
+	}
+	switch(QRandom()>>7)
+	{
+		case 0:
+			vReturn.MovementVector.y=-128;
+			break;
+		case 1:
+			vReturn.MovementVector.x=128;
+			break;
+	}
 	vReturn.Points=9;
 	for(iPointLoop=0;iPointLoop<vReturn.Points;iPointLoop++)
 	{
-		vReturn.PointList[iPointLoop].x = 16;
-		vReturn.PointList[iPointLoop].y = 16;
-		vReturn.PointList[iPointLoop].colour = 1;
+		vReturn.PointList[iPointLoop].x = 8;
+		vReturn.PointList[iPointLoop].y = 8;
+		vReturn.PointList[iPointLoop].colour = 3;
 	}
 	vReturn.Scale=1;
 	vReturn.RotationAngle=0;
@@ -1530,10 +1554,49 @@ void DefenderoidsMain()
 						for(iPointLoop=0;iPointLoop<VectorList[iVectorLoop].Points-1;iPointLoop++)
 						{
 							VectorList[iVectorLoop].PointList[iPointLoop] = VectorList[iVectorLoop].PointList[iPointLoop+1];
+							// Adjust by the movement vector - looks a bit weird with the whole Qix object moving
+							// All previous lines should stay still, and only the new line should go in a new direction?
+							VectorList[iVectorLoop].PointList[iPointLoop].x += (VectorList[iVectorLoop].MovementVector.x*-1)>>SPRITE_SCALE;
+							VectorList[iVectorLoop].PointList[iPointLoop].y += (VectorList[iVectorLoop].MovementVector.y*-1)>>SPRITE_SCALE;
 						}
 						// Randomise the last point on the list
 						VectorList[iVectorLoop].PointList[VectorList[iVectorLoop].Points-1].x = (s16)(QRandom()>>3)-(s16)(QRandom()>>3);
 						VectorList[iVectorLoop].PointList[VectorList[iVectorLoop].Points-1].y = (s16)(QRandom()>>3)-(s16)(QRandom()>>3);
+						// Qix needs to move around as well...
+						// Add a modifier based on player position, or on Qix movement vector?
+						if (VectorList[iVectorLoop].MovementVector.y>VectorList[iVectorLoop].Position.y+(8192) || (VectorList[iVectorLoop].Position.y + VectorList[iVectorLoop].MovementVector.y)>>SPRITE_SCALE > bmpPlayField[1]){
+							VectorList[iVectorLoop].MovementVector.y = VectorList[iVectorLoop].MovementVector.y*-1;
+						}
+						VectorList[iVectorLoop].Position.x += VectorList[iVectorLoop].MovementVector.x;
+						VectorList[iVectorLoop].Position.y += VectorList[iVectorLoop].MovementVector.y;
+						// And every so often switch up the movement vector
+						if (QRandom()>248)
+						{
+							switch(QRandom()>>6)
+							{
+								case 0:
+									VectorList[iVectorLoop].MovementVector.x=-256;
+									break;
+								case 1:
+									VectorList[iVectorLoop].MovementVector.x=-128;
+									break;
+								case 2:
+									VectorList[iVectorLoop].MovementVector.x=-128;
+									break;
+								case 3:
+									VectorList[iVectorLoop].MovementVector.x=256;
+									break;
+							}
+							switch(QRandom()>>7)
+							{
+								case 0:
+									VectorList[iVectorLoop].MovementVector.y=-128;
+									break;
+								case 1:
+									VectorList[iVectorLoop].MovementVector.x=128;
+									break;
+							}
+						}
 						break;
 				}
 					
