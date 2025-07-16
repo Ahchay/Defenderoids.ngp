@@ -46,7 +46,7 @@ void DrawVectorObject(u16 * BitmapAddress, SMALLVECTOROBJECT VectorObject, u16 i
 		iStartY = VectorObject.PointList[0].y;
 
 		//Plot the centre point
-		//SetPixel((u16*)BitmapAddress,iPositionX,iPositionY,3);
+		//SetPixel((u16*)BitmapAddress,iPositionX,iPositionY,1);
 		while (iPoint++<VectorObject.Points)
 		{
 

@@ -124,7 +124,7 @@ SMALLVECTOROBJECT CreateAsteroid(s16 x, s16 y, u8 Scale, u8 Colour)
 	u8 iPointScaling;
 	u8 iScale;
 
-	SMALLVECTOROBJECT AsteroidTemplate= {VEC_ASTEROID,{0,0},{0,0},{0,0},9,{{0,1,1},{1,1,1},{1,0,1},{1,-1,1},{0,-1,1},{-1,-1,1},{-1,0,1},{-1,1,1},{0,1,1}},0,0,0};
+	SMALLVECTOROBJECT AsteroidTemplate= {VEC_ASTEROID,{0,0},{0,0},{0,0},9,{{0,1,1},{1,1,1},{1,0,1},{1,-1,1},{0,-1,1},{-1,-1,1},{-1,0,1},{-1,1,1},{0,1,1}},0,0,0,0};
 
 	//InitialiseQRandom();
 
@@ -152,6 +152,9 @@ SMALLVECTOROBJECT CreateAsteroid(s16 x, s16 y, u8 Scale, u8 Colour)
 
 	vReturn.Position.x=x;
 	vReturn.Position.y=y;
+
+	//Counter unused for asteroids
+	vReturn.Counter=0;
 
 	// Set scale, rotation and speed randomly
 	vReturn.Scale=Scale;
@@ -213,6 +216,8 @@ SMALLVECTOROBJECT CreateQix()
 	vReturn.Scale=1;
 	vReturn.RotationAngle=0;
 	vReturn.RotationSpeed=0;
+	// Use counter for Qix health
+	vReturn.Counter=vReturn.Points<<3;
 	return vReturn;
 }
 
@@ -415,7 +420,7 @@ bool CheckSpriteCollision(POINT object1, SPRITEPOINT object2)
 	return bReturn;
 }
 
-bool CheckAsteroidCollision(POINT object1, POINT object2)
+bool CheckVectorCollision(POINT object1, POINT object2)
 {
 	bool bReturn;
 	u16 iHorizontalDistance;
@@ -827,6 +832,7 @@ void DefenderoidsMain()
 	u8 iTransitionCounter;
 	u8 iTransitionFrame;
 	u8 iTransitionPalette;
+	POINT ptPlayer;
 	
 	/////////////////////////////////////////////////////////
 	// Vector/sprite arrays
@@ -1101,7 +1107,13 @@ void DefenderoidsMain()
 				// No Lemmanoids saved - planet blows up!
 				// Palette shift on the bitmap plane - colour 1 flash red/white for a couple of seconds and
 				// the ground colour fading to black. Maybe a bunch of asteroids or something in the ground colour?
-				if(!bQixLevel)
+				if(bQixLevel)
+				{
+					// Explosions. Lot's of them. Random position on the screen
+					// Stop player movement
+					// Spawn a bunch of umbrelemmanoids
+				}
+				else
 				{
 					//Normal level complete conditions don't apply on Qix levels
 					if (lvCurrent.LemmanoidCount==lvCurrent.Died)
@@ -1460,7 +1472,7 @@ void DefenderoidsMain()
 								{
 									if (VectorList[iLoopAsteroid].ObjectType==VEC_ASTEROID)
 									{
-										if (CheckAsteroidCollision(VectorList[iVectorLoop].Position,VectorList[iLoopAsteroid].Position))
+										if (CheckVectorCollision(VectorList[iVectorLoop].Position,VectorList[iLoopAsteroid].Position))
 										{
 											// Use the Asteroid Scale object to determine what happens next
 											switch (VectorList[iLoopAsteroid].Scale)
@@ -1595,6 +1607,40 @@ void DefenderoidsMain()
 								case 1:
 									VectorList[iVectorLoop].MovementVector.x=128;
 									break;
+							}
+						}
+						// Check for ship collision
+						ptPlayer.x=PLAYER_X;
+						ptPlayer.y=PLAYER_Y;
+						PrintString(SCR_1_PLANE,PAL_SCORE,0,17,"QIXERGY:");
+						PrintDecimal(SCR_1_PLANE,PAL_SCORE,9,17,VectorList[iVectorLoop].Counter,3);
+						if (CheckVectorCollision(VectorList[iVectorLoop].Position,ptPlayer))
+						{
+							for (iLoopExplosion=1;iLoopExplosion<MAX_VECTOR;iLoopExplosion++)
+							{
+								if (VectorList[iLoopExplosion].ObjectType==VEC_NONE)
+								{
+									VectorList[iLoopExplosion]=CreateExplosion(SpriteList[iSpriteLoop].Position, VectorList[iVectorLoop].MovementVector);
+									iLoopExplosion = MAX_VECTOR;
+								}
+							} 
+							iEnergyGauge-=4;
+							//Reduce the Qix energy (every 16 points will kill one leg)
+							//The Qix itself will explode when there is only one leg left
+							VectorList[iVectorLoop].Counter--;
+							if (VectorList[iVectorLoop].Counter%16==0)
+							{
+								// Create a few small asteroids (four?) and then reduce the size of the Qix by one
+								for (iNewVectorLoop=1;iNewVectorLoop<MAX_VECTOR;iNewVectorLoop++)
+								{
+									if (VectorList[iNewVectorLoop].ObjectType==VEC_NONE)
+									{
+										VectorList[iNewVectorLoop]=CreateAsteroid(VectorList[iVectorLoop].Position.x,VectorList[iVectorLoop].Position.y,2,1);
+										iNewVectorLoop=MAX_VECTOR;
+									}
+								}
+								// Each asteroid can be killed for 1 pictcell, 1 pictcell will restore 25% of your health.
+								VectorList[iVectorLoop].Points--;
 							}
 						}
 						break;

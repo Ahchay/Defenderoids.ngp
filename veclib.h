@@ -40,6 +40,7 @@ typedef struct SmallVectorObject
 	u8 Scale; // 1 byte
 	u8 RotationAngle; // 1 byte
 	s8 RotationSpeed; // 1 byte
+	u8 Counter; // 1 byte
 } SMALLVECTOROBJECT;
 
 void DrawVectorObjectAbsolute(u16 * BitmapAddress, SMALLVECTOROBJECT VectorObject);
