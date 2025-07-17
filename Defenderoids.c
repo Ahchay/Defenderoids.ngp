@@ -381,33 +381,35 @@ DrawSprite(SPRITE sprSprite, u16 iHorizontalOffset)
 	}
 }
 
-bool CheckSpriteCollision(POINT object1, SPRITEPOINT object2)
+bool CheckVectorSpriteCollision(POINT object1, SPRITEPOINT object2, u16 iCollisionDistance)
 {
 	bool bReturn;
 	u16 iHorizontalDistance;
 	u16 iWrapDistance;
 	u16 iVerticalDistance;
-	const u16 iCollisionDistance=1024;
 	const u16 iWrapPoint=65535;
 	bReturn=0;
 
-	if (object1.x>=object2.x)
+	// Test to the centre of the sprite
+	// Vector object "origin" is already the centre point
+
+	if (object1.x>=(object2.x+((u16)4<<SPRITE_SCALE)))
 	{
-		iHorizontalDistance=object1.x-object2.x;
-		iWrapDistance=(iWrapPoint-object1.x)+object2.x;
+		iHorizontalDistance=object1.x-(object2.x+((u16)4<<SPRITE_SCALE));
+		iWrapDistance=(iWrapPoint-object1.x)+(object2.x+((u16)4<<SPRITE_SCALE));
 	}
 	else
 	{
-		iHorizontalDistance=object2.x-object1.x;
-		iWrapDistance=(iWrapPoint-object2.x)+object1.x;
+		iHorizontalDistance=(object2.x+((u16)4<<SPRITE_SCALE))-object1.x;
+		iWrapDistance=(iWrapPoint-(object2.x+((u16)4<<SPRITE_SCALE)))+object1.x;
 	}
-	if (object1.y>=object2.y)
+	if (object1.y>=(object2.y+((u16)4<<SPRITE_SCALE)))
 	{
-		iVerticalDistance=object1.y-object2.y;
+		iVerticalDistance=object1.y-(object2.y+((u16)4<<SPRITE_SCALE));
 	}
 	else
 	{
-		iVerticalDistance=object2.y-object1.y;
+		iVerticalDistance=(object2.y+((u16)4<<SPRITE_SCALE))-object1.y;
 	}
 
 	if ((iHorizontalDistance<=iCollisionDistance||iWrapDistance<=iCollisionDistance)&&iVerticalDistance<=iCollisionDistance)
@@ -420,13 +422,12 @@ bool CheckSpriteCollision(POINT object1, SPRITEPOINT object2)
 	return bReturn;
 }
 
-bool CheckVectorCollision(POINT object1, POINT object2)
+bool CheckVectorCollision(POINT object1, POINT object2, u16 iCollisionDistance)
 {
 	bool bReturn;
 	u16 iHorizontalDistance;
 	u16 iWrapDistance;
 	u16 iVerticalDistance;
-	const u16 iCollisionDistance=1024;
 	const u16 iWrapPoint=65535;
 	bReturn=0;
 
@@ -935,9 +936,9 @@ void DefenderoidsMain()
 		}
 
 		// Qix
-		for (;iVectorLoop<=lvCurrent.AsteroidCount+lvCurrent.QixCount;iVectorLoop++)
+		if(lvCurrent.QixCount>0)
 		{
-			VectorList[iVectorLoop] = CreateQix();
+			VectorList[0] = CreateQix();
 		}
 
 		// Clear all other vector objects!
@@ -1109,9 +1110,27 @@ void DefenderoidsMain()
 				// the ground colour fading to black. Maybe a bunch of asteroids or something in the ground colour?
 				if(bQixLevel)
 				{
-					// Explosions. Lot's of them. Random position on the screen
-					// Stop player movement
-					// Spawn a bunch of umbrelemmanoids
+					if(VectorList[0].Points<=3)
+					{
+						// Explosions. Lot's of them. Random position on the screen
+						// Stop player movement
+						// Spawn a bunch of umbrelemmanoids
+						iTransitionPalette=PAL_DEBUG;
+						switch (iTransitionCounter++)
+						{
+							case 0:
+								PrintString(SCR_1_PLANE,iTransitionPalette,2,7,"CONGRATURATION");
+								Sleep(60);
+								iTransitionPalette=PAL_SCORE;
+								break;
+							case 1:
+								PrintString(SCR_1_PLANE,PAL_SCORE,2,7,"              ");
+								VectorList[0].ObjectType=VEC_NONE;
+								bLevelComplete=true;
+								break;
+						// When animation is complete, set the Level Complete flag...
+						}
+					}
 				}
 				else
 				{
@@ -1300,10 +1319,7 @@ void DefenderoidsMain()
 				}
 				// Theoretically possible to run out of Pictcell's and therefore to not be able to completely build
 				// the city and save any Lemmanoids? Do I need to trap this as an end-of-level condition?
-				// - Decided not too, in this scenario it's only a matter of time before all Lemmanoids are
-				// captured - so, leave it up to the player when to let that happen - at the moment, it's a bit too easy to
-				// just coast along forever and shoot the aliens down before they manage to capture anything, but I'll get
-				// to the game balancing when I've run out of other stuff to do
+				// I might spawn bonus asteroids in this situation (if(AsteroidCount==0))
 				
 				// Energy Gauge==0
 				// Player ship explodees
@@ -1312,12 +1328,13 @@ void DefenderoidsMain()
 				// Will then fall out of the loop to the Game Over screen
 				if (iEnergyGauge==0)
 				{
-					iTransitionPalette=PAL_BITMAP;
+					iTransitionPalette=PAL_DEBUG;
 					switch (iTransitionCounter++)
 					{
 						case 0:
-							PrintString(SCR_1_PLANE,PAL_SCORE,8,7,"Uh Oh!");
+							PrintString(SCR_1_PLANE,iTransitionPalette,8,7,"Uh Oh!");
 							Sleep(60);
+							iTransitionPalette=PAL_SCORE;
 							break;
 						case 1:
 							PrintString(SCR_1_PLANE,PAL_SCORE,8,7,"      ");
@@ -1419,7 +1436,7 @@ void DefenderoidsMain()
 								// Only Invaders and Mutated Lemmanoids can be shot
 								if (SpriteList[iSpriteLoop].SpriteType == sprInvader||(SpriteList[iSpriteLoop].SpriteType == sprLemmanoid&&SpriteList[iSpriteLoop].Direction == DIR_MUTANOID))
 								{
-									if (CheckSpriteCollision(VectorList[iVectorLoop].Position,SpriteList[iSpriteLoop].Position))
+									if (CheckVectorSpriteCollision(VectorList[iVectorLoop].Position,SpriteList[iSpriteLoop].Position,512<<VectorList[iVectorLoop].Scale))
 									{	
 										// Add an explosion
 										for (iLoopExplosion=1;iLoopExplosion<MAX_VECTOR;iLoopExplosion++)
@@ -1472,7 +1489,7 @@ void DefenderoidsMain()
 								{
 									if (VectorList[iLoopAsteroid].ObjectType==VEC_ASTEROID)
 									{
-										if (CheckVectorCollision(VectorList[iVectorLoop].Position,VectorList[iLoopAsteroid].Position))
+										if (CheckVectorCollision(VectorList[iVectorLoop].Position,VectorList[iLoopAsteroid].Position,1024))
 										{
 											// Use the Asteroid Scale object to determine what happens next
 											switch (VectorList[iLoopAsteroid].Scale)
@@ -1609,38 +1626,43 @@ void DefenderoidsMain()
 									break;
 							}
 						}
-						// Check for ship collision
-						ptPlayer.x=PLAYER_X;
-						ptPlayer.y=PLAYER_Y;
-						PrintString(SCR_1_PLANE,PAL_SCORE,0,17,"QIXERGY:");
-						PrintDecimal(SCR_1_PLANE,PAL_SCORE,9,17,VectorList[iVectorLoop].Counter,3);
-						if (CheckVectorCollision(VectorList[iVectorLoop].Position,ptPlayer))
+						//Stop checking if we're in a game/level over loop
+						if(bProcessControls)
 						{
-							for (iLoopExplosion=1;iLoopExplosion<MAX_VECTOR;iLoopExplosion++)
+						// Check for ship collision
+							ptPlayer.x=PLAYER_X;
+							ptPlayer.y=PLAYER_Y;
+							PrintString(SCR_1_PLANE,PAL_SCORE,0,17,"QIXERGY:");
+							PrintDecimal(SCR_1_PLANE,PAL_SCORE,9,17,VectorList[iVectorLoop].Counter,3);
+							PrintDecimal(SCR_1_PLANE,PAL_SCORE,14,17,VectorList[iVectorLoop].Points,2);
+							if (CheckVectorCollision(VectorList[iVectorLoop].Position,ptPlayer,2048))
 							{
-								if (VectorList[iLoopExplosion].ObjectType==VEC_NONE)
+								for (iLoopExplosion=1;iLoopExplosion<MAX_VECTOR;iLoopExplosion++)
 								{
-									VectorList[iLoopExplosion]=CreateExplosion(SpriteList[iSpriteLoop].Position, VectorList[iVectorLoop].MovementVector);
-									iLoopExplosion = MAX_VECTOR;
-								}
-							} 
-							iEnergyGauge-=4;
-							//Reduce the Qix energy (every 16 points will kill one leg)
-							//The Qix itself will explode when there is only one leg left
-							VectorList[iVectorLoop].Counter--;
-							if (VectorList[iVectorLoop].Counter%16==0)
-							{
-								// Create a few small asteroids (four?) and then reduce the size of the Qix by one
-								for (iNewVectorLoop=1;iNewVectorLoop<MAX_VECTOR;iNewVectorLoop++)
-								{
-									if (VectorList[iNewVectorLoop].ObjectType==VEC_NONE)
+									if (VectorList[iLoopExplosion].ObjectType==VEC_NONE)
 									{
-										VectorList[iNewVectorLoop]=CreateAsteroid(VectorList[iVectorLoop].Position.x,VectorList[iVectorLoop].Position.y,2,1);
-										iNewVectorLoop=MAX_VECTOR;
+										VectorList[iLoopExplosion]=CreateExplosion(SpriteList[iSpriteLoop].Position, VectorList[iVectorLoop].MovementVector);
+										iLoopExplosion = MAX_VECTOR;
 									}
+								} 
+								iEnergyGauge-=4;
+								//Reduce the Qix energy (every 16 points will kill one leg)
+								//The Qix itself will explode when there is only one leg left
+								VectorList[iVectorLoop].Counter--;
+								if (VectorList[iVectorLoop].Counter%16==0)
+								{
+									// Create a few small asteroids (four?) and then reduce the size of the Qix by one
+									for (iNewVectorLoop=1;iNewVectorLoop<MAX_VECTOR;iNewVectorLoop++)
+									{
+										if (VectorList[iNewVectorLoop].ObjectType==VEC_NONE)
+										{
+											VectorList[iNewVectorLoop]=CreateAsteroid(VectorList[iVectorLoop].Position.x,VectorList[iVectorLoop].Position.y,2,1);
+											iNewVectorLoop=MAX_VECTOR;
+										}
+									}
+									// Each asteroid can be killed for 1 pictcell, 1 pictcell will restore 25% of your health.
+									VectorList[iVectorLoop].Points--;
 								}
-								// Each asteroid can be killed for 1 pictcell, 1 pictcell will restore 25% of your health.
-								VectorList[iVectorLoop].Points--;
 							}
 						}
 						break;
@@ -1925,8 +1947,21 @@ void DefenderoidsMain()
 								SpriteList[iSpriteLoop].Position.y+=64;
 								if (SpriteList[iSpriteLoop].Position.y>((u16)(HeightMap[((u8)(SpriteList[iSpriteLoop].Position.x>>SPRITE_SCALE))+4]+4)<<SPRITE_SCALE)-1024)
 								{
-									SpriteList[iSpriteLoop].Direction = 0;
+									SpriteList[iSpriteLoop].Direction = DIR_NONE;
 									SpriteList[iSpriteLoop].RelatedSpriteID = 99;
+								}
+							}
+							//Player collision?
+							if  (SpriteList[iSpriteLoop].Direction== DIR_SOUTH||SpriteList[iSpriteLoop].Direction== DIR_NONE)
+							{
+								ptPlayer.x=PLAYER_X;
+								ptPlayer.y=PLAYER_Y;
+								if(CheckVectorSpriteCollision(ptPlayer,SpriteList[iSpriteLoop].Position,2048))
+								{
+									SpriteList[iSpriteLoop].SpriteType = sprMisc;
+									SpriteList[iSpriteLoop].Direction = DIR_NONE;
+									SpriteList[iSpriteLoop].RelatedSpriteID = 99;
+									iEnergyGauge+=32;
 								}
 							}
 							SpriteList[iSpriteLoop].Frame++;
@@ -2010,11 +2045,11 @@ void DefenderoidsMain()
 
 			// Debug info
 			// Energy gauge
-			iGaugePalette=PAL_SCORE;
+			iGaugePalette=PAL_DEBUG;
 			for(iEnergyLoop=1;iEnergyLoop<=(iEnergyGauge>>3);iEnergyLoop++)
 			{
 				PutTile(SCR_1_PLANE, iGaugePalette, 6+iEnergyLoop, 16, 8);
-				if(iEnergyLoop==3) iGaugePalette=0;
+				if(iEnergyLoop==3) iGaugePalette=PAL_SCORE;
 			}
 			PutTile(SCR_1_PLANE,iGaugePalette,6+iEnergyLoop,16,(iEnergyGauge%8));
 			//iEnergyGauge--;
@@ -2070,7 +2105,8 @@ void DefenderoidsMain()
 			}
 
 			// Switch to hands-off mode if end of level reached for any reason
-			if (iEnergyGauge==0 || ((lvCurrent.LemmanoidCount==(lvCurrent.Saved+lvCurrent.Died))&&!bQixLevel))
+			// On the Qix level, Vector object [0] will always be the Qix
+			if (iEnergyGauge==0 || ((lvCurrent.LemmanoidCount==(lvCurrent.Saved+lvCurrent.Died))&&!bQixLevel)||(bQixLevel&&VectorList[0].Points<=3))
 			{
 				bProcessControls=false;
 			}
@@ -2089,7 +2125,14 @@ void DefenderoidsMain()
 		// Reset the Lemmanoid count and City status tiles too
 
 		// Setup next level
-		if (!bQixLevel) iCurrentLevel++;
+		if (bQixLevel)
+		{
+			bQixLevel=false;
+		}
+		else
+		{
+			iCurrentLevel++;
+		}
 		if(iCurrentLevel>MAX_LEVEL) iCurrentLevel=1;
 		lvCurrent=DefenderoidsLevels[iCurrentLevel];
 

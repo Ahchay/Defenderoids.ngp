@@ -84,6 +84,7 @@ typedef struct Sprite
 } SPRITE;
 
 // Direction constants
+#define DIR_NONE 99
 #define DIR_EAST 0
 #define DIR_WEST 4
 #define DIR_SOUTH 8
