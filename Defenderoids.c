@@ -882,7 +882,7 @@ void DefenderoidsMain()
 	VGM_PlayBGM_Loop((u8*)bgm1, bgm1_loop_point);
 
 	iEnergyGauge=96;
-	bQixLevel=true;
+	bQixLevel=false;
 
 	// Overall game loop
 	while (iEnergyGauge>0)
@@ -1114,19 +1114,35 @@ void DefenderoidsMain()
 					{
 						// Explosions. Lot's of them. Random position on the screen
 						// Stop player movement
-						// Spawn a bunch of umbrelemmanoids
-						iTransitionPalette=PAL_DEBUG;
+						// Spawn a bunch of umbrella lemmanoids
+						iTransitionPalette=(iTransitionPalette++)>>7;
 						switch (iTransitionCounter++)
 						{
 							case 0:
-								PrintString(SCR_1_PLANE,iTransitionPalette,2,7,"CONGRATURATION");
-								Sleep(60);
-								iTransitionPalette=PAL_SCORE;
+								// Start by disabling any movement velocity
+								vShip.MovementVector.x=0;
+								vShip.MovementVector.y=0;
+								iTransitionCounter++;
+								iTransitionFrame=0;
 								break;
 							case 1:
+								PrintString(SCR_1_PLANE,iTransitionPalette,2,7,"CONGRATURATION");
+								//Create Explosion
+							
+								//Create Lemmanoid/Umbrella at/near top of screen
+
+								if(iTransitionFrame>64)
+								{
+									iTransitionCounter++;
+								}
+								break;
+							case 2:
 								PrintString(SCR_1_PLANE,PAL_SCORE,2,7,"              ");
+								//Make sure the Qix object doesn't hang around to the next level
 								VectorList[0].ObjectType=VEC_NONE;
+								//Set level complete and turn off the QixLevel flag so that the normal level loop reinstates
 								bLevelComplete=true;
+								bQixLevel=false;
 								break;
 						// When animation is complete, set the Level Complete flag...
 						}
@@ -1593,7 +1609,14 @@ void DefenderoidsMain()
 						VectorList[iVectorLoop].PointList[VectorList[iVectorLoop].Points-1].y = (s16)(QRandom()>>3)-(s16)(QRandom()>>3);
 						// Qix needs to move around as well...
 						// Add a modifier based on player position, or on Qix movement vector?
-						if (VectorList[iVectorLoop].MovementVector.y>VectorList[iVectorLoop].Position.y+(8192) || (VectorList[iVectorLoop].Position.y + VectorList[iVectorLoop].MovementVector.y)>>SPRITE_SCALE > bmpPlayField[1]){
+						// Bounce the Qix off the walls - only switch directions if it's heading off the screen
+						if (VectorList[iVectorLoop].Position.y>>SPRITE_SCALE<16 && VectorList[iVectorLoop].MovementVector.y<1)
+						{
+							VectorList[iVectorLoop].MovementVector.y = VectorList[iVectorLoop].MovementVector.y*-1;
+						}
+						
+						if (VectorList[iVectorLoop].Position.y>>SPRITE_SCALE > bmpPlayField[1]-16 && VectorList[iVectorLoop].MovementVector.y>1)
+						{
 							VectorList[iVectorLoop].MovementVector.y = VectorList[iVectorLoop].MovementVector.y*-1;
 						}
 						VectorList[iVectorLoop].Position.x += VectorList[iVectorLoop].MovementVector.x;
@@ -2125,11 +2148,7 @@ void DefenderoidsMain()
 		// Reset the Lemmanoid count and City status tiles too
 
 		// Setup next level
-		if (bQixLevel)
-		{
-			bQixLevel=false;
-		}
-		else
+		if (!bQixLevel)
 		{
 			iCurrentLevel++;
 		}
