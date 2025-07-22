@@ -11,6 +11,7 @@
 
 // SCR_2_PLANE
 #define PAL_BITMAP 0
+#define PAL_SHIP 1
 
 // SPR_PLANE
 #define PAL_SPRITE 0

@@ -589,7 +589,8 @@ void DefinePalettes()
 	SetPalette(SCR_1_PLANE, PAL_CITY_STATUS, RGB(0,0,0), RGB(0, 0, 15), RGB(15,0,0), RGB(0,15,0));
 
 	// Scroll Plane 2 palette
-	SetPalette(SCR_2_PLANE, PAL_BITMAP, 0, RGB(15,15,15), RGB(0,0,15), RGB(15,0,0));
+	SetPalette(SCR_2_PLANE, PAL_SHIP, 0, RGB(15,15,15), RGB(0,0,15), RGB(15,0,0));
+	SetPalette(SCR_2_PLANE, PAL_BITMAP, 0, RGB(15,15,15), RGB(15,15,0), RGB(15,0,0));
 	
 
 }
@@ -868,7 +869,10 @@ void DefenderoidsMain()
 	{
 		for (iLoopX=0;iLoopX<18;iLoopX++)
 		{
-			PutTile(SCR_2_PLANE, PAL_BITMAP, 1 + iLoopX, 1 + iLoopY, bgTileBase+iTile);
+			if (iLoopX>=8&&iLoopX<=10)
+				PutTile(SCR_2_PLANE, PAL_SHIP, 1 + iLoopX, 1 + iLoopY, bgTileBase+iTile);
+			else
+				PutTile(SCR_2_PLANE, PAL_BITMAP, 1 + iLoopX, 1 + iLoopY, bgTileBase+iTile);
 			iTile++;
 		}
 	}
