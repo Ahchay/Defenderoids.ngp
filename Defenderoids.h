@@ -105,10 +105,16 @@ typedef struct Sprite
 #define CITYAGE4 12
 #define CITY_COMPLETE 12
 
-// 
+// City position
 
 #define MIN_CITY 1024
 #define MAX_CITY 4096
+
+// Misc sprite definitions
+#define sprUmbrella sprMisc+1
+#define sprHodWest sprMisc+2
+#define sprHodEast sprMisc+3
+
 
 typedef struct Level
 {
