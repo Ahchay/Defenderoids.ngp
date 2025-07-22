@@ -869,6 +869,7 @@ void DefenderoidsMain()
 	{
 		for (iLoopX=0;iLoopX<18;iLoopX++)
 		{
+			// Switch palettes for the central zone Red/White stay the same, switch the third colour to blue (ship) and yellow (rest of screen)
 			if (iLoopX>=8&&iLoopX<=10)
 				PutTile(SCR_2_PLANE, PAL_SHIP, 1 + iLoopX, 1 + iLoopY, bgTileBase+iTile);
 			else
@@ -896,10 +897,21 @@ void DefenderoidsMain()
 		// Level setup
 		////////////////////////////////////////////////////////////
 
+		// Clear down any existing vector objects
+		for(iVectorLoop=0;iVectorLoop<MAX_VECTOR;iVectorLoop++)
+		{
+			VectorList[iVectorLoop].ObjectType=VEC_NONE;
+		}
+		// And any sprites
+
 		if (bQixLevel)
+		{
 			lvCurrent=DefenderoidsLevels[0];
+		}
 		else
+		{
 			lvCurrent=DefenderoidsLevels[iCurrentLevel];
+		}
 
 		// City (need to create at end of sprite list so they end up at back of priority queue)
 		// Need to use the city age (0-12) to determine each individual block frame
@@ -945,13 +957,7 @@ void DefenderoidsMain()
 		{
 			VectorList[0] = CreateQix();
 		}
-
-		// Clear all other vector objects!
-		for (;iVectorLoop<=MAX_VECTOR;iVectorLoop++)
-		{
-			VectorList[iVectorLoop].ObjectType=VEC_NONE;
-		}
-
+		
 		// Set the horizontal offset.
 		iHorizontalOffset=255;
 
@@ -1126,6 +1132,7 @@ void DefenderoidsMain()
 								break;
 							case 1:
 								PrintString(SCR_1_PLANE,iTransitionPalette,2,7,"CONGRATURATION");
+								PrintString(SCR_1_PLANE,iTransitionPalette,1,8,"YOU BIG SUCCESS!");
 								//Create Explosion
 								for (iLoopExplosion=1;iLoopExplosion<MAX_VECTOR;iLoopExplosion++)
 								{
@@ -1173,6 +1180,7 @@ void DefenderoidsMain()
 								break;
 							case 2:
 								PrintString(SCR_1_PLANE,PAL_SCORE,2,7,"              ");
+								PrintString(SCR_1_PLANE,PAL_SCORE,1,8,"                ");
 								//Make sure the Qix object doesn't hang around to the next level
 								VectorList[0].ObjectType=VEC_NONE;
 								//Set level complete and turn off the QixLevel flag so that the normal level loop reinstates
