@@ -24,13 +24,6 @@
  *    Might just mix up the sprites for the standard type, make it look a bit varied at least
  *   Bomber (attack the city)
  *    Want to try and get a missile command-y vibe
- *   Qix
- * 	  Implement Qix object - Done
- *    Qix can only be harmed by ramming with the Defenderoid
- *    Ramming will deplete ~50% of your energy guage over 2 seconds (or something)
- *    Each 50% of energy will destroy one leg of the Qix
- *    Shoot asteroids to release Pictcells as before
- *    Pictcells will replenish energy
  * Ship collisions
  * 	Asteroids
  *  Invaders
@@ -55,6 +48,13 @@
  * 
  * DONE List
  * QRandom() eventually tends towards zero? - Done
+ * Qix
+ *  Implement Qix object - Done
+ *  Qix can only be harmed by ramming with the Defenderoid - Done
+ *  Ramming will deplete ~50% of your energy guage over 2 seconds (or something) - Done
+ *  Each 50% of energy will destroy one leg of the Qix - Done
+ *  Shoot asteroids to release Pictcells as before - Done
+ *  Pictcells will replenish energy - Done
  * Asteroids
  *  Sizing etc -- Might have been sorted with the QRandom() fix -- Done
  *   Still get occasional perfectly square asteroids
@@ -646,37 +646,6 @@ void DrawGameScreen()
 
 }
 
-void DrawGameOverScreen()
-{
-	u8 iLoopX;
-	u8 iLoopY;
-
-	//Corners
-	PutTile(SCR_1_PLANE,PAL_BORDER,2,7,borderTilebase);
-	PutTile(SCR_1_PLANE,PAL_BORDER,17,7,borderTilebase+2);
-	PutTile(SCR_1_PLANE,PAL_BORDER,2,11,borderTilebase+6);
-	PutTile(SCR_1_PLANE,PAL_BORDER,17,11,borderTilebase+8);
-
-	//Top/Bottom edges
-	for(iLoopX=3;iLoopX<=16;iLoopX++){
-		PutTile(SCR_1_PLANE,PAL_BORDER,iLoopX,7,borderTilebase+1);
-		PutTile(SCR_1_PLANE,PAL_BORDER,iLoopX,11,borderTilebase+7);
-	}
-	//Left/Right edges
-	for(iLoopY=8;iLoopY<=10;iLoopY++){
-		PutTile(SCR_1_PLANE,PAL_BORDER,2,iLoopY,borderTilebase+3);
-		PutTile(SCR_1_PLANE,PAL_BORDER,17,iLoopY,borderTilebase+5);
-	}
-
-	//Other window dressing (debug info and scorecard/lives count etc)
-	PrintString(SCR_1_PLANE, PAL_SCORE, 3, 8, "  GAME OVER");
-	PrintString(SCR_1_PLANE, PAL_SCORE, 3, 9, "The Lemmanoids");
-	PrintString(SCR_1_PLANE, PAL_SCORE, 3, 10, "  are doomed");
-
-	Sleep(120);
-
-}
-
 /////////////////////////////////////////////////////
 // Logo and game select screen
 /////////////////////////////////////////////////////
@@ -1113,7 +1082,7 @@ void DefenderoidsMain()
 				// No Lemmanoids saved - planet blows up!
 				// Palette shift on the bitmap plane - colour 1 flash red/white for a couple of seconds and
 				// the ground colour fading to black. Maybe a bunch of asteroids or something in the ground colour?
-				if(bQixLevel)
+				if(bQixLevel&&iEnergyGauge!=0)
 				{
 					if(VectorList[0].Points<=3)
 					{
@@ -1131,8 +1100,8 @@ void DefenderoidsMain()
 								iTransitionFrame=0;
 								break;
 							case 1:
-								PrintString(SCR_1_PLANE,iTransitionPalette,2,7,"CONGRATURATION");
-								PrintString(SCR_1_PLANE,iTransitionPalette,1,8,"YOU BIG SUCCESS!");
+								PrintString(SCR_1_PLANE,iTransitionPalette,4,7,"CONGRATURATION");
+								PrintString(SCR_1_PLANE,iTransitionPalette,3,8,"YOU BIG SUCCESS!");
 								//Create Explosion
 								for (iLoopExplosion=1;iLoopExplosion<MAX_VECTOR;iLoopExplosion++)
 								{
@@ -1179,8 +1148,8 @@ void DefenderoidsMain()
 								}
 								break;
 							case 2:
-								PrintString(SCR_1_PLANE,PAL_SCORE,2,7,"              ");
-								PrintString(SCR_1_PLANE,PAL_SCORE,1,8,"                ");
+								PrintString(SCR_1_PLANE,PAL_SCORE,4,7,"              ");
+								PrintString(SCR_1_PLANE,PAL_SCORE,3,8,"                ");
 								//Make sure the Qix object doesn't hang around to the next level
 								VectorList[0].ObjectType=VEC_NONE;
 								//Set level complete and turn off the QixLevel flag so that the normal level loop reinstates
@@ -1421,23 +1390,64 @@ void DefenderoidsMain()
 				// Will then fall out of the loop to the Game Over screen
 				if (iEnergyGauge==0)
 				{
-					iTransitionPalette=PAL_DEBUG;
-					switch (iTransitionCounter++)
+					iTransitionPalette=PAL_SCORE;
+					if (iTransitionFrame++%2==0) iTransitionPalette=PAL_DEBUG;
+					PrintString(SCR_1_PLANE,iTransitionPalette,7,3,"MISSION");
+					PrintString(SCR_1_PLANE,iTransitionPalette,7,4,"FAILED!");
+					PrintString(SCR_1_PLANE,iTransitionPalette,4,8,"LEMMANKIND IS");
+					PrintString(SCR_1_PLANE,iTransitionPalette,7,9,"DOOMED");
+					// Add a screen shake by moving SCR_2_PLANE around a bit
+					if (iTransitionFrame%4==0)
+						SCR2_X++;
+					else if (iTransitionFrame%3==0)
+						SCR2_X--;
+					else if (iTransitionFrame%2==0)
+						SCR2_Y++;
+					else
+						SCR2_Y--;
+					//SCR1_Y+=((s8)(128-QRandom())>>6);
+					if (iTransitionPalette==PAL_DEBUG)
+					{
+						SetPalette(SCR_2_PLANE, PAL_BITMAP, 0, RGB(15,0,0), RGB(15,0,0), RGB(15,0,0));
+					}
+					else
+					{
+						SetPalette(SCR_2_PLANE,PAL_BITMAP,RGB(15,0,0),RGB(15,15,15),RGB(15,15,15),RGB(15,15,15));
+					}
+					switch (iTransitionCounter)
 					{
 						case 0:
-							PrintString(SCR_1_PLANE,iTransitionPalette,8,7,"Uh Oh!");
-							Sleep(60);
-							iTransitionPalette=PAL_SCORE;
+							if(iTransitionFrame>=4)
+							{
+								iTransitionCounter++;
+							}
 							break;
 						case 1:
-							PrintString(SCR_1_PLANE,PAL_SCORE,8,7,"      ");
-							bLevelComplete=true;
+							for (iNewVectorLoop=1;iNewVectorLoop<MAX_VECTOR;iNewVectorLoop++)
+							{
+								if (VectorList[iNewVectorLoop].ObjectType==VEC_NONE)
+								{
+									// Limit asteroid creation to current horizontal offset+8 to offset+136
+									ptExplosion.x=PLAYER_X + QRandom()-QRandom();
+									ptExplosion.y=PLAYER_Y + QRandom()-QRandom();
+									VectorList[iNewVectorLoop]=CreateExplosion(ptExplosion,vShip.MovementVector);
+									iNewVectorLoop=MAX_VECTOR;
+								}
+									
+							}
+							if (iTransitionFrame==128) iTransitionCounter++;
 							break;
-					// When animation is complete, set the Level Complete flag...
+						default:
+							bLevelComplete=true;
+							bQixLevel=false;
+							SCR2_X=0;
+							SCR2_Y=0;
+							PrintString(SCR_1_PLANE,iTransitionPalette,7,3,"       ");
+							PrintString(SCR_1_PLANE,iTransitionPalette,7,4,"       ");
+							break;
+							// When animation is complete, set the Level Complete flag...
 					}
 				}
-
-
 
 			}
 
@@ -1741,7 +1751,9 @@ void DefenderoidsMain()
 								{
 									if (VectorList[iLoopExplosion].ObjectType==VEC_NONE)
 									{
-										VectorList[iLoopExplosion]=CreateExplosion(SpriteList[iSpriteLoop].Position, VectorList[iVectorLoop].MovementVector);
+										ptExplosion.x = PLAYER_X;
+										ptExplosion.y = PLAYER_Y;
+										VectorList[iLoopExplosion]=CreateExplosion(ptExplosion, VectorList[iVectorLoop].MovementVector);
 										iLoopExplosion = MAX_VECTOR;
 									}
 								} 
@@ -2230,7 +2242,7 @@ void DefenderoidsMain()
 
 	VGM_StopBGM();
 
-	DrawGameOverScreen();
+	//DrawGameOverScreen();
 
 	//////////////////////////////////////////////////////
 	// Game Over information etc
