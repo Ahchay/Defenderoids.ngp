@@ -26,6 +26,7 @@ typedef struct VectorObject
 	u8 Scale; // 1 byte
 	u8 RotationAngle; // 1 byte
 	s8 RotationSpeed; // 1 byte
+	u8 Counter;
 } VECTOROBJECT;
 
 // 67 bytes

@@ -51,6 +51,7 @@ const u8 BITMAP_HEIGHT=112;
 #define SPRITE_MAX_WIDTH (512)
 #define MAX_SPRITE (64)
 #define MAX_VECTOR 48
+#define MAX_ENERGY 96
 
 // Vector Type Objects
 #define VEC_NONE 0
@@ -115,6 +116,12 @@ typedef struct Sprite
 #define sprUmbrella sprMisc+1
 #define sprHodWest sprMisc+2
 #define sprHodEast sprMisc+3
+
+// Collision distances
+#define COLLISION_QIX 4096
+#define COLLISION_PLAYER 1024
+#define COLLISION_SHOT 1024
+#define COLLISION_ASTEROID 2048
 
 
 typedef struct Level

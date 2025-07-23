@@ -15,22 +15,14 @@
 
 /*************************************************
  * TODO List
- *  Mutanoid behaviour - Chase player or bomb city?
- *   Needs to be a bit more aggressive
- *   And actually home in on the player rather than horizontal offset
- *   Alien shots maybe?
  *  Different enemy types
  *   Other attackeroid types?
- *    Might just mix up the sprites for the standard type, make it look a bit varied at least
- *   Bomber (attack the city)
- *    Want to try and get a missile command-y vibe
- * Ship collisions
- * 	Asteroids
- *  Invaders
- * 	Pictcells
- *  Qix
- * All collisions
- *  Fine tune collision - Might actually leave this alone
+ *    Different behaviours
+ *    - Sine Wave
+ *    - Invader march/Galaxian swoop?
+ *    - Missile
+ *    - Bomber (attack the city)
+ *      Want to try and get a missile command-y vibe
  * Pause Mode
  *  Option to bring up a menu
  *  - Resume
@@ -40,13 +32,28 @@
  *    - Help
  *    - About
  *    - How to play
- * Transitions
- * 	Needs more pizazz - fireworks/explosions/sortathing 
- *   Level Success - fireworks + explosion objects - Done
- *   All Lemmanoids destroyed - spawn asteroids along heightmap - Done
- *   Ship destroyed - Explosions everywhere
+ * Sounds
+ *  Music
+ *  Sound effects:
+ *  - Shot
+ *  - Explosion
+ *    Different types for:
+ *    - Invader
+ *    - Planet
+ *    - Qix
+ *    - Asteroid
+ *  - Help!
+ *  - Yippee!
+ *  
  * 
  * DONE List
+ * Ship collisions
+ * 	Asteroids - Done
+ *  Invaders - Done
+ * 	Pictcells - Done
+ *  Qix - Done
+ * Energy Gauge
+ *  Add bounds checking so that energy doesn't go >DEFAULT or <0
  * QRandom() eventually tends towards zero? - Done
  * Qix
  *  Implement Qix object - Done
@@ -98,6 +105,8 @@
  *  Proximity collision - Done
  *  Explosions
  * 		Still a bit rubbish really. Often not at the right place either - Done.
+ * All collisions
+ *  Fine tune collision - Might actually leave this alone - Have set different granularities which seems to work...
  * Level success/failure modes
  * 	Success: City built, Lemmanoids rescued - Done
  *  Failure: Lemmanoids destroyed/captured (Qix space level) - Done
@@ -108,6 +117,11 @@
  *  On failure:
  *   Next level will be a Qix Level
  *  Game Over: Energy gauge goes to zero
+ * Transitions
+ * 	Needs more pizazz - fireworks/explosions/sortathing - Done
+ *   Level Success - fireworks + explosion objects - Done
+ *   All Lemmanoids destroyed - spawn asteroids along heightmap - Done
+ *   Ship destroyed - Explosions everywhere - Done
  * 
  ************************************************/
 
@@ -463,7 +477,7 @@ bool CheckVectorCollision(POINT object1, POINT object2, u16 iCollisionDistance)
 /////////////////////////////////////////////////////
 // Create an explosion object
 ////////////////////////////////////////////////////
-SMALLVECTOROBJECT CreateExplosion(SPRITEPOINT spPosition, POINT spDirection)
+SMALLVECTOROBJECT CreateExplosion(SPRITEPOINT spPosition)
 {
 	SMALLVECTOROBJECT voReturn;
 	u8 iPointLoop;
@@ -481,7 +495,8 @@ SMALLVECTOROBJECT CreateExplosion(SPRITEPOINT spPosition, POINT spDirection)
 	}
 	voReturn.Origin.x = 0;
 	voReturn.Origin.y = 0;
-	voReturn.MovementVector = spDirection;
+	voReturn.MovementVector.x = 0;
+	voReturn.MovementVector.y = 0;
 	voReturn.Position.x = spPosition.x>>SPRITE_SCALE;
 	voReturn.Position.y = spPosition.y>>SPRITE_SCALE;
 	voReturn.RotationAngle = QRandom();
@@ -511,6 +526,7 @@ VECTOROBJECT CreatePlayer()
 	PlayerOne.Points = 50;
 	PlayerOne.RotationAngle = 64;
 	PlayerOne.RotationSpeed = 0;
+	PlayerOne.Counter = 0;
 	iPointLoop=0;
 	while (iPointLoop<PlayerOne.Points)
 	{
@@ -761,6 +777,31 @@ u8 DefenderoidsLogo()
 }
 
 /////////////////////////////////////////////////////
+// Change Energy Gauge
+/////////////////////////////////////////////////////
+u8 AddEnergy(u8 EnergyLevel, u8 UpperBound,s8 EnergyChange)
+{
+	u8 retval;
+	retval=EnergyLevel;
+	if(EnergyChange<0)
+	{
+		if((EnergyChange*-1)>EnergyLevel)
+			retval=0;
+		else
+			retval+=EnergyChange;
+	}
+	else
+	{
+		if (EnergyLevel+EnergyChange>UpperBound)
+			retval=UpperBound;
+		else
+			retval+=EnergyChange;
+	}
+	return retval;
+}
+
+
+/////////////////////////////////////////////////////
 // Main game loop
 /////////////////////////////////////////////////////
 void DefenderoidsMain()
@@ -856,7 +897,7 @@ void DefenderoidsMain()
 	
 	VGM_PlayBGM_Loop((u8*)bgm1, bgm1_loop_point);
 
-	iEnergyGauge=96;
+	iEnergyGauge=MAX_ENERGY;
 	bQixLevel=false;
 
 	// Overall game loop
@@ -949,6 +990,9 @@ void DefenderoidsMain()
 		while (!bLevelComplete)
 		{
 
+			// Translate the player position to a point (for use in collision detection)
+			ptPlayer.x=PLAYER_X;
+			ptPlayer.y=PLAYER_Y;
 
 			//Reset the bitmap for every frame.
 			CreateBitmap((u16*)bmpPlayField, BITMAP_WIDTH, BITMAP_HEIGHT);
@@ -1109,7 +1153,7 @@ void DefenderoidsMain()
 									{
 										ptExplosion.x=PLAYER_X+QRandom()-QRandom();
 										ptExplosion.y=PLAYER_Y+QRandom()-QRandom();
-										VectorList[iLoopExplosion]=CreateExplosion(ptExplosion, vShip.MovementVector);
+										VectorList[iLoopExplosion]=CreateExplosion(ptExplosion);
 
 										// Need a better 'splode noise
 										//VGM_PlaySFX((u8*)noise,1);
@@ -1250,7 +1294,6 @@ void DefenderoidsMain()
 								break;
 							default:
 								bLevelComplete=true;
-								bQixLevel=true;
 								SCR2_X=0;
 								SCR2_Y=0;
 								PrintString(SCR_1_PLANE,iTransitionPalette,7,3,"       ");
@@ -1382,6 +1425,7 @@ void DefenderoidsMain()
 				// Theoretically possible to run out of Pictcell's and therefore to not be able to completely build
 				// the city and save any Lemmanoids? Do I need to trap this as an end-of-level condition?
 				// I might spawn bonus asteroids in this situation (if(AsteroidCount==0))
+				// Spawn a Qix if 
 				
 				// Energy Gauge==0
 				// Player ship explodees
@@ -1427,23 +1471,23 @@ void DefenderoidsMain()
 							{
 								if (VectorList[iNewVectorLoop].ObjectType==VEC_NONE)
 								{
-									// Limit asteroid creation to current horizontal offset+8 to offset+136
 									ptExplosion.x=PLAYER_X + QRandom()-QRandom();
 									ptExplosion.y=PLAYER_Y + QRandom()-QRandom();
-									VectorList[iNewVectorLoop]=CreateExplosion(ptExplosion,vShip.MovementVector);
+									VectorList[iNewVectorLoop]=CreateExplosion(ptExplosion);
 									iNewVectorLoop=MAX_VECTOR;
 								}
 									
 							}
-							if (iTransitionFrame==128) iTransitionCounter++;
+							if (iTransitionFrame==64) iTransitionCounter++;
 							break;
 						default:
 							bLevelComplete=true;
-							bQixLevel=false;
 							SCR2_X=0;
 							SCR2_Y=0;
 							PrintString(SCR_1_PLANE,iTransitionPalette,7,3,"       ");
 							PrintString(SCR_1_PLANE,iTransitionPalette,7,4,"       ");
+							PrintString(SCR_1_PLANE,iTransitionPalette,4,8,"             ");
+							PrintString(SCR_1_PLANE,iTransitionPalette,7,9,"      ");
 							break;
 							// When animation is complete, set the Level Complete flag...
 					}
@@ -1539,14 +1583,14 @@ void DefenderoidsMain()
 								// Only Invaders and Mutated Lemmanoids can be shot
 								if (SpriteList[iSpriteLoop].SpriteType == sprInvader||(SpriteList[iSpriteLoop].SpriteType == sprLemmanoid&&SpriteList[iSpriteLoop].Direction == DIR_MUTANOID))
 								{
-									if (CheckVectorSpriteCollision(VectorList[iVectorLoop].Position,SpriteList[iSpriteLoop].Position,512<<VectorList[iVectorLoop].Scale))
+									if (CheckVectorSpriteCollision(VectorList[iVectorLoop].Position,SpriteList[iSpriteLoop].Position,COLLISION_SHOT))
 									{	
 										// Add an explosion
 										for (iLoopExplosion=1;iLoopExplosion<MAX_VECTOR;iLoopExplosion++)
 										{
 											if (VectorList[iLoopExplosion].ObjectType==VEC_NONE)
 											{
-												VectorList[iLoopExplosion]=CreateExplosion(SpriteList[iSpriteLoop].Position, VectorList[iVectorLoop].MovementVector);
+												VectorList[iLoopExplosion]=CreateExplosion(SpriteList[iSpriteLoop].Position);
 
 												// Need a better 'splode noise
 												//VGM_PlaySFX((u8*)noise,1);
@@ -1592,7 +1636,7 @@ void DefenderoidsMain()
 								{
 									if (VectorList[iLoopAsteroid].ObjectType==VEC_ASTEROID)
 									{
-										if (CheckVectorCollision(VectorList[iVectorLoop].Position,VectorList[iLoopAsteroid].Position,1024))
+										if (CheckVectorCollision(VectorList[iVectorLoop].Position,VectorList[iLoopAsteroid].Position,COLLISION_ASTEROID))
 										{
 											// Use the Asteroid Scale object to determine what happens next
 											switch (VectorList[iLoopAsteroid].Scale)
@@ -1672,6 +1716,27 @@ void DefenderoidsMain()
 						//////////////////////////////////////////////////////
 						// Asteroids
 						//////////////////////////////////////////////////////
+
+						// Check Player Collision (bounce the player away)
+						if (CheckVectorCollision(VectorList[iVectorLoop].Position,ptPlayer,COLLISION_ASTEROID))
+						{
+							//Only bounce if the asteroid vector and ship vector are going in the same direction
+							//If either isn't moving, then leave it alone
+							// Can get stuck if more than one asteroid is in a small area...
+							if (vShip.Counter==0)
+							{
+								vShip.Counter=8;
+								if ((vShip.MovementVector.x<0&&VectorList[iVectorLoop].MovementVector.x<0)||(vShip.MovementVector.x>0&&VectorList[iVectorLoop].MovementVector.x>0))
+									vShip.MovementVector.x=vShip.MovementVector.x*-1;
+								if ((vShip.MovementVector.y<0&&VectorList[iVectorLoop].MovementVector.y<0)||(vShip.MovementVector.y>0&&VectorList[iVectorLoop].MovementVector.y>0))
+									vShip.MovementVector.y=vShip.MovementVector.y*-1;
+								if(vShip.RotationAngle>64&&vShip.RotationAngle<196)
+									vShip.RotationAngle=vShip.RotationAngle+128;
+								else
+									vShip.RotationAngle=vShip.RotationAngle-128;
+							}
+						}
+
 						// Increase rotation angle
 						VectorList[iVectorLoop].RotationAngle+=VectorList[iVectorLoop].RotationSpeed;
 						// Need to do some bounds checking here...
@@ -1739,25 +1804,23 @@ void DefenderoidsMain()
 						//Stop checking if we're in a game/level over loop
 						if(bProcessControls)
 						{
-						// Check for ship collision
-							ptPlayer.x=PLAYER_X;
-							ptPlayer.y=PLAYER_Y;
+							// Check for ship collision
 							PrintString(SCR_1_PLANE,PAL_SCORE,0,17,"QIXERGY:");
 							PrintDecimal(SCR_1_PLANE,PAL_SCORE,9,17,VectorList[iVectorLoop].Counter,3);
 							PrintDecimal(SCR_1_PLANE,PAL_SCORE,14,17,VectorList[iVectorLoop].Points,2);
-							if (CheckVectorCollision(VectorList[iVectorLoop].Position,ptPlayer,2048))
+							if (CheckVectorCollision(VectorList[iVectorLoop].Position,ptPlayer,COLLISION_QIX))
 							{
 								for (iLoopExplosion=1;iLoopExplosion<MAX_VECTOR;iLoopExplosion++)
 								{
 									if (VectorList[iLoopExplosion].ObjectType==VEC_NONE)
 									{
-										ptExplosion.x = PLAYER_X;
-										ptExplosion.y = PLAYER_Y;
-										VectorList[iLoopExplosion]=CreateExplosion(ptExplosion, VectorList[iVectorLoop].MovementVector);
+										ptExplosion.x = ptPlayer.x;
+										ptExplosion.y = ptPlayer.y;
+										VectorList[iLoopExplosion]=CreateExplosion(ptExplosion);
 										iLoopExplosion = MAX_VECTOR;
 									}
 								} 
-								iEnergyGauge-=4;
+								iEnergyGauge=AddEnergy(iEnergyGauge,MAX_ENERGY,-4);
 								//Reduce the Qix energy (every 16 points will kill one leg)
 								//The Qix itself will explode when there is only one leg left
 								VectorList[iVectorLoop].Counter--;
@@ -1810,93 +1873,131 @@ void DefenderoidsMain()
 					case sprInvader:
 						// Invaders bob up and down
 						//PrintDecimal(SCR_2_PLANE,0,3,2+iSpriteLoop-4,SpriteList[iSpriteLoop].Position.x,5);
-
-						// Need to home in on a Lemmanoid if there's one nearby
-						// So, if Y-position is <$foo from the heightmap, and a Lemmanoid is within $bar horizontal units, start adjusting the trajectory towards the Lemmanoid
-						// On capture. Change the Lemmanoid direction to North and switch the related flag to the capturing alien
-						// Aliens with cargo will move half as slowly as normal, and maybe wobble a bit on the way up or something
-						switch(SpriteList[iSpriteLoop].Direction)
+						if (bProcessControls&&CheckVectorSpriteCollision(ptPlayer,SpriteList[iSpriteLoop].Position,COLLISION_PLAYER))
 						{
-							case DIR_SOUTH:
-								//PrintString(SCR_2_PLANE,0,9,2+iSpriteLoop-4,"S           ");
-								// Check for any nearby Lemmanoids
-								// Don't check if already carrying a hostage
-								iCaptureHeight=((u16)(HeightMap[((u8)(SpriteList[iSpriteLoop].Position.x>>SPRITE_SCALE))+4]-4))-(SpriteList[iSpriteLoop].Position.y>>SPRITE_SCALE);
-								if (iCaptureHeight<32&&SpriteList[iSpriteLoop].RelatedSpriteID==99&&bProcessControls)
+
+							for (iLoopExplosion=1;iLoopExplosion<MAX_VECTOR;iLoopExplosion++)
+							{
+								if (VectorList[iLoopExplosion].ObjectType==VEC_NONE)
 								{
-									for(iLemmanoidLoop=0;iLemmanoidLoop<MAX_SPRITE;iLemmanoidLoop++)
+									VectorList[iLoopExplosion]=CreateExplosion(SpriteList[iSpriteLoop].Position);
+
+									// Need a better 'splode noise
+									//VGM_PlaySFX((u8*)noise,1);
+
+									iLoopExplosion = MAX_VECTOR;
+								}
+							} 
+							// Check affected sprite for other sprites to handle
+							if (SpriteList[iSpriteLoop].RelatedSpriteID!=99)
+							{
+								// Drop the Lemmanoid - do we need to check for sprite type?
+								// Invader has a captured Lemmanoid, give 'em an umbrella and let them go
+								// No need for another loop - we can recycle the invader sprite ID for the umbrella?
+								// Keep the RelatedSpriteID connections active
+								SpriteList[iSpriteLoop].SpriteType=sprUmbrella;
+								SetSpritePalette(SpriteList[iSpriteLoop].SpriteID,PAL_UMBRELLA);
+
+								// Set the Lemmanoid movement direction
+								SpriteList[SpriteList[iSpriteLoop].RelatedSpriteID].Direction=DIR_SOUTH;
+
+							}
+							else
+							{
+								SpriteList[iSpriteLoop].SpriteType = sprMisc;
+							}
+							lvCurrent.InvaderCount--;
+							iEnergyGauge=AddEnergy(iEnergyGauge,MAX_ENERGY,-2);
+						}
+						else
+						{
+							// Need to home in on a Lemmanoid if there's one nearby
+							// So, if Y-position is <$foo from the heightmap, and a Lemmanoid is within $bar horizontal units, start adjusting the trajectory towards the Lemmanoid
+							// On capture. Change the Lemmanoid direction to North and switch the related flag to the capturing alien
+							// Aliens with cargo will move half as slowly as normal, and maybe wobble a bit on the way up or something
+							switch(SpriteList[iSpriteLoop].Direction)
+							{
+								case DIR_SOUTH:
+									//PrintString(SCR_2_PLANE,0,9,2+iSpriteLoop-4,"S           ");
+									// Check for any nearby Lemmanoids
+									// Don't check if already carrying a hostage
+									iCaptureHeight=((u16)(HeightMap[((u8)(SpriteList[iSpriteLoop].Position.x>>SPRITE_SCALE))+4]-4))-(SpriteList[iSpriteLoop].Position.y>>SPRITE_SCALE);
+									if (iCaptureHeight<32&&SpriteList[iSpriteLoop].RelatedSpriteID==99&&bProcessControls)
 									{
-										// Leave any Lemmanoid alone if it is already captured (or, as it currently stands, is holding anything - might put that into the plot "The mystical power of the Pictcells can temporarily protect the Lemmanoids")
-										if(SpriteList[iLemmanoidLoop].SpriteType==sprLemmanoid&&SpriteList[iLemmanoidLoop].RelatedSpriteID==99&&SpriteList[iLemmanoidLoop].Direction<=DIR_WEST)
+										for(iLemmanoidLoop=0;iLemmanoidLoop<MAX_SPRITE;iLemmanoidLoop++)
 										{
-											//PrintDecimal(SCR_2_PLANE,0,10,3+iSpriteLoop-4,SpriteList[iLemmanoidLoop].Position.x,5);
-											//PrintDecimal(SCR_2_PLANE,0,10,2+iSpriteLoop-4,WrapDistance(SpriteList[iSpriteLoop].Position.x,SpriteList[iLemmanoidLoop].Position.x,65535),5);
-											iCaptureDistance=WrapDistance(SpriteList[iSpriteLoop].Position.x>>SPRITE_SCALE,SpriteList[iLemmanoidLoop].Position.x>>SPRITE_SCALE,SPRITE_MAX_WIDTH);
-											
-											if (iCaptureDistance<8&&iCaptureHeight<8)
+											// Leave any Lemmanoid alone if it is already captured (or, as it currently stands, is holding anything - might put that into the plot "The mystical power of the Pictcells can temporarily protect the Lemmanoids")
+											if(SpriteList[iLemmanoidLoop].SpriteType==sprLemmanoid&&SpriteList[iLemmanoidLoop].RelatedSpriteID==99&&SpriteList[iLemmanoidLoop].Direction<=DIR_WEST)
 											{
-													//Gotcha
-													//PrintString(SCR_2_PLANE,0,11,2+iSpriteLoop-4,"C");
-													//PrintDecimal(SCR_2_PLANE,0,12,2+iSpriteLoop-4,iLemmanoidLoop,2);
-													SpriteList[iSpriteLoop].RelatedSpriteID=SpriteList[iLemmanoidLoop].SpriteID;
-													SpriteList[iLemmanoidLoop].RelatedSpriteID=SpriteList[iSpriteLoop].SpriteID;
-													SpriteList[iLemmanoidLoop].Direction=DIR_NORTH;
+												//PrintDecimal(SCR_2_PLANE,0,10,3+iSpriteLoop-4,SpriteList[iLemmanoidLoop].Position.x,5);
+												//PrintDecimal(SCR_2_PLANE,0,10,2+iSpriteLoop-4,WrapDistance(SpriteList[iSpriteLoop].Position.x,SpriteList[iLemmanoidLoop].Position.x,65535),5);
+												iCaptureDistance=WrapDistance(SpriteList[iSpriteLoop].Position.x>>SPRITE_SCALE,SpriteList[iLemmanoidLoop].Position.x>>SPRITE_SCALE,SPRITE_MAX_WIDTH);
+												
+												if (iCaptureDistance<8&&iCaptureHeight<8)
+												{
+														//Gotcha
+														//PrintString(SCR_2_PLANE,0,11,2+iSpriteLoop-4,"C");
+														//PrintDecimal(SCR_2_PLANE,0,12,2+iSpriteLoop-4,iLemmanoidLoop,2);
+														SpriteList[iSpriteLoop].RelatedSpriteID=SpriteList[iLemmanoidLoop].SpriteID;
+														SpriteList[iLemmanoidLoop].RelatedSpriteID=SpriteList[iSpriteLoop].SpriteID;
+														SpriteList[iLemmanoidLoop].Direction=DIR_NORTH;
+														iLemmanoidLoop=MAX_SPRITE;
+												}
+												else if (iCaptureDistance<64)
+												{
+														//PrintString(SCR_2_PLANE,0,14,2+iSpriteLoop-4,"H");
+														//PrintDecimal(SCR_2_PLANE,0,15,2+iSpriteLoop-4,iLemmanoidLoop,2);
+														SetSprite(SpriteList[iSpriteLoop].SpriteID, SpriteList[iSpriteLoop].BaseTile , 0, 0, 0, PAL_ANGRYINVADER);
+														if(SpriteList[iSpriteLoop].Position.x>SpriteList[iLemmanoidLoop].Position.x)
+															SpriteList[iSpriteLoop].Position.x-=256;
+														else
+															SpriteList[iSpriteLoop].Position.x+=256;
+													// Fixate on a single Lemmanoid
 													iLemmanoidLoop=MAX_SPRITE;
-											}
-											else if (iCaptureDistance<64)
-											{
-													//PrintString(SCR_2_PLANE,0,14,2+iSpriteLoop-4,"H");
-													//PrintDecimal(SCR_2_PLANE,0,15,2+iSpriteLoop-4,iLemmanoidLoop,2);
-													SetSprite(SpriteList[iSpriteLoop].SpriteID, SpriteList[iSpriteLoop].BaseTile , 0, 0, 0, PAL_ANGRYINVADER);
-													if(SpriteList[iSpriteLoop].Position.x>SpriteList[iLemmanoidLoop].Position.x)
-														SpriteList[iSpriteLoop].Position.x-=256;
-													else
-														SpriteList[iSpriteLoop].Position.x+=256;
-												// Fixate on a single Lemmanoid
-												iLemmanoidLoop=MAX_SPRITE;
+												}
 											}
 										}
 									}
-								}
-								SpriteList[iSpriteLoop].Position.x=SpriteList[iSpriteLoop].Position.x+QRandom()-QRandom();
-								SpriteList[iSpriteLoop].Position.y+=64;
-								// We only need to check for Lemmanoid capture as we approach the ground
-								if (SpriteList[iSpriteLoop].Position.y>(u16)(HeightMap[((u8)(SpriteList[iSpriteLoop].Position.x>>SPRITE_SCALE))+4]-8)<<SPRITE_SCALE)
-								{
-									SpriteList[iSpriteLoop].Direction = DIR_NORTH;
-									SetSprite(SpriteList[iSpriteLoop].SpriteID, SpriteList[iSpriteLoop].BaseTile , 0, 0, 0, PAL_INVADER);
-								}
-								break;
-							case DIR_NORTH:
-								//PrintString(SCR_2_PLANE,0,9,2+iSpriteLoop-4,"N");
-								// Slow down if carrying anything
-								SpriteList[iSpriteLoop].Position.x=SpriteList[iSpriteLoop].Position.x+QRandom()-QRandom();
-								if (SpriteList[iSpriteLoop].RelatedSpriteID == 99)
-								{
-									SpriteList[iSpriteLoop].Position.y-=64;
-									if (SpriteList[iSpriteLoop].Position.y<64)
+									SpriteList[iSpriteLoop].Position.x=SpriteList[iSpriteLoop].Position.x+QRandom()-QRandom();
+									SpriteList[iSpriteLoop].Position.y+=64;
+									// We only need to check for Lemmanoid capture as we approach the ground
+									if (SpriteList[iSpriteLoop].Position.y>(u16)(HeightMap[((u8)(SpriteList[iSpriteLoop].Position.x>>SPRITE_SCALE))+4]-8)<<SPRITE_SCALE)
 									{
-										SpriteList[iSpriteLoop].Direction = DIR_SOUTH;
+										SpriteList[iSpriteLoop].Direction = DIR_NORTH;
+										SetSprite(SpriteList[iSpriteLoop].SpriteID, SpriteList[iSpriteLoop].BaseTile , 0, 0, 0, PAL_INVADER);
 									}
-								}
-								else
-								{
-									SpriteList[iSpriteLoop].Position.y-=32;
-									if (SpriteList[iSpriteLoop].Position.y<32)
+									break;
+								case DIR_NORTH:
+									//PrintString(SCR_2_PLANE,0,9,2+iSpriteLoop-4,"N");
+									// Slow down if carrying anything
+									SpriteList[iSpriteLoop].Position.x=SpriteList[iSpriteLoop].Position.x+QRandom()-QRandom();
+									if (SpriteList[iSpriteLoop].RelatedSpriteID == 99)
 									{
-										SpriteList[iSpriteLoop].Direction = DIR_SOUTH;
-										//Drop and mutate the Lemmanoid
-										SpriteList[SpriteList[iSpriteLoop].RelatedSpriteID].Direction=DIR_MUTANOID;
-										SpriteList[SpriteList[iSpriteLoop].RelatedSpriteID].RelatedSpriteID=99;
-										SpriteList[iSpriteLoop].RelatedSpriteID=99;
-										//lvCurrent.LemmanoidCount--;
+										SpriteList[iSpriteLoop].Position.y-=64;
+										if (SpriteList[iSpriteLoop].Position.y<64)
+										{
+											SpriteList[iSpriteLoop].Direction = DIR_SOUTH;
+										}
 									}
-								}
-								break;
+									else
+									{
+										SpriteList[iSpriteLoop].Position.y-=32;
+										if (SpriteList[iSpriteLoop].Position.y<32)
+										{
+											SpriteList[iSpriteLoop].Direction = DIR_SOUTH;
+											//Drop and mutate the Lemmanoid
+											SpriteList[SpriteList[iSpriteLoop].RelatedSpriteID].Direction=DIR_MUTANOID;
+											SpriteList[SpriteList[iSpriteLoop].RelatedSpriteID].RelatedSpriteID=99;
+											SpriteList[iSpriteLoop].RelatedSpriteID=99;
+											//lvCurrent.LemmanoidCount--;
+										}
+									}
+									break;
+							}
+							SpriteList[iSpriteLoop].Frame++;
+							if (SpriteList[iSpriteLoop].Frame>3) SpriteList[iSpriteLoop].Frame=0;
+							break;
 						}
-						SpriteList[iSpriteLoop].Frame++;
-						if (SpriteList[iSpriteLoop].Frame>3) SpriteList[iSpriteLoop].Frame=0;
-						break;
 					case sprLemmanoid:
 						// Lemmanoids lope along the mountain left and right, unless they've been captured
 						//PrintDecimal(SCR_2_PLANE,0,3,9+iSpriteLoop-5,SpriteList[iSpriteLoop].Position.x,5);
@@ -1955,23 +2056,22 @@ void DefenderoidsMain()
 								}
 								break;
 							case DIR_MUTANOID:
-								// Hunt down the player?
-								// Vertical movement is fine, but horizontal isn't...
-								if(SpriteList[iSpriteLoop].Position.x<PLAYER_X)
+								// Hunt down the player
+								if(SpriteList[iSpriteLoop].Position.x<ptPlayer.x)
 								{
-									SpriteList[iSpriteLoop].Position.x+=64;
+									SpriteList[iSpriteLoop].Position.x+=256;
 								}
 								else
 								{
-									SpriteList[iSpriteLoop].Position.x-=64;
+									SpriteList[iSpriteLoop].Position.x-=256;
 								}
-								if(SpriteList[iSpriteLoop].Position.y<(vShip.Position.y<<SPRITE_SCALE))
+								if(SpriteList[iSpriteLoop].Position.y<ptPlayer.y)
 								{
-									SpriteList[iSpriteLoop].Position.y+=64;
+									SpriteList[iSpriteLoop].Position.y+=256;
 								}
 								else
 								{
-									SpriteList[iSpriteLoop].Position.y-=64;
+									SpriteList[iSpriteLoop].Position.y-=256;
 								}
 								break;
 							default:
@@ -2061,14 +2161,12 @@ void DefenderoidsMain()
 						//Player collision?
 						if ((SpriteList[iSpriteLoop].Direction== DIR_SOUTH||SpriteList[iSpriteLoop].Direction== DIR_NONE)&&bProcessControls)
 						{
-							ptPlayer.x=PLAYER_X;
-							ptPlayer.y=PLAYER_Y;
-							if(CheckVectorSpriteCollision(ptPlayer,SpriteList[iSpriteLoop].Position,2048))
+							if(CheckVectorSpriteCollision(ptPlayer,SpriteList[iSpriteLoop].Position,COLLISION_PLAYER))
 							{
 								SpriteList[iSpriteLoop].SpriteType = sprMisc;
 								SpriteList[iSpriteLoop].Direction = DIR_NONE;
 								SpriteList[iSpriteLoop].RelatedSpriteID = 99;
-								iEnergyGauge+=32;
+								iEnergyGauge=AddEnergy(iEnergyGauge,MAX_ENERGY,32);
 							}
 						}
 						SpriteList[iSpriteLoop].Frame++;
@@ -2117,7 +2215,7 @@ void DefenderoidsMain()
 									{
 										if (VectorList[iLoopExplosion].ObjectType==VEC_NONE)
 										{
-											VectorList[iLoopExplosion]=CreateExplosion(SpriteList[iSpriteLoop].Position, VectorList[iVectorLoop].MovementVector);
+											VectorList[iLoopExplosion]=CreateExplosion(SpriteList[iSpriteLoop].Position);
 
 											// Need a better 'splode noise
 											//VGM_PlaySFX((u8*)noise,1);
@@ -2217,6 +2315,12 @@ void DefenderoidsMain()
 				bProcessControls=false;
 			}
 
+			// Reduce the ship "bounce" counter if>0
+			if (vShip.Counter>0)
+			{
+				vShip.Counter--;
+			}
+
 		} // Level Loop
 
 		// Clear all sprites
@@ -2230,13 +2334,18 @@ void DefenderoidsMain()
 
 		// Reset the Lemmanoid count and City status tiles too
 
-		// Setup next level
-		if (!bQixLevel)
+		if(!bQixLevel&&lvCurrent.LemmanoidCount==lvCurrent.Died)
 		{
-			iCurrentLevel++;
+			bQixLevel=true;
 		}
-		if(iCurrentLevel>MAX_LEVEL) iCurrentLevel=1;
-		lvCurrent=DefenderoidsLevels[iCurrentLevel];
+		else
+		{
+			bQixLevel=false;
+			iCurrentLevel++;
+			// Setup next level
+			if(iCurrentLevel>MAX_LEVEL) iCurrentLevel=1;
+		}
+
 
 	} // Player Energy Loop
 
