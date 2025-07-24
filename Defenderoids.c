@@ -106,7 +106,7 @@
  *  Explosions
  * 		Still a bit rubbish really. Often not at the right place either - Done.
  * All collisions
- *  Fine tune collision - Might actually leave this alone - Have set different granularities which seems to work...
+ *  Fine tune collision - Might actually leave this alone - Have set different granularities which seems to work well enough (see Defenderoids.h)...
  * Level success/failure modes
  * 	Success: City built, Lemmanoids rescued - Done
  *  Failure: Lemmanoids destroyed/captured (Qix space level) - Done
@@ -225,7 +225,7 @@ SMALLVECTOROBJECT CreateQix()
 	{
 		vReturn.PointList[iPointLoop].x = 8;
 		vReturn.PointList[iPointLoop].y = 8;
-		vReturn.PointList[iPointLoop].colour = 3;
+		vReturn.PointList[iPointLoop].colour = 1;
 	}
 	vReturn.Scale=1;
 	vReturn.RotationAngle=0;
@@ -306,7 +306,7 @@ SPRITE CreateSprite(u16 x, u16 y, u8 ID, u8 Type, u8 Direction, u8 Frame)
 
 	// Sprites are created with a Null sprite tile and an empty NGPC sprite object
 	// The sprite animation and object properties are both maintained in the main
-	// sprite animation loop which checks to see if the sprite is visible etc
+	// sprite animation loop which checks to see if the sprite is on screen etc
 
 	CopyAnimationFrame(Sprites, sprReturn.BaseTile, 1, sprMisc);
 	SetSprite(sprReturn.SpriteID, sprReturn.BaseTile , iChain, 0, 0, iPalette);
@@ -322,6 +322,7 @@ DrawSprite(SPRITE sprSprite, u16 iHorizontalOffset)
 {
 	u16 iRelativeX;
 	u8 iRelativeY;
+	u8 iSpriteTile;
 
 	if(sprSprite.Initiated==1)
 	{
@@ -342,56 +343,49 @@ DrawSprite(SPRITE sprSprite, u16 iHorizontalOffset)
 
 		if(iRelativeX>144||iRelativeY>112||iRelativeX<8||iRelativeY<8) {
 			//Replace tile with the empty sprite if it's outside the visible area
-			CopyAnimationFrame(Sprites, sprSprite.BaseTile, 1, sprMisc);
+			iSpriteTile = sprMisc;
 		}
-		else {
+		else
+		{
 			//Sprite Tile selection will differ depending on SpriteType
 			//Spacie -- sprSpacie + Type + 4 frames
 			switch (sprSprite.SpriteType)
 			{
 				case sprInvader:
-					//Invader -- sprInvader + 4 frames
-					CopyAnimationFrame(Sprites, sprSprite.BaseTile, 1, (sprSprite.SpriteType) + sprSprite.Frame);
+					//Invader -- sprInvader + frame (0-3)
+					iSpriteTile = (sprSprite.SpriteType) + sprSprite.Frame;
 					break;
 				case sprBomber:
 				case sprBomber+1:
 					// Two frames, left or right tile depending on type
-					// SpriteType (60 or 61) + Frame*2 (0 or 2)
-					CopyAnimationFrame(Sprites, sprSprite.BaseTile, 1, (sprSprite.SpriteType) + (sprSprite.Frame<<1));
-					break;
-				case sprPictcell:
-					//Pictcell -- sprPictCell + 4 frames
-					CopyAnimationFrame(Sprites, sprSprite.BaseTile, 1, (sprSprite.SpriteType) + sprSprite.Frame);
+					// SpriteType (60 or 62) + Frame*2 (0 or 2)
+					iSpriteTile = (sprSprite.SpriteType) + (sprSprite.Frame<<1);
 					break;
 				case sprLemmanoid:
-					//Lemmanoid -- sprLemmanoid + Direction + 4 frames
-					// Flipped sprites behave weirdly - are their x/y positions also flipped?
-					//if(sprSprite.Direction==DIR_WEST) {
-					//	FlipSprite(sprSprite.SpriteID,1,0);
-					//}
-					CopyAnimationFrame(Sprites, sprSprite.BaseTile, 1, (sprSprite.SpriteType) + (sprSprite.Direction) + sprSprite.Frame);
-					break;
 				case sprCity:
+					//Lemmanoid -- sprLemmanoid + Direction + Frame (0-3)
 					//City -- sprCity + blockid + age
 					// Use Direction as BlockID (0-3)
 					// Use Frame as age (0,4,18,12)
-					CopyAnimationFrame(Sprites, sprSprite.BaseTile, 1, (sprSprite.SpriteType) + (sprSprite.Direction) + sprSprite.Frame);
+					// Net result -- sprCity + Direction + Frame (0-3)
+					iSpriteTile = (sprSprite.SpriteType) + (sprSprite.Direction) + sprSprite.Frame;
 					break;
+				case sprPictcell:
 				case sprFirework:
 				case sprFirework+4:
-					// Firework - cycle through the frames
-					CopyAnimationFrame(Sprites, sprSprite.BaseTile, 1, (sprSprite.SpriteType) + sprSprite.Frame);
+					// Firework/Pictcell - cycle through the frames
+					iSpriteTile = (sprSprite.SpriteType) + sprSprite.Frame;
 					break;
 				default:
 					//Sprite Misc -- sprMisc + type (Empty, Umbrella, Builders Hat, Hod, etc)
 					//Default -- No animation
-					CopyAnimationFrame(Sprites, sprSprite.BaseTile, 1, (sprSprite.SpriteType));
+					iSpriteTile = sprSprite.SpriteType;
 					break;
 			}
 			// Cast the relativeX position to (u8) once the bounds checking has been completed
 			SetSpritePosition(sprSprite.SpriteID, (u8)iRelativeX, iRelativeY);
-
 		}
+		CopyAnimationFrame(Sprites, sprSprite.BaseTile, 1, iSpriteTile);
 	}
 }
 
