@@ -1173,12 +1173,12 @@ void DefenderoidsMain()
 											// Create a falling Lemmanoid
 											if(iLemmanoidLoop==0)
 											{
-												SpriteList[iSpriteLoop]=CreateSprite(((u16)iHorizontalOffset<<SPRITE_SCALE)+((vShip.Position.x+QRandom()-QRandom())<<SPRITE_SCALE),(u16)(QRandom()>>3)<<SPRITE_SCALE,iSpriteLoop,sprLemmanoid,DIR_SOUTH,0);
+												SpriteList[iSpriteLoop]=CreateSprite(((u16)iHorizontalOffset<<SPRITE_SCALE)+((vShip.Position.x+QRandom()-QRandom())<<SPRITE_SCALE),(u16)(QRandom()>>3)<<SPRITE_SCALE,iSpriteLoop,(u8)sprLemmanoid,DIR_SOUTH,0);
 												iLemmanoidLoop=iSpriteLoop;
 											}
 											else
 											{
-												SpriteList[iSpriteLoop]=CreateSprite(0,0,iSpriteLoop,sprUmbrella,DIR_SOUTH,0);
+												SpriteList[iSpriteLoop]=CreateSprite((u16)0,(u16)0,iSpriteLoop,(u8)sprUmbrella,DIR_SOUTH,0);
 												SetSpritePalette(SpriteList[iSpriteLoop].SpriteID,PAL_UMBRELLA);
 												SpriteList[iSpriteLoop].RelatedSpriteID=iLemmanoidLoop;
 												iSpriteLoop=MAX_SPRITE+1;
@@ -1332,7 +1332,7 @@ void DefenderoidsMain()
 								}
 								else
 								{
-									SpriteList[iSpriteLoop]=CreateSprite(((u16)iHorizontalOffset<<SPRITE_SCALE)+((vShip.Position.x+QRandom()-QRandom())<<SPRITE_SCALE),(u16)(100)<<SPRITE_SCALE,iSpriteLoop,sprFirework+4,DIR_NORTH,0);
+									SpriteList[iSpriteLoop]=CreateSprite(((u16)iHorizontalOffset<<SPRITE_SCALE)+((vShip.Position.x+QRandom()-QRandom())<<SPRITE_SCALE),(u16)(100)<<SPRITE_SCALE,iSpriteLoop,(u8)sprFirework+4,DIR_NORTH,0);
 								}
 
 								iSpriteLoop=MAX_SPRITE+1;
@@ -2350,8 +2350,6 @@ void DefenderoidsMain()
 	} // Player Energy Loop
 
 	VGM_StopBGM();
-
-	//DrawGameOverScreen();
 
 	//////////////////////////////////////////////////////
 	// Game Over information etc

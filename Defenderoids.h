@@ -119,7 +119,7 @@ typedef struct Sprite
 
 // Collision distances
 #define COLLISION_QIX 4096
-#define COLLISION_PLAYER 1024
+#define COLLISION_PLAYER 1536
 #define COLLISION_SHOT 1024
 #define COLLISION_ASTEROID 2048
 
