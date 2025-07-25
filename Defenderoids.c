@@ -280,6 +280,14 @@ SPRITE CreateSprite(u16 x, u16 y, u8 ID, u8 Type, u8 Direction, u8 Frame)
 		case sprInvader:
 			iPalette=(u8)(PAL_INVADER);
 			break;
+		case sprSpacie:
+		case sprSpacie+1:
+		case sprSpacie+2:
+			iPalette=(u8)(PAL_SPACIE+Direction);
+			break;
+		case sprMissile:
+			iPalette=(u8)(PAL_MISSILE);
+			break;
 		case sprBomber+1:
 			// Bomber sprites are chained...
 			iChain=1;
@@ -312,6 +320,52 @@ SPRITE CreateSprite(u16 x, u16 y, u8 ID, u8 Type, u8 Direction, u8 Frame)
 	SetSprite(sprReturn.SpriteID, sprReturn.BaseTile , iChain, 0, 0, iPalette);
 
 	return sprReturn;
+}
+
+/////////////////////////////////////////////////////
+// CreateInvader()
+//	x.pos
+//  y.pos
+//  Sprite ID
+//
+// Function to create a random Invader/Enemy:
+// - sprInvader
+// - sprMissile
+// - sprSpacie
+// - sprBomber
+// 
+/////////////////////////////////////////////////////
+SPRITE CreateInvader(u16 x, u16 y, u8 ID)
+{
+	u8 iInvaderType;
+	u8 iDirection;
+	u8 iFrame;
+	SPRITE spReturn;
+
+	iInvaderType=QRandom()>>6;
+	switch (iInvaderType)
+	{
+		case 0:
+		case 1:
+			iFrame=(QRandom()>>6);
+			iDirection=DIR_SOUTH;
+			iInvaderType=sprInvader;
+			break;
+		case 2:
+			iFrame=(QRandom()>>7);
+			iDirection=(QRandom()>>7)<<1;
+			iInvaderType=sprMissile;
+			break;
+		case 3:
+			iFrame=(QRandom()>>6);
+			iDirection=((QRandom()>>7)<<1)+(QRandom()>>7);
+			iInvaderType=sprSpacie;
+			break;
+	}
+
+	spReturn=CreateSprite(x,y,ID,iInvaderType,iDirection,iFrame);
+
+	return spReturn;
 }
 
 /////////////////////////////////////////////////////
@@ -352,33 +406,41 @@ DrawSprite(SPRITE sprSprite, u16 iHorizontalOffset)
 			switch (sprSprite.SpriteType)
 			{
 				case sprInvader:
-					//Invader -- sprInvader + frame (0-3)
+				case sprPictcell:
+				case sprFirework:
+				case sprFirework+4:
+					// Single char animated sprites (typically four frames) - no direction element so just SpriteType + Frame
 					iSpriteTile = (sprSprite.SpriteType) + sprSprite.Frame;
-					break;
-				case sprBomber:
-				case sprBomber+1:
-					// Two frames, left or right tile depending on type
-					// SpriteType (60 or 62) + Frame*2 (0 or 2)
-					iSpriteTile = (sprSprite.SpriteType) + (sprSprite.Frame<<1);
 					break;
 				case sprLemmanoid:
 				case sprCity:
-					//Lemmanoid -- sprLemmanoid + Direction + Frame (0-3)
+				case sprSpacie:
+				case sprMissile:
+					// Direction relative sprites
+					// Both for when a literal "direction" or "Frame" is used, or when the Direction attribute represents
+					// something else (City Block no and Age, Spacies sub-type)
+					//
+					//Lemmanoid -- sprLemmanoid + Direction (East/West 0, 4) + Frame (0-3)
+					//Missile -- sprMissile + Right/Left (0,2) + Frame (0,1)
+					//Spacie -- sprSpacie + sub-type (0,3,7) + frame (0-3)
 					//City -- sprCity + blockid + age
 					// Use Direction as BlockID (0-3)
 					// Use Frame as age (0,4,18,12)
 					// Net result -- sprCity + Direction + Frame (0-3)
 					iSpriteTile = (sprSprite.SpriteType) + (sprSprite.Direction) + sprSprite.Frame;
 					break;
-				case sprPictcell:
-				case sprFirework:
-				case sprFirework+4:
-					// Firework/Pictcell - cycle through the frames
-					iSpriteTile = (sprSprite.SpriteType) + sprSprite.Frame;
+				case sprBomber:
+				case sprBomber+1:
+					// Two frames, left or right tile depending on type
+					// SpriteType (60 or 61) + Frame*2 (0 or 2)
+					// (Sprite 61 position will be relative to Sprite 60 - 61.position.y=60.position.y and 61.position.x=60.position.x+(8<<SPRITE_SCALE))
+					// I could chain them, but that might cause problems when I reuse sprites
+					iSpriteTile = (sprSprite.SpriteType) + (sprSprite.Frame<<1);
 					break;
 				default:
-					//Sprite Misc -- sprMisc + type (Empty, Umbrella, Builders Hat, Hod, etc)
-					//Default -- No animation
+					//Fixed, no animation, sprites
+					//Empty, Umbrella, Builders Hat, Hod, etc
+					//Default -- No animation, so just use SpriteType
 					iSpriteTile = sprSprite.SpriteType;
 					break;
 			}
@@ -587,6 +649,10 @@ void DefinePalettes()
 	SetPalette(SPRITE_PLANE, (u8)(PAL_ANGRYINVADER), RGB(0,0,0), RGB(15,0,0), RGB(15,15,0), RGB(0,0,15));
 	SetPalette(SPRITE_PLANE, (u8)(PAL_UMBRELLA), RGB(0,0,0), RGB(15, 0, 0), RGB(15,15,15), RGB(10,5,0));
 	SetPalette(SPRITE_PLANE, (u8)(PAL_BOMBER), RGB(0,0,0), RGB(0,15,0), RGB(15,15,0), RGB(15,0,0));
+	SetPalette(SPRITE_PLANE, (u8)(PAL_MISSILE), RGB(0,0,0), RGB(15,15,15), RGB(15,0,0), RGB(0,0,15));
+	SetPalette(SPRITE_PLANE, (u8)(PAL_SPACIE), RGB(0,0,0), RGB(0,15,0), RGB(15,15,0), RGB(4,0,15));
+	SetPalette(SPRITE_PLANE, (u8)(PAL_SPACIE+1), RGB(0,0,0), RGB(15,15,0), RGB(15,15,15), RGB(0,0,15));
+	SetPalette(SPRITE_PLANE, (u8)(PAL_SPACIE+2), RGB(0,0,0), RGB(15,0,0), RGB(0,15,0), RGB(0,0,15));
 	SetPalette(SPRITE_PLANE, (u8)(PAL_FIREWORK), RGB(0,0,0), RGB(15, 15, 15), RGB(15,15,0), RGB(15,0,0));
 	SetPalette(SPRITE_PLANE, (u8)(PAL_FIREWORK+1), RGB(0,0,0), RGB(7, 15, 3), RGB(15,7,0), RGB(0,0,15));
 	SetPalette(SPRITE_PLANE, (u8)(PAL_FIREWORK+2), RGB(0,0,0), RGB(3, 15, 7), RGB(7,15,0), RGB(0,15,0));
@@ -932,7 +998,7 @@ void DefenderoidsMain()
 		{
 			//x, y, ID, Type, Direction, Frame
 			//Invaders always move south on creation
-			SpriteList[iSpriteLoop] = CreateSprite(((u16)QRandom())<<8,((u16)QRandom())<<4,iSpriteLoop,sprInvader,DIR_SOUTH,(QRandom()>>6));
+			SpriteList[iSpriteLoop] = CreateInvader(((u16)QRandom())<<8,((u16)QRandom())<<4,iSpriteLoop);
 		}
 
 		// Lemmanoids
@@ -2176,11 +2242,11 @@ void DefenderoidsMain()
 							// Spawn invaders off screen, keep the player on their toes
 							if(iHorizontalOffset<255)
 							{
-								SpriteList[iSpriteLoop]=CreateSprite(((u16)iHorizontalOffset-255)<<SPRITE_SCALE,0,iSpriteLoop,sprInvader,DIR_SOUTH,(QRandom()>>6));
+								SpriteList[iSpriteLoop]=CreateInvader(((u16)iHorizontalOffset-255)<<SPRITE_SCALE,0,iSpriteLoop);
 							}
 							else
 							{
-								SpriteList[iSpriteLoop]=CreateSprite(((u16)iHorizontalOffset+255)<<SPRITE_SCALE,0,iSpriteLoop,sprInvader,DIR_SOUTH,(QRandom()>>6));
+								SpriteList[iSpriteLoop]=CreateInvader(((u16)iHorizontalOffset+255)<<SPRITE_SCALE,0,iSpriteLoop);
 							}	
 						}
 					default:

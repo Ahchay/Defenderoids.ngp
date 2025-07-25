@@ -22,7 +22,9 @@
 #define PAL_ANGRYINVADER 5
 #define PAL_UMBRELLA 6
 #define PAL_BOMBER 7
-#define PAL_FIREWORK 8 // Actually 8-11 for firework palettes
+#define PAL_MISSILE 8
+#define PAL_SPACIE 9 // Actuall 9-11 for the three Spacie types
+#define PAL_FIREWORK 12 // Actually 12-15 for firework palettes
 
 
 // SPR_PLANE/SCR1_PLANE (Lemmanoid/City)
@@ -87,6 +89,8 @@ typedef struct Sprite
 
 // Direction constants
 #define DIR_NONE 99
+#define DIR_RIGHT 0
+#define DIR_LEFT 2
 #define DIR_EAST 0
 #define DIR_WEST 4
 #define DIR_SOUTH 8
