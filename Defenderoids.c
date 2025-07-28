@@ -347,18 +347,40 @@ SPRITE CreateInvader(u16 x, u16 y, u8 ID)
 	{
 		case 0:
 		case 1:
+			// Base invader/catcher type
+			// Four frames
 			iFrame=(QRandom()>>6);
+			// Always spawn going south
 			iDirection=DIR_SOUTH;
 			iInvaderType=sprInvader;
 			break;
 		case 2:
+			// Missile type
+			// Two frames
 			iFrame=(QRandom()>>7);
+			// Should be 0-1 (LEFT/RIGHT)
 			iDirection=(QRandom()>>7)<<1;
 			iInvaderType=sprMissile;
 			break;
 		case 3:
+			// Spacie type
+			// Four frames
 			iFrame=(QRandom()>>6);
-			iDirection=((QRandom()>>7)<<1)+(QRandom()>>7);
+			// Should be 0-2 (first, second, third rank)
+			// Bit of a palaver - should have gone with four spacie types...
+			iDirection=QRandom();
+			if (iDirection>170)
+			{
+				iDirection=2;
+			}
+			else if (iDirection>86)
+			{
+				iDirection=1;
+			}
+			else 
+			{
+				iDirection=0;
+			}
 			iInvaderType=sprSpacie;
 			break;
 	}
@@ -412,9 +434,12 @@ DrawSprite(SPRITE sprSprite, u16 iHorizontalOffset)
 					// Single char animated sprites (typically four frames) - no direction element so just SpriteType + Frame
 					iSpriteTile = (sprSprite.SpriteType) + sprSprite.Frame;
 					break;
+				case sprSpacie:
+					//Spacie -- sprSpacie + sub-type/Direction (0,1,2)*4 + frame (0-3)
+					iSpriteTile = (sprSprite.SpriteType) + (sprSprite.Direction<<2) + sprSprite.Frame;
+					break;
 				case sprLemmanoid:
 				case sprCity:
-				case sprSpacie:
 				case sprMissile:
 					// Direction relative sprites
 					// Both for when a literal "direction" or "Frame" is used, or when the Direction attribute represents
@@ -422,7 +447,6 @@ DrawSprite(SPRITE sprSprite, u16 iHorizontalOffset)
 					//
 					//Lemmanoid -- sprLemmanoid + Direction (East/West 0, 4) + Frame (0-3)
 					//Missile -- sprMissile + Right/Left (0,2) + Frame (0,1)
-					//Spacie -- sprSpacie + sub-type (0,3,7) + frame (0-3)
 					//City -- sprCity + blockid + age
 					// Use Direction as BlockID (0-3)
 					// Use Frame as age (0,4,18,12)
