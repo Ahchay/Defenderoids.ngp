@@ -581,7 +581,7 @@ sprLemmanoid:
 ;// NeoTile: TileColour1 0,240,0
 ;// NeoTile: TileColour2 240,240,0
 ;// NeoTile: TileColour3 240,128,0
-sprInvader:
+sprCatcher:
 	DW 0000010101010000b
 	DW 0001010101010100b
 	DW 0101100101100101b
