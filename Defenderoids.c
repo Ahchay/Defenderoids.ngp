@@ -1065,6 +1065,8 @@ void DefenderoidsMain()
 					if (SpriteList[iSpriteLoop].Direction>2)
 						SpriteList[iSpriteLoop].Direction=0;
 				}
+				// Sprites can end up with the wrong palette if the "direction" changes
+				SetSprite(SpriteList[iSpriteLoop].SpriteID, SpriteList[iSpriteLoop].BaseTile , 0, 0, 0, PAL_SPACIE+SpriteList[iSpriteLoop].Direction);
 				// Might need different invader counts per row?
 				SpriteList[iSpriteLoop].RankColumn=rkSpacies.InvaderCount[SpriteList[iSpriteLoop].Direction]++;
 				SpriteList[iSpriteLoop].Position.x=rkSpacies.Position.x+((u16)(SpriteList[iSpriteLoop].RankColumn)<<4)<<SPRITE_SCALE;
@@ -2186,6 +2188,8 @@ void DefenderoidsMain()
 					case sprSpacie:
 						// Spacies will move towards their position in the rank (animation within the rank will be dealt with separately)
 						// Set RelatedSpriteID to rsRank when in position
+						// Since rkSpacies.Position.x/y is currently always (0,0), invaders will only move right to left, regardless of where they spawn
+						// They also overshoot very easily.
 						if (SpriteList[iSpriteLoop].RelatedSpriteID!=rsRank)
 						{
 							//Find next available position in rank
@@ -2193,11 +2197,18 @@ void DefenderoidsMain()
 							{
 								if (SpriteList[iSpriteLoop].Position.x<=rkSpacies.Position.x+((u16)(SpriteList[iSpriteLoop].RankColumn)<<4)<<SPRITE_SCALE)
 								{
-									SpriteList[iSpriteLoop].Position.x+=512;
+									if(SpriteList[iSpriteLoop].Position.x+512>=rkSpacies.Position.x+((u16)(SpriteList[iSpriteLoop].RankColumn)<<4)<<SPRITE_SCALE)
+										SpriteList[iSpriteLoop].Position.x=rkSpacies.Position.x+((u16)(SpriteList[iSpriteLoop].RankColumn)<<4)<<SPRITE_SCALE;
+									else
+										SpriteList[iSpriteLoop].Position.x+=512;
 								}
 								else
 								{
-									SpriteList[iSpriteLoop].Position.x-=512;
+									// Doesn't account for the wrap point
+									if(SpriteList[iSpriteLoop].Position.x<=(rkSpacies.Position.x+((u16)(SpriteList[iSpriteLoop].RankColumn)<<4)<<SPRITE_SCALE)+512)
+										SpriteList[iSpriteLoop].Position.x=rkSpacies.Position.x+((u16)(SpriteList[iSpriteLoop].RankColumn)<<4)<<SPRITE_SCALE;
+									else
+										SpriteList[iSpriteLoop].Position.x-=512;
 								}
 
 								if(SpriteList[iSpriteLoop].Position.y<=rkSpacies.Position.y+((SpriteList[iSpriteLoop].Direction<<4)<<SPRITE_SCALE))
