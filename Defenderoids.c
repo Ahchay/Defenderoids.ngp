@@ -1730,6 +1730,19 @@ void DefenderoidsMain()
 											}
 										} 
 										// Check affected sprite for other sprites to handle (again, should only apply to sprCatcher)
+										if(SpriteList[iSpriteLoop].SpriteType == sprSpacie)
+										{
+											// Clear the associated rkSpacie settings
+											for(iInvaderLoop=0;iInvaderLoop<24;iInvaderLoop++)
+											{
+												if(rkSpacies.Invaders[iInvaderLoop]==SpriteList[iSpriteLoop].SpriteID)
+												{
+													rkSpacies.Invaders[iInvaderLoop]=rsNone;
+													rkSpacies.InvaderCount[SpriteList[iSpriteLoop].Direction]--;
+													SpriteList[iSpriteLoop].RankColumn=0;
+												}
+											}
+										}
 										switch(SpriteList[iSpriteLoop].RelatedSpriteID)
 										{
 											case rsNone:
@@ -2022,24 +2035,43 @@ void DefenderoidsMain()
 							}
 						} 
 						// Check affected sprite for other sprites to handle (should only matter for sprCatcher)
-						if (SpriteList[iSpriteLoop].RelatedSpriteID!=rsNone)
+						// Could do with making this a function, as it has to be repeated for Ship and Shot collisions
+						if(SpriteList[iSpriteLoop].SpriteType == sprSpacie)
 						{
-							// Drop the Lemmanoid - do we need to check for sprite type?
-							// Invader has a captured Lemmanoid, give 'em an umbrella and let them go
-							// No need for another loop - we can recycle the invader sprite ID for the umbrella?
-							// Keep the RelatedSpriteID connections active
-							SpriteList[iSpriteLoop].SpriteType=sprUmbrella;
-							SetSpritePalette(SpriteList[iSpriteLoop].SpriteID,PAL_UMBRELLA);
-
-							// Set the Lemmanoid movement direction
-							SpriteList[SpriteList[iSpriteLoop].RelatedSpriteID].Direction=DIR_SOUTH;
-
+							// Clear the associated rkSpacie settings
+							for(iInvaderLoop=0;iInvaderLoop<24;iInvaderLoop++)
+							{
+								if(rkSpacies.Invaders[iInvaderLoop]==SpriteList[iSpriteLoop].SpriteID)
+								{
+									rkSpacies.Invaders[iInvaderLoop]=rsNone;
+									rkSpacies.InvaderCount[SpriteList[iSpriteLoop].Direction]--;
+									SpriteList[iSpriteLoop].RankColumn=0;
+								}
+							}
 						}
-						else
+						switch(SpriteList[iSpriteLoop].RelatedSpriteID)
 						{
-							SpriteList[iSpriteLoop].SpriteType = sprMisc;
+							case rsNone:
+								SpriteList[iSpriteLoop].SpriteType = sprMisc;
+								break;
+							case rsRank:
+								SpriteList[iSpriteLoop].SpriteType = sprMisc;
+								SpriteList[iSpriteLoop].RelatedSpriteID = rsNone;
+								break;
+							default:
+								// Invader has a captured Lemmanoid, give 'em an umbrella and let them go
+								// No need to check for RelatedSpriteID.SpriteType as it can only be sprLemmanoid
+								// We can recycle the invader sprite ID for the umbrella and
+								// keep the RelatedSpriteID connections active
+								SpriteList[iSpriteLoop].SpriteType=sprUmbrella;
+								SetSpritePalette(SpriteList[iSpriteLoop].SpriteID,PAL_UMBRELLA);
+
+								// Set the Lemmanoid movement direction
+								SpriteList[SpriteList[iSpriteLoop].RelatedSpriteID].Direction=DIR_SOUTH;
+								break;
 						}
 						lvCurrent.InvaderCount--;
+
 						iEnergyGauge=AddEnergy(iEnergyGauge,MAX_ENERGY,-2);
 					}
 				}
@@ -2401,8 +2433,8 @@ void DefenderoidsMain()
 								// Then loop through all spacies to work out which columns are free
 								for(iInvaderLoop=0;iInvaderLoop<24;iInvaderLoop++)
 								{
-									// Make sure we don't match to the current sprite
-									if(rkSpacies.Invaders[iInvaderLoop]!=SpriteList[iSpriteLoop].SpriteID)
+									// Make sure we don't match to the current sprite, or the empty spaces
+									if(rkSpacies.Invaders[iInvaderLoop]!=SpriteList[iSpriteLoop].SpriteID&rkSpacies.Invaders[iInvaderLoop]!=rsNone)
 									{
 										// Only check spacies in the same row
 										if(SpriteList[rkSpacies.Invaders[iInvaderLoop]].Direction==SpriteList[iSpriteLoop].Direction)
