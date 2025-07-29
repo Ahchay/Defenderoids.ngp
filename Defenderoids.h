@@ -84,6 +84,7 @@ typedef struct Sprite
 	u16 Frame;
 	u16 Direction;
 	u8 RelatedSpriteID;
+	u8 RankColumn;
 	bool Initiated;
 } SPRITE;
 
@@ -127,6 +128,8 @@ typedef struct Sprite
 #define COLLISION_SHOT 1024
 #define COLLISION_ASTEROID 2048
 
+#define rsNone 99
+#define rsRank 100
 
 typedef struct Level
 {
@@ -150,6 +153,17 @@ const LEVEL DefenderoidsLevels[] = {
 	{"THE LAST LEMMANOID",4,1,4,0,0,0,0},
 	{"WHOS DEFENDING WHO",6,6,3,0,0,0,0}
 };
+
+// Invader Rank object
+// Max of 24 Spacie sprites
+typedef struct InvaderRank
+{
+	SPRITEPOINT Position;
+	u8 Direction;
+	u8 NextInvader;
+	u8 InvaderCount[3];
+	u8 Invaders[24];
+} INVADERRANK;
 
 #define MAX_LEVEL 7
 
